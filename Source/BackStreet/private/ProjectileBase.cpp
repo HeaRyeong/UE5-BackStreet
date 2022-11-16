@@ -42,10 +42,8 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 	FTransform TargetTransform = { FRotator(), SweepResult.ImpactPoint, {1.0f, 1.0f, 1.0f} };
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
 
-	FVector hitFromDirection = UKismetMathLibrary::FindLookAtRotation(this->GetActorLocation(), OtherActor->GetActorLocation()).Vector();
-	const FHitResult hitResult;
-	UGameplayStatics::ApplyPointDamage(OtherActor, ProjectileStat.ProjectileDamage, hitFromDirection
-										, hitResult, SpawnInstigator, this, nullptr);
+	UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
+							SpawnInstigator, this, nullptr);
 
 	Destroy();
 }
