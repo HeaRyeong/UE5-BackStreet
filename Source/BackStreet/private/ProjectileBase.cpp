@@ -43,8 +43,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
 
 	UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-							SpawnInstigator, this, nullptr);
-
+								SpawnInstigator, this, nullptr);
 	Destroy();
 }
 
