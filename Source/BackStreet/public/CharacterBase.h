@@ -38,13 +38,10 @@ public:
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION()
-		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType);
-
-	//Native-Only Function
-		void SetDebuffTimer(AActor* Causer, float TotalTime, ECharacterDebuffType DebuffType, FTimerHandle& TimerHandle);
+		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer);
 
 	UFUNCTION(BlueprintCallable)
-		void SetDebuffTimer(AActor* Causer, float TotalTime, ECharacterDebuffType DebuffType);
+		void SetDebuffTimer(float TotalTime, ECharacterDebuffType DebuffType, AActor* Causer);
 
 	UFUNCTION()
 		void ClearDebuffTimer();
@@ -88,7 +85,4 @@ protected:
 
 	UPROPERTY()
 		float DebuffRemainingTime[10];
-
-private:
-	FTimerDelegate TimerDelegate[10];
 };
