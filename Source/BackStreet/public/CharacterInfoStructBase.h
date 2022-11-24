@@ -51,3 +51,11 @@ enum class ECharacterDebuffType : uint8
 	E_Slow		UMETA(DisplayName = "Slow"),
 	E_Sleep		UMETA(DisplayName = "Sleep")
 };
+
+UENUM(BlueprintType)
+enum class ECharacterBuffType : uint8
+{
+	E_SpeedUp		UMETA(DisplayName = "SpeedUp"),
+	E_Healing		UMETA(DisplayName = "Healing"),
+	E_FastAtk		UMETA(DisplayName = "FastAtk")
+};

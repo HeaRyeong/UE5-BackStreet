@@ -37,14 +37,17 @@ public:
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintCallable)
+		void SetDebuffTimer(float TotalTime, float Damage, ECharacterDebuffType DebuffType, AActor* Causer);
+
 	UFUNCTION()
 		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer);
 
-	UFUNCTION(BlueprintCallable)
-		void SetDebuffTimer(float TotalTime, ECharacterDebuffType DebuffType, AActor* Causer);
+	UFUNCTION()
+		void ClearDebuffTimer(ECharacterDebuffType DebuffType);
 
 	UFUNCTION()
-		void ClearDebuffTimer();
+		void ClearAllDebuffTimer();
 
 	UFUNCTION(BlueprintImplementableEvent) 
 		void Die();
@@ -79,10 +82,16 @@ protected:
 	//Action 타이머 핸들
 	UPROPERTY()
 		FTimerHandle DelayHandle;
-	
+
 	UPROPERTY()
-		FTimerHandle DebuffTimerHandle[10];
+		float BuffRemainingTime[5];
+
+	UPROPERTY()
+		FTimerHandle BuffTimerHandle[5];
 
 	UPROPERTY()
 		float DebuffRemainingTime[10];
+
+	UPROPERTY()
+		FTimerHandle DebuffTimerHandle[10];
 };
