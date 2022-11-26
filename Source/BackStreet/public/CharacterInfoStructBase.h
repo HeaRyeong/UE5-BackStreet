@@ -49,7 +49,9 @@ enum class ECharacterDebuffType : uint8
 	E_Flame		UMETA(DisplayName = "Flame"),
 	E_Poison	UMETA(DisplayName = "Poison"),
 	E_Slow		UMETA(DisplayName = "Slow"),
-	E_Sleep		UMETA(DisplayName = "Sleep")
+	E_Sleep		UMETA(DisplayName = "Sleep"),
+	//방어력 감소
+	//공격력 감소
 };
 
 UENUM(BlueprintType)

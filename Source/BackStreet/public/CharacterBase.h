@@ -26,6 +26,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+/* Character State Basic */
 public:
 	UFUNCTION()
 		void InitCharacterState();
@@ -37,20 +38,27 @@ public:
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void Die();
+
+/* Character Debuff */
+public:
 	UFUNCTION(BlueprintCallable)
 		void SetDebuffTimer(float TotalTime, float Damage, ECharacterDebuffType DebuffType, AActor* Causer);
 
 	UFUNCTION()
+		void ResetNonDamageDebuff(ECharacterDebuffType DebuffType, float ResetValue=0.0f);
+
+	UFUNCTION()
 		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer);
 
+	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION()
 		void ClearDebuffTimer(ECharacterDebuffType DebuffType);
 
 	UFUNCTION()
 		void ClearAllDebuffTimer();
 
-	UFUNCTION(BlueprintImplementableEvent) 
-		void Die();
 
 protected:
 	//SoftObjRef로 대체 예정
