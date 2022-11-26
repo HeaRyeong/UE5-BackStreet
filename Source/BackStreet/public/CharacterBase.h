@@ -3,44 +3,9 @@
 #pragma once
 
 #include "EngineMinimal.h"
+#include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
-
-USTRUCT(BlueprintType)
-struct FPlayerStatStruct
-{
-public:
-	GENERATED_USTRUCT_BODY()
-
-	//PlayerMaxHP는 1.0f
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.5f, UIMax = 10.0f))
-		float CharacterMaxHP = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.1f, UIMax = 10.0f))
-		float CharacterAtkMultiplier = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 100.0f, UIMax = 1000.0f))
-		float CharacterMoveSpeed = 400.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FPlayerStateStruct
-{
-public:
-	GENERATED_USTRUCT_BODY()
-
-	//현재 구르고 있는지?
-	UPROPERTY(BlueprintReadOnly)
-		bool bIsRolling = false;
-
-	//현재 공격을 하고 있는지?
-	UPROPERTY(BlueprintReadOnly)
-		bool bIsAttacking = false;;
-
-	//PlayerMaxHP는 1.0f
-	UPROPERTY(BlueprintReadOnly)
-		float CharacterCurrHP;
-};
 
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
@@ -61,30 +26,39 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+/* Character State Basic */
 public:
 	UFUNCTION()
 		void InitCharacterState();
 
 	UFUNCTION(BlueprintCallable)
-		void UpdateCharacterStat(FPlayerStatStruct NewStat);
+		void UpdateCharacterStat(FCharacterStatStruct NewStat);
 
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
-	UFUNCTION()
-		float TakeDebuffDamage(float DamageAmount);
-
-	void SetDebuffTimer(float Rate, AActor* Causer, FTimerHandle TimerHandle);
-
-	UFUNCTION(BlueprintCallable)
-		void SetDebuffTimer(float Rate, AActor* Causer);
-
-	UFUNCTION()
-		void ClearDebuffTimer();
-
-	UFUNCTION(BlueprintImplementableEvent) 
+	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
+
+/* Character Debuff */
+public:
+	UFUNCTION(BlueprintCallable)
+		void SetDebuffTimer(float TotalTime, float Damage, ECharacterDebuffType DebuffType, AActor* Causer);
+
+	UFUNCTION()
+		void ResetNonDamageDebuff(ECharacterDebuffType DebuffType, float ResetValue=0.0f);
+
+	UFUNCTION()
+		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer);
+
+	//특정 Debuff의 타이머를 해제한다.
+	UFUNCTION()
+		void ClearDebuffTimer(ECharacterDebuffType DebuffType);
+
+	UFUNCTION()
+		void ClearAllDebuffTimer();
+
 
 protected:
 	//SoftObjRef로 대체 예정
@@ -104,22 +78,28 @@ protected:
 		class UAnimMontage* RollAnimMontage;
 
 protected:
+	//캐릭터의 스탯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		FCharacterStatStruct CharacterStat;
+
+	//캐릭터의 현재 상태
+	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
+		FCharacterStateStruct CharacterState;
+
+protected:
 	//Action 타이머 핸들
 	UPROPERTY()
 		FTimerHandle DelayHandle;
 
-	//Debuff는 최대 3개까지 가능
 	UPROPERTY()
-		FTimerHandle DebuffTimerHandle[3];
+		float BuffRemainingTime[5];
 
 	UPROPERTY()
-		float DebuffRemainingTime[3];
+		FTimerHandle BuffTimerHandle[5];
 
-	//캐릭터의 스탯
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
-		FPlayerStatStruct CharacterStat;
-	
-	//캐릭터의 현재 상태
-	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
-		FPlayerStateStruct CharacterState;
+	UPROPERTY()
+		float DebuffRemainingTime[10];
+
+	UPROPERTY()
+		FTimerHandle DebuffTimerHandle[10];
 };

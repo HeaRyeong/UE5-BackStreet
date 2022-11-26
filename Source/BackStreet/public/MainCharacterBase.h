@@ -7,7 +7,6 @@
 #include "GameFramework/Character.h"
 #include "MainCharacterBase.generated.h"
 
-
 UCLASS()
 class BACKSTREET_API AMainCharacterBase : public ACharacterBase
 {
