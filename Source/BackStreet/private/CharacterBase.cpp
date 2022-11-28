@@ -4,6 +4,8 @@
 #include "../public/CharacterBase.h"
 
 
+FTimerHandle BuffTimerHandle[2][10];
+float BuffRemainingTime[2][10];
 
 // Sets default values
 ACharacterBase::ACharacterBase()
@@ -36,6 +38,7 @@ void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator
 								, AActor* DamageCauser)
 {
+	DamageAmount = DamageAmount - DamageAmount * CharacterStat.CharacterDefense;
 	if (DamageAmount <= 0.0f || !IsValid(DamageCauser)) return 0.0f;
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -52,92 +55,102 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
-void ACharacterBase::SetDebuffTimer(float TotalTime, float Damage, ECharacterDebuffType DebuffType, AActor* Causer)
+void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	if (CharacterState.CharacterDebuffState & (1 << (int)DebuffType))
+	FTimerDelegate TimerDelegate;
+	FTimerHandle& timerHandle = BuffTimerHandle[bIsDebuff][(int)BuffType];
+	
+	if (CharacterState.CharacterBuffState & (1 << (int)BuffType))
 	{
-		DebuffRemainingTime[(int)DebuffType] += TotalTime;
+		BuffRemainingTime[bIsDebuff][(int)BuffType] += TotalTime;
 		return;
 	}
-	CharacterState.CharacterDebuffState |= (1 << (int)DebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+	if (GetWorldTimerManager().IsTimerActive(timerHandle)) return;
 
-	FTimerDelegate TimerDelegate;
-	FTimerHandle& timerHandle = DebuffTimerHandle[(int)DebuffType];
-
-	if (!GetWorldTimerManager().IsTimerActive(timerHandle))
+	CharacterState.CharacterBuffState |= (1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+	BuffRemainingTime[bIsDebuff][(int)BuffType] = TotalTime;
+	if(bIsDebuff)
 	{
-		DebuffRemainingTime[(int)DebuffType] = TotalTime;
-		switch (DebuffType)
+		switch ((ECharacterDebuffType)BuffType)
 		{
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
-			//SpawnDebuffParticle(E_Flame, TotalTime) //TimerDelegate에 걸어도 됨
-			TimerDelegate.BindUFunction(this, FName("TakeDebuffDamage"), Damage, DebuffType, Causer);
+			//SpawnBuffParticle(E_Flame, TotalTime) //TimerDelegate에 걸어도 됨
+			TimerDelegate.BindUFunction(this, FName("TakeDebuffDamage"), Variable, BuffType, Causer);
 			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 1.0f, true);
-			UE_LOG(LogTemp, Warning, TEXT("FLAME || POISON"));
 			break;
 
 		case ECharacterDebuffType::E_Sleep:
-			TimerDelegate.BindUFunction(this, FName("ResetNonDamageDebuff"), DebuffType);
+			TimerDelegate.BindUFunction(this, FName("ResetNormalBuffState"), BuffType);
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
 			break;
 
 		case ECharacterDebuffType::E_Slow:
 			const float normalWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-			TimerDelegate.BindUFunction(this, FName("ResetNonDamageDebuff"), DebuffType, normalWalkSpeed);
+			TimerDelegate.BindUFunction(this, FName("ResetNormalBuffState"), BuffType, normalWalkSpeed);
 			GetCharacterMovement()->MaxWalkSpeed *= 0.5f;
-			UE_LOG(LogTemp, Warning, TEXT("SLOW!!"));
 			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
+			break;
+		}
+	}
+	else
+	{
+		switch ((ECharacterBuffType)BuffType)
+		{
+		case ECharacterBuffType::E_Healing :
 			break;
 		}
 	}
 }
 
-float ACharacterBase::TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer)
+void ACharacterBase::ResetNormalBuffState(bool bIsDebuff, uint8 BuffType, float ResetValue)
+{
+	if (bIsDebuff)
+	{
+		switch ((ECharacterDebuffType)BuffType)
+		{
+		case ECharacterDebuffType::E_Sleep:
+			//WakeUp Animation
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+			break;
+		case ECharacterDebuffType::E_Slow:
+			GetCharacterMovement()->MaxWalkSpeed = ResetValue;
+			break;
+		}
+	}
+	ClearBuffTimer(bIsDebuff, BuffType);
+}
+
+float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer)
 {
 	//추후 디버프 당 파티클 시스템 추가 예정
-	if (!IsValid(Causer) || DebuffRemainingTime[(int)DebuffType] <= 0.0f) return 0.0f;
+	if (!IsValid(Causer) || BuffRemainingTime[1][(int)DebuffType] <= 0.0f) return 0.0f;
 		
-	DebuffRemainingTime[(int)DebuffType] -= 1.0f;
+	BuffRemainingTime[1][(int)DebuffType] -= 1.0f;
 
 	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
 
-	if (DebuffRemainingTime[(int)DebuffType] <= 0.0f)
+	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
 	{
 		CharacterState.CharacterDebuffState &= ~(1 << (int)DebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
-		ClearDebuffTimer(DebuffType);
+		ClearBuffTimer(1, DebuffType);
 	}
 	return DamageAmount;
 }
 
-void ACharacterBase::ResetNonDamageDebuff(ECharacterDebuffType DebuffType, float ResetValue)
-{
-	switch (DebuffType)
-	{
-	case ECharacterDebuffType::E_Sleep:
-		//WakeUp Animation
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-		break;
-	case ECharacterDebuffType::E_Slow:
-		GetCharacterMovement()->MaxWalkSpeed = ResetValue;
-		break;
-	}
-	ClearDebuffTimer(DebuffType);
-}
-
-void ACharacterBase::ClearDebuffTimer(ECharacterDebuffType DebuffType)
+void ACharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ClearTimer!!"));
-	DebuffRemainingTime[(int)DebuffType] = 0.0f;
-	GetWorldTimerManager().ClearTimer(DebuffTimerHandle[(int)DebuffType]);
+	BuffRemainingTime[bIsDebuff][(int)BuffType] = 0.0f;
+	GetWorldTimerManager().ClearTimer(BuffTimerHandle[bIsDebuff][(int)BuffType]);
 }
 
-void ACharacterBase::ClearAllDebuffTimer()
+void ACharacterBase::ClearAllBuffTimer(bool bIsDebuff)
 {
 	for (int timerIdx = 0; timerIdx < 10; timerIdx++)
 	{
-		GetWorldTimerManager().ClearTimer(DebuffTimerHandle[timerIdx]);
+		GetWorldTimerManager().ClearTimer(BuffTimerHandle[bIsDebuff][timerIdx]);
 	}
 }
 
