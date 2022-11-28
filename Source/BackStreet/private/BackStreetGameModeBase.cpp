@@ -23,7 +23,7 @@ void ABackStreetGameModeBase::InitGame()
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, StreamerVolumeA->GetName());
 
 		}
-		if (entity->GetName() == FString(TEXT("LevelStreamerActor_2")))
+		if (entity->GetName() == FString(TEXT("LevelStreamerActor_3")))
 		{
 			StreamerVolumeB = entity;
 			if (GEngine)
@@ -41,7 +41,7 @@ void ABackStreetGameModeBase::InitGame()
 	CurrentVolumeLocation = FVector(0.f, 0.f, 0.f);
 	CurrentVolume = StreamerVolumeA;
 
-	ATile* currentTile = Map.GetCurrentTile();
+	FTile* currentTile = Map.GetCurrentTile();
 	currentTile->down = true;
 
 	SetMap();
@@ -79,23 +79,24 @@ void ABackStreetGameModeBase::SelectRandomMap()
 void ABackStreetGameModeBase::SetMap()
 {
 	SelectRandomMap();
-	ATile* currentTile = Map.GetCurrentTile();
+	FTile* currentTile = Map.GetCurrentTile();
 	UWorld* world = GetWorld();
-
-	PrintTileInfo();
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Test"));
+	//PrintTileInfo();
 	{
 		UObject* SpawnActor;
 		FVector spawnLocation;
-
+	
 		if (currentTile->up)
 		{
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Gate")));
-			spawnLocation = CurrentTransform + FVector(-1500, 2450, 1000);
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Gate")));
+			spawnLocation = CurrentTransform + FVector(-1500, 2450, 1500);
 		}
 		else
 		{
 			spawnLocation = CurrentTransform + FVector(0, 2450, 0);
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Wall")));
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Wall")));
 		}
 
 		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
@@ -128,12 +129,12 @@ void ABackStreetGameModeBase::SetMap()
 		if (currentTile->down)
 		{
 
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Gate")));
-			spawnLocation = CurrentTransform + FVector(-1500, -2450, 1000);
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Gate")));
+			spawnLocation = CurrentTransform + FVector(-1500, -2450, 1500);
 		}
 		else
 		{
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Wall")));
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Wall")));
 			spawnLocation = CurrentTransform + FVector(0, -2450, 0);
 		}
 
@@ -166,12 +167,12 @@ void ABackStreetGameModeBase::SetMap()
 		if (currentTile->left)
 		{
 			// 해당 위치에 Gate 생성
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Gate")));
-			spawnLocation = CurrentTransform + FVector(2450, -1500, 1000);
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Gate")));
+			spawnLocation = CurrentTransform + FVector(2450, -1500, 1500);
 		}
 		else
 		{
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Wall")));
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Wall")));
 			spawnLocation = CurrentTransform + FVector(2450, 0, 0);
 		}
 
@@ -204,13 +205,13 @@ void ABackStreetGameModeBase::SetMap()
 		if (currentTile->right)
 		{
 			// 해당 위치에 Gate 생성
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Gate")));
-			spawnLocation = CurrentTransform + FVector(-2450, -1500, 1000);
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Gate")));
+			spawnLocation = CurrentTransform + FVector(-2450, -1500, 1500);
 		}
 		else
 		{
-			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/ThirdPerson/Blueprints/BP_Wall")));
-			spawnLocation = CurrentTransform + FVector(-2450, 0, 0);
+			SpawnActor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/BP_Wall")));
+			spawnLocation = CurrentTransform + FVector(-2450, 0, 1500);
 		}
 
 		UBlueprint* GeneratedBP = Cast<UBlueprint>(SpawnActor);
@@ -270,7 +271,7 @@ void ABackStreetGameModeBase::GateOpen()
 
 void ABackStreetGameModeBase::SetVolume()
 {
-	ATile* currentTile = Map.GetCurrentTile();
+	FTile* currentTile = Map.GetCurrentTile();
 	if (CurrentTransform != FVector(0.f, 0.f, 0.f))
 	{
 
@@ -311,7 +312,7 @@ void ABackStreetGameModeBase::SetVolume()
 
 void ABackStreetGameModeBase::PrintTileInfo()
 {
-	ATile* currentTile = Map.GetCurrentTile();
+	FTile* currentTile = Map.GetCurrentTile();
 
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Up"));

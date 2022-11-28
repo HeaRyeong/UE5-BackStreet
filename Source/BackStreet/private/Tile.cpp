@@ -3,30 +3,7 @@
 
 #include "Tile.h"
 
-// Sets default values
-ATile::ATile()
-{
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-}
-
-// Called when the game starts or when spawned
-void ATile::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void ATile::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-
-void ATile::InitTile(int _x, int _y)
+void FTile::InitTile(int _x, int _y)
 {
 	x = _x;
 	y = _y;
@@ -36,12 +13,12 @@ void ATile::InitTile(int _x, int _y)
 
 }
 
-bool ATile::IsVisited()
+bool FTile::IsVisited()
 {
 	return up || down || left || right;
 }
 
-void ATile::GateCount()
+void FTile::GateCount()
 {
 	if (up)
 		GateCnt++;

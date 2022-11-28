@@ -13,7 +13,7 @@ void FGrid::CreateMaze(int width, int hight, int cellSize)
 	Hight = hight;
 	CellSize = cellSize;
 
-	GridArray = new ATile[width * hight];
+	GridArray = new FTile[width * hight];
 
 	for (int x = 0; x < width; x++)
 	{
@@ -43,8 +43,8 @@ void FGrid::RecursiveBacktracking()
 {
 	if (Tracks.Num() == 0) return;
 
-	ATile* currenttile = Tracks[Tracks.Num() - 1];
-	ATile* nexttile = GetRandomNeighbourTile(currenttile);
+	FTile* currenttile = Tracks[Tracks.Num() - 1];
+	FTile* nexttile = GetRandomNeighbourTile(currenttile);
 
 	if (nexttile != nullptr)
 	{
@@ -60,7 +60,7 @@ void FGrid::RecursiveBacktracking()
 	RecursiveBacktracking();
 }
 
-ATile* FGrid::GetTile(int x, int y)
+FTile* FGrid::GetTile(int x, int y)
 {
 	if (x >= 0 && x < Width && y >= 0 && y < Hight)
 	{
@@ -70,14 +70,14 @@ ATile* FGrid::GetTile(int x, int y)
 	return nullptr;
 }
 
-ATile* FGrid::GetRandomNeighbourTile(ATile* tile)
+FTile* FGrid::GetRandomNeighbourTile(FTile* tile)
 {
-	ATile* upTile = GetTile(tile->x, tile->y + 1);
-	ATile* downTile = GetTile(tile->x, tile->y - 1);
-	ATile* leftTile = GetTile(tile->x - 1, tile->y);
-	ATile* rightTile = GetTile(tile->x + 1, tile->y);
+	FTile* upTile = GetTile(tile->x, tile->y + 1);
+	FTile* downTile = GetTile(tile->x, tile->y - 1);
+	FTile* leftTile = GetTile(tile->x - 1, tile->y);
+	FTile* rightTile = GetTile(tile->x + 1, tile->y);
 
-	TArray<ATile*> neighbourTiles;
+	TArray<FTile*> neighbourTiles;
 	if (upTile != nullptr && !upTile->IsVisited()) neighbourTiles.Add(upTile);
 	if (downTile != nullptr && !downTile->IsVisited()) neighbourTiles.Add(downTile);
 	if (leftTile != nullptr && !leftTile->IsVisited()) neighbourTiles.Add(leftTile);
@@ -89,7 +89,7 @@ ATile* FGrid::GetRandomNeighbourTile(ATile* tile)
 	return neighbourTiles[rand() % neighbourTiles.Num()];
 }
 
-void FGrid::VisitTile(ATile* currentTile, ATile* nextTile)
+void FGrid::VisitTile(FTile* currentTile, FTile* nextTile)
 {
 	if (currentTile->x < nextTile->x)
 	{
@@ -115,7 +115,7 @@ void FGrid::VisitTile(ATile* currentTile, ATile* nextTile)
 	Tracks.Add(nextTile);
 }
 
-ATile* FGrid::GetCurrentTile()
+FTile* FGrid::GetCurrentTile()
 {
 	return CurrentTile;
 }

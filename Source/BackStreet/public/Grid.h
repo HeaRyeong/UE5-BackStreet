@@ -13,17 +13,17 @@ public:
 	int Width;
 	int Hight;
 	int CellSize;
-	ATile* CurrentTile;
-	ATile* GridArray;
-	TArray<ATile*> Tracks;
+	FTile* CurrentTile;
+	FTile* GridArray;
+	TArray<FTile*> Tracks;
 
 public:
-	ATile* GetCurrentTile();
+	FTile* GetCurrentTile();
 	void CreateMaze(int width, int hight, int cellSize);
 
 private:
 	void RecursiveBacktracking();
-	ATile* GetTile(int x, int y);
-	ATile* GetRandomNeighbourTile(ATile* tile);
-	void VisitTile(ATile* currenttile, ATile* nextTile);
+	FTile* GetTile(int x, int y);
+	FTile* GetRandomNeighbourTile(FTile* tile);
+	void VisitTile(FTile* currenttile, FTile* nextTile);
 };

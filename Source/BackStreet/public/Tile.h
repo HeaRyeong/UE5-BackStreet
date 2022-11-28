@@ -3,14 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "Tile.generated.h"
 
-UCLASS()
-class BACKSTREET_API ATile : public AActor
+/**
+ * 
+ */
+class BACKSTREET_API FTile
 {
-	GENERATED_BODY()
-
 public:
 	char stagemap;
 	int x;
@@ -20,17 +18,6 @@ public:
 public:
 	bool up, down, left, right;
 
-public:
-	// Sets default values for this actor's properties
-	ATile();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 public:
 	void InitTile(int width, int hight);

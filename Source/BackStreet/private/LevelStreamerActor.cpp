@@ -61,7 +61,7 @@ void ALevelStreamerActor::OverlapEnds(UPrimitiveComponent* OverlappedComponent, 
 void ALevelStreamerActor::SetLevelToLoad(FName Level, FVector WorldOffset, bool bActorsOnly)
 {
 	LevelToLoad = Level;
-	FName PackageName = FName((FString(TEXT("/Game/ThirdPerson/Maps/")) + LevelToLoad.ToString()));
+	FName PackageName = FName((FString(TEXT("/Game/Map/Stages/")) + LevelToLoad.ToString()));
 
 	ULevelStreaming* LevelStreaming = UGameplayStatics::GetStreamingLevel(GetWorld(), PackageName);
 
