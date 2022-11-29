@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
+
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -41,24 +42,23 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
 
-/* Character Debuff */
+/* Character Buff/Debuff */
 public:
 	UFUNCTION(BlueprintCallable)
-		void SetDebuffTimer(float TotalTime, float Damage, ECharacterDebuffType DebuffType, AActor* Causer);
+		void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 
 	UFUNCTION()
-		void ResetNonDamageDebuff(ECharacterDebuffType DebuffType, float ResetValue=0.0f);
+		void ResetNormalBuffState(bool bIsDebuff, uint8 BuffType, float ResetValue=0.0f);
 
 	UFUNCTION()
-		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer);
+		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
 
 	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION()
-		void ClearDebuffTimer(ECharacterDebuffType DebuffType);
+		void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
 
 	UFUNCTION()
-		void ClearAllDebuffTimer();
-
+		void ClearAllBuffTimer(bool bIsDebuff);
 
 protected:
 	//SoftObjRef로 대체 예정
@@ -86,20 +86,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStateStruct CharacterState;
 
-protected:
-	//Action 타이머 핸들
 	UPROPERTY()
 		FTimerHandle DelayHandle;
-
-	UPROPERTY()
-		float BuffRemainingTime[5];
-
-	UPROPERTY()
-		FTimerHandle BuffTimerHandle[5];
-
-	UPROPERTY()
-		float DebuffRemainingTime[10];
-
-	UPROPERTY()
-		FTimerHandle DebuffTimerHandle[10];
 };

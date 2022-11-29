@@ -28,7 +28,7 @@ AMainCharacterBase::AMainCharacterBase()
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
 	GetCharacterMovement()->RotationRate = { 0.0f, 0.0f, 750.0f };
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	
+	GetCharacterMovement()->GravityScale = 2.5f;
 }
 
 // Called when the game starts or when spawned
@@ -76,13 +76,12 @@ void AMainCharacterBase::Dash()
 	if (CharacterState.bIsRolling || !IsValid(RollAnimMontage)) return;
 	
 	PlayAnimMontage(RollAnimMontage);
-	GetCharacterMovement()->MaxWalkSpeed += 150.0f;
+	LaunchCharacter(GetMesh()->GetForwardVector() + FVector( 0.0f, 0.0f, 500.0f ), false, false);
 	CharacterState.bIsRolling = true; 
 
 	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([&]() {
-		GetCharacterMovement()->MaxWalkSpeed -= 150.0f;
 		CharacterState.bIsRolling = false;
-	}), 0.75f, false);
+	}), 0.5f, false);
 }
 
 void AMainCharacterBase::Fire()
