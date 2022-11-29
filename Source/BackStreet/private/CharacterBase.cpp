@@ -40,6 +40,7 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 {
 	DamageAmount = DamageAmount - DamageAmount * CharacterStat.CharacterDefense;
 	if (DamageAmount <= 0.0f || !IsValid(DamageCauser)) return 0.0f;
+	if (CharacterState.bIsInvincibility) return 0.0f;
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	CharacterState.CharacterCurrHP -= DamageAmount;
@@ -53,6 +54,39 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 		PlayAnimMontage(HitAnimMontage);
 	}
 	return DamageAmount;
+}
+
+float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer)
+{
+	//추후 디버프 당 파티클 시스템 추가 예정
+	if (!IsValid(Causer) || BuffRemainingTime[1][(int)DebuffType] <= 0.0f) return 0.0f;
+
+	BuffRemainingTime[1][(int)DebuffType] -= 1.0f;
+
+	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
+
+	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
+	{
+		CharacterState.CharacterDebuffState &= ~(1 << (int)DebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+		ClearBuffTimer(1, DebuffType);
+	}
+	return DamageAmount;
+}
+
+void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffType)
+{
+	CharacterState.CharacterCurrHP += HealAmount;
+	CharacterState.CharacterCurrHP = FMath::Min(CharacterStat.CharacterMaxHP
+												, CharacterState.CharacterCurrHP);
+	if (bIsTimerEvent)
+	{
+		BuffRemainingTime[0][(int)BuffType] -= 1.0f;
+		if (BuffRemainingTime[0][(int)BuffType] <= 0.0f)
+		{
+			ClearBuffTimer(false, BuffType);
+		}
+		return;
+	}
 }
 
 void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
@@ -73,6 +107,7 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 	{
 		switch ((ECharacterDebuffType)BuffType)
 		{
+		//----데미지 디버프-------------------
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
 			//SpawnBuffParticle(E_Flame, TotalTime) //TimerDelegate에 걸어도 됨
@@ -80,16 +115,28 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 1.0f, true);
 			break;
 
+		//----스탯 조정 디버프-------------------
 		case ECharacterDebuffType::E_Sleep:
-			TimerDelegate.BindUFunction(this, FName("ResetNormalBuffState"), BuffType);
-			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
-			break;
-
 		case ECharacterDebuffType::E_Slow:
-			const float normalWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
-			TimerDelegate.BindUFunction(this, FName("ResetNormalBuffState"), BuffType, normalWalkSpeed);
-			GetCharacterMovement()->MaxWalkSpeed *= 0.5f;
+		case ECharacterDebuffType::E_AttackDown:
+		case ECharacterDebuffType::E_DefenseDown:
+			if (BuffType == (uint8)ECharacterDebuffType::E_Sleep)
+			{
+				GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+			}
+			else if (BuffType == (uint8)ECharacterDebuffType::E_Slow)
+			{
+				GetCharacterMovement()->MaxWalkSpeed *= FMath::Abs(Variable);
+			}
+			else if (BuffType == (uint8)ECharacterDebuffType::E_AttackDown)
+			{
+				CharacterState.CharacterCurrAtkMultiplier *= FMath::Abs(Variable);
+			}
+			else if (BuffType == (uint8)ECharacterDebuffType::E_DefenseDown)
+			{
+				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
+			}
+			TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType);
 			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
 			break;
 		}
@@ -98,13 +145,41 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 	{
 		switch ((ECharacterBuffType)BuffType)
 		{
-		case ECharacterBuffType::E_Healing :
+		//----힐 버프-------------------
+		case ECharacterBuffType::E_Healing:
+			TimerDelegate.BindUFunction(this, FName("TakeHeal"), Variable, true, BuffType);
+			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 1.0f, true);
+			break;
+
+		//----스탯 조정 버프-------------------
+		case ECharacterBuffType::E_DefenseUp:
+		case ECharacterBuffType::E_AttackUp:
+		case ECharacterBuffType::E_Invincibility:
+		case ECharacterBuffType::E_SpeedUp:
+			if (BuffType == (uint8)ECharacterDebuffType::E_Sleep)
+			{
+				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
+			}
+			else if (BuffType == (uint8)ECharacterDebuffType::E_Slow)
+			{
+				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
+			}
+			else if (BuffType == (uint8)ECharacterDebuffType::E_AttackDown)
+			{
+				CharacterState.CharacterCurrDefense = 100.0f;
+			}
+			else if (BuffType == (uint8)ECharacterDebuffType::E_DefenseDown)
+			{
+				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
+			}
+			TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType);
+			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
 			break;
 		}
 	}
 }
 
-void ACharacterBase::ResetNormalBuffState(bool bIsDebuff, uint8 BuffType, float ResetValue)
+void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType)
 {
 	if (bIsDebuff)
 	{
@@ -115,28 +190,37 @@ void ACharacterBase::ResetNormalBuffState(bool bIsDebuff, uint8 BuffType, float 
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 			break;
 		case ECharacterDebuffType::E_Slow:
-			GetCharacterMovement()->MaxWalkSpeed = ResetValue;
+			GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
+			UE_LOG(LogTemp, Warning, TEXT("ResetSLOW - %d"), CharacterStat.CharacterMoveSpeed);
+			break;
+		case ECharacterDebuffType::E_AttackDown:
+			CharacterState.CharacterCurrAtkMultiplier = CharacterStat.CharacterAtkMultiplier;
+			break;
+		case ECharacterDebuffType::E_DefenseDown:
+			CharacterState.CharacterCurrDefense = CharacterStat.CharacterDefense;
+			break;
+		}
+	}
+	else
+	{
+		switch ((ECharacterBuffType)BuffType)
+		{
+		case ECharacterBuffType::E_DefenseUp:
+			CharacterState.CharacterCurrDefense = CharacterStat.CharacterDefense;
+			break;
+		case ECharacterBuffType::E_AttackUp:
+			CharacterState.CharacterCurrAtkMultiplier = CharacterStat.CharacterAtkMultiplier;
+			break;
+		case ECharacterBuffType::E_Invincibility:
+			CharacterState.bIsInvincibility = false;
+			ClearAllBuffTimer(true);
+			break;
+		case ECharacterBuffType::E_SpeedUp:
+			GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
 			break;
 		}
 	}
 	ClearBuffTimer(bIsDebuff, BuffType);
-}
-
-float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer)
-{
-	//추후 디버프 당 파티클 시스템 추가 예정
-	if (!IsValid(Causer) || BuffRemainingTime[1][(int)DebuffType] <= 0.0f) return 0.0f;
-		
-	BuffRemainingTime[1][(int)DebuffType] -= 1.0f;
-
-	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
-
-	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
-	{
-		CharacterState.CharacterDebuffState &= ~(1 << (int)DebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
-		ClearBuffTimer(1, DebuffType);
-	}
-	return DamageAmount;
 }
 
 void ACharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)

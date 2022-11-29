@@ -39,6 +39,12 @@ public:
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION()
+		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
+
+	UFUNCTION()
+		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
+
 	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
 
@@ -48,10 +54,7 @@ public:
 		void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 
 	UFUNCTION()
-		void ResetNormalBuffState(bool bIsDebuff, uint8 BuffType, float ResetValue=0.0f);
-
-	UFUNCTION()
-		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
+		void ResetStatBuffState(bool bIsDebuff, uint8 BuffType);
 
 	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION()
