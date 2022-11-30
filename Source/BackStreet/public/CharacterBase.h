@@ -63,6 +63,12 @@ public:
 	UFUNCTION()
 		void ClearAllBuffTimer(bool bIsDebuff);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetDebuffIsActive(ECharacterDebuffType DebuffType);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetBuffIsActive(ECharacterBuffType BuffType);
+
 protected:
 	//SoftObjRef로 대체 예정
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")

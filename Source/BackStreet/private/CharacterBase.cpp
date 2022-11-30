@@ -67,7 +67,6 @@ float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AAc
 
 	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
 	{
-		CharacterState.CharacterDebuffState &= ~(1 << (int)DebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 		ClearBuffTimer(1, DebuffType);
 	}
 	return DamageAmount;
@@ -94,17 +93,18 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 	FTimerDelegate TimerDelegate;
 	FTimerHandle& timerHandle = BuffTimerHandle[bIsDebuff][(int)BuffType];
 	
-	if (CharacterState.CharacterBuffState & (1 << (int)BuffType))
+	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffType))
+		&& (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffType)))
 	{
 		BuffRemainingTime[bIsDebuff][(int)BuffType] += TotalTime;
 		return;
 	}
 	if (GetWorldTimerManager().IsTimerActive(timerHandle)) return;
 
-	CharacterState.CharacterBuffState |= (1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 	BuffRemainingTime[bIsDebuff][(int)BuffType] = TotalTime;
 	if(bIsDebuff)
 	{
+		CharacterState.CharacterDebuffState |= (1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 		switch ((ECharacterDebuffType)BuffType)
 		{
 		//----데미지 디버프-------------------
@@ -143,6 +143,7 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 	}
 	else
 	{
+		CharacterState.CharacterBuffState |= (1 << (int)BuffType);
 		switch ((ECharacterBuffType)BuffType)
 		{
 		//----힐 버프-------------------
@@ -226,6 +227,14 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType)
 void ACharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ClearTimer!!"));
+	if (bIsDebuff)
+	{
+		CharacterState.CharacterDebuffState &= ~(1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+	}
+	else
+	{
+		CharacterState.CharacterBuffState &= ~(1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+	}
 	BuffRemainingTime[bIsDebuff][(int)BuffType] = 0.0f;
 	GetWorldTimerManager().ClearTimer(BuffTimerHandle[bIsDebuff][(int)BuffType]);
 }
@@ -236,6 +245,18 @@ void ACharacterBase::ClearAllBuffTimer(bool bIsDebuff)
 	{
 		GetWorldTimerManager().ClearTimer(BuffTimerHandle[bIsDebuff][timerIdx]);
 	}
+}
+
+bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
+{
+	if (CharacterState.CharacterDebuffState & (1 << (int)DebuffType)) return true;
+	return false;
+}
+
+bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
+{
+	if (CharacterState.CharacterBuffState & (1 << (int)BuffType)) return true;
+	return false;
 }
 
 // Called every frame
