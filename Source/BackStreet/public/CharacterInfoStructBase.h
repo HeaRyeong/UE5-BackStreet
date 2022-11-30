@@ -16,6 +16,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.1f, UIMax = 10.0f))
 		float CharacterAtkMultiplier = 1.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.1f, UIMax = 3.0f))
+		float CharacterAtkSpeed = 1.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 100.0f, UIMax = 1000.0f))
 		float CharacterMoveSpeed = 400.0f;
 
@@ -45,9 +48,21 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bIsAttacking = false;;
 
+	UPROPERTY(BlueprintReadOnly)
+		bool bIsInvincibility = false;
+
 	//PlayerMaxHP´Â 1.0f
 	UPROPERTY(BlueprintReadOnly)
 		float CharacterCurrHP;
+
+	UPROPERTY(BlueprintReadOnly)
+		float CharacterCurrAtkMultiplier = 1.0f;
+
+	UPROPERTY(BlueprintReadOnly)
+		float CharacterCurrAtkSpeed = 1.0f;
+
+	UPROPERTY(BlueprintReadOnly)
+		float CharacterCurrDefense = 0.0f;
 };
 
 UENUM(BlueprintType)
