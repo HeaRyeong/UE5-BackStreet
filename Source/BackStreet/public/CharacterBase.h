@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "BackStreet.h"
 #include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
@@ -70,10 +70,6 @@ public:
 		bool GetBuffIsActive(ECharacterBuffType BuffType);
 
 protected:
-	//SoftObjRef로 대체 예정
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
-		TSubclassOf<class AProjectileBase> ProjectileClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* AttackAnimMontage;
 

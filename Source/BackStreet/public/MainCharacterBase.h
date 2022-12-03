@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "BackStreet.h"
 #include "CharacterBase.h"
 #include "GameFramework/Character.h"
 #include "MainCharacterBase.generated.h"
@@ -34,7 +34,7 @@ public:
 		void MoveRight(float Value);
 
 	UFUNCTION()
-		void Fire();
+		void Attack();
 
 	UFUNCTION()
 		void Dash();

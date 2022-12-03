@@ -56,7 +56,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMainCharacterBase::Dash);
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainCharacterBase::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainCharacterBase::Attack);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -84,7 +84,7 @@ void AMainCharacterBase::Dash()
 	}), 0.5f, false);
 }
 
-void AMainCharacterBase::Fire()
+void AMainCharacterBase::Attack()
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this; //Projectile의 소유자는 Player

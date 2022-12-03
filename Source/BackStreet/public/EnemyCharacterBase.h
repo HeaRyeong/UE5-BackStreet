@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "BackStreet.h"
 #include "CharacterBase.h"
 #include "EnemyCharacterBase.generated.h"
 

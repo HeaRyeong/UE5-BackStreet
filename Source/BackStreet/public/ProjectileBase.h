@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "BackStreet.h"
 #include "GameFramework/Actor.h"
 #include "WeaponStatStructBase.h"
 #include "ProjectileBase.generated.h"
