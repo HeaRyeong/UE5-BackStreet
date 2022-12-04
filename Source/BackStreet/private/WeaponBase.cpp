@@ -2,7 +2,12 @@
 
 
 #include "WeaponBase.h"
+#include "CharacterBase.h"
+#include "CollisionQueryParams.h"
 #include "../public/ProjectileBase.h"
+
+FTimerHandle MeleeAtkDelayHandle;
+FCollisionQueryParams linetraceCollisionQueryParams;
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -16,7 +21,20 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	OwnerCharacterRef = Cast<ACharacterBase>(GetOwner());
+}
+
+void AWeaponBase::Attack()
+{
+	if (bHasProjectile)
+	{
+
+	}
+	else
+	{
+
+	}
 }
 
 AProjectileBase* AWeaponBase::CreateProjectile()
@@ -43,6 +61,33 @@ void AWeaponBase::FireProjectile()
 		newProjectile->ActivateProjectileMovement();
 		newProjectile->SetSpawnInstigator(newProjectile->GetInstigator()->GetController());
 	}
+}
+
+void AWeaponBase::MeleeAttack()
+{
+	if (MeleeComboCnt <= MeleeAtkAnimMontageArray.Num() 
+		&& IsValid(MeleeAtkAnimMontageArray[MeleeComboCnt]))
+	{
+		MeleeComboCnt = (MeleeComboCnt + 1) % MeleeMaxComboCnt;
+	}
+	FHitResult hitResult;
+	FVector StartLocation = Mesh->GetSocketLocation(FName("GrabPoint"));
+	FVector EndLocation = Mesh->GetSocketLocation(FName("End"));
+
+	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
+	if (hitResult.bBlockingHit && IsValid(HitEffectParticle))
+	{
+		FTransform emitterSpawnTransform(FQuat(0.0f), FVector(1.0f), hitResult.Location);
+
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
+		linetraceCollisionQueryParams.AddIgnoredActor(hitResult.GetActor());
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), MeleeStat.WeaponDamage, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
+	}
+}
+
+void AWeaponBase::ResetMeleeCombo()
+{
+
 }
 
 // Called every frame

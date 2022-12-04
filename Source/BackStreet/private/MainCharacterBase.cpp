@@ -86,19 +86,11 @@ void AMainCharacterBase::Dash()
 
 void AMainCharacterBase::Attack()
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this; //Projectile의 소유자는 Player
-	SpawnParams.Instigator = GetInstigator();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	Super::Attack();
 
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + GetActorRightVector() * 25.0f;
-	FRotator SpawnRotation = GetActorRotation();
-	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
+}
 
-	AProjectileBase * Projectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
-	if (Projectile)
-	{
-		Projectile->ActivateProjectileMovement();
-		Projectile->SetSpawnInstigator(GetController());
-	}
+void AMainCharacterBase::StopAttack()
+{
+	Super::StopAttack();
 }

@@ -13,6 +13,8 @@ ACharacterBase::ACharacterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
+	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
 }
 
 // Called when the game starts or when spawned
@@ -86,6 +88,16 @@ void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffTy
 		}
 		return;
 	}
+}
+
+void ACharacterBase::Attack()
+{
+	CharacterState.bIsAttacking = true;
+}
+
+void ACharacterBase::StopAttack()
+{
+	CharacterState.bIsAttacking = false;
 }
 
 void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)

@@ -34,14 +34,16 @@ public:
 		void MoveRight(float Value);
 
 	UFUNCTION()
-		void Attack();
-
-	UFUNCTION()
 		void Dash();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void Roll();
 
+	UFUNCTION(BlueprintCallable)
+		virtual void Attack() override;
+
+	UFUNCTION(BlueprintCallable)
+		virtual void StopAttack() override;
 
 public:
 	//플레이어 메인 카메라 붐

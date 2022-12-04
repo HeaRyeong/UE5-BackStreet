@@ -3,6 +3,7 @@
 #pragma once
 
 #include "BackStreet.h"
+#include "CollisionQueryParams.h"
 #include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
@@ -23,17 +24,31 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+//------ Global -------------------
 public:	
 	//true : Non-Melee 公扁,  false : Melee 公扁
-	UPROPERTY(EditefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Setup")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Setup")
 		bool bHasProjectile;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		UParticleSystem* HitEffectParticle;
+
+	UFUNCTION()
+		void Attack();
+
+//------ Projectile 公扁-------------
 public:
 	UFUNCTION()
 		class AProjectileBase* CreateProjectile();
 
 	UFUNCTION()
 		void FireProjectile(); 
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetAttackAnimIndex() { return bHasProjectile ? 0 : GetCurrentMeleeComboCnt(); }
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
@@ -43,9 +58,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
 
+//-------- Melee 公扁 ------------
 public:
 	UFUNCTION()
 		void MeleeAttack();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetCurrentMeleeComboCnt() { return MeleeComboCnt; }
 
 	UFUNCTION()
 		void ResetMeleeCombo();
@@ -54,5 +73,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FMeleeWeaponStatStruct MeleeStat;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		TArray<UAnimMontage*> MeleeAtkAnimMontageArray;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Setup")
+		float MeleeAtkInterval = 0.5f;
+
+	UPROPERTY(BlueprintReadOnly)
+		int32 MeleeComboCnt = 0;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Setup")
+		int32 MeleeMaxComboCnt = 3;
+
+private:
+	UPROPERTY()
+		class ACharacterBase* OwnerCharacterRef;
 };

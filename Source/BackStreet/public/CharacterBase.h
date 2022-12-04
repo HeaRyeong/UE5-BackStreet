@@ -13,6 +13,7 @@ class BACKSTREET_API ACharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
+//----- 오버라이트 함수 ----------
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
@@ -23,11 +24,20 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Attack();
+
+	virtual void StopAttack();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-/* Character State Basic */
+// ------- 캐릭터 컴포넌트 -------------
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		UChildActorComponent* WeaponActor;
+
+// ------- Character Action 기본 ------- 
 public:
 	UFUNCTION()
 		void InitCharacterState();
@@ -48,7 +58,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
 
-/* Character Buff/Debuff */
+// ------ 캐릭터 버프 / 디버프 ---------------
 public:
 	UFUNCTION(BlueprintCallable)
 		void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
@@ -69,6 +79,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetBuffIsActive(ECharacterBuffType BuffType);
 
+// ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* AttackAnimMontage;
@@ -82,6 +93,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* RollAnimMontage;
 
+// ------ 그 외 캐릭터 프로퍼티 ---------------
 protected:
 	//캐릭터의 스탯
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
