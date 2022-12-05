@@ -15,6 +15,12 @@ AWeaponBase::AWeaponBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENE_ROOT"));
+	DefaultSceneRoot->SetupAttachment(RootComponent);
+	SetRootComponent(DefaultSceneRoot);
+
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WEAPON_MESH"));
+	WeaponMesh->SetupAttachment(DefaultSceneRoot);
 }
 
 // Called when the game starts or when spawned
@@ -29,11 +35,39 @@ void AWeaponBase::Attack()
 {
 	if (bHasProjectile)
 	{
-
+		FireProjectile();
 	}
 	else
 	{
+		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
+		MeleeAttack();
+		MeleeComboCnt = (MeleeComboCnt + 1) % MeleeMaxComboCnt;
+	}
+}
 
+void AWeaponBase::StopAttack()
+{
+	if (!bHasProjectile)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("STOP ATK TIMER"));
+		GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
+		ResetMeleeCombo();
+	}
+}
+
+void AWeaponBase::InitMeleeWeaponStat(bool bIsMeleeWeapon, FMeleeWeaponStatStruct NewMeleeStat)
+{
+	if (bIsMeleeWeapon)
+	{
+		MeleeStat = NewMeleeStat;
+	}
+}
+
+void AWeaponBase::InitRangedWeaponStat(bool bIsMeleeWeapon, FProjectileStatStruct NewProjectileStat)
+{
+	if (!bIsMeleeWeapon)
+	{
+		ProjectileStat = NewProjectileStat;
 	}
 }
 
@@ -64,15 +98,10 @@ void AWeaponBase::FireProjectile()
 }
 
 void AWeaponBase::MeleeAttack()
-{
-	if (MeleeComboCnt <= MeleeAtkAnimMontageArray.Num() 
-		&& IsValid(MeleeAtkAnimMontageArray[MeleeComboCnt]))
-	{
-		MeleeComboCnt = (MeleeComboCnt + 1) % MeleeMaxComboCnt;
-	}
+{	
 	FHitResult hitResult;
-	FVector StartLocation = Mesh->GetSocketLocation(FName("GrabPoint"));
-	FVector EndLocation = Mesh->GetSocketLocation(FName("End"));
+	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
+	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
 	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
 	if (hitResult.bBlockingHit && IsValid(HitEffectParticle))
@@ -87,7 +116,8 @@ void AWeaponBase::MeleeAttack()
 
 void AWeaponBase::ResetMeleeCombo()
 {
-
+	MeleeComboCnt = 0;
+	linetraceCollisionQueryParams.ClearIgnoredActors();
 }
 
 // Called every frame

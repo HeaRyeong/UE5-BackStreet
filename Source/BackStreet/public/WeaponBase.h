@@ -30,14 +30,26 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Setup")
 		bool bHasProjectile;
 
+	UPROPERTY(VisibleDefaultsOnly)
+		USceneComponent* DefaultSceneRoot;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		UStaticMeshComponent* Mesh;
+		UStaticMeshComponent* WeaponMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* HitEffectParticle;
 
 	UFUNCTION()
 		void Attack();
+
+	UFUNCTION()
+		void StopAttack();
+
+	UFUNCTION(BlueprintCallable)
+		void InitMeleeWeaponStat(bool bIsMeleeWeapon, FMeleeWeaponStatStruct NewMeleeStat);
+
+	UFUNCTION(BlueprintCallable)
+		void InitRangedWeaponStat(bool bIsMeleeWeapon, FProjectileStatStruct NewProjectileStat);
 
 //------ Projectile ¹«±â-------------
 public:
@@ -73,9 +85,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FMeleeWeaponStatStruct MeleeStat;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		TArray<UAnimMontage*> MeleeAtkAnimMontageArray;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Setup")
 		float MeleeAtkInterval = 0.5f;
 
@@ -88,4 +97,10 @@ protected:
 private:
 	UPROPERTY()
 		class ACharacterBase* OwnerCharacterRef;
+
+	UPROPERTY()
+		FTimerHandle MeleeAtkTimerHandle;
+
+	UPROPERTY()
+		float MeleeAtkComboRemainTime = 1.0f;
 };

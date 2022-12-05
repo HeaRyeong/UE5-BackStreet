@@ -82,7 +82,7 @@ public:
 // ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* AttackAnimMontage;
+		TArray<UAnimMontage*> AttackAnimMontageArray;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* HitAnimMontage;

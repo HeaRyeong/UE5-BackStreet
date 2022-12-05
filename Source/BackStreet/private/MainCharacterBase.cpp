@@ -2,7 +2,7 @@
 
 
 #include "../public/MainCharacterBase.h"
-#include "../public/ProjectileBase.h"
+#include "../public/WeaponBase.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 
@@ -56,7 +56,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMainCharacterBase::Dash);
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainCharacterBase::Attack);
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::Attack);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -87,10 +87,25 @@ void AMainCharacterBase::Dash()
 void AMainCharacterBase::Attack()
 {
 	Super::Attack();
+	if (IsValid(WeaponActor->GetChildActor()))
+	{
+		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 
+		UE_LOG(LogTemp, Warning, TEXT("idx : %d"), weaponRef->GetAttackAnimIndex());
+		if (weaponRef->GetAttackAnimIndex() < AttackAnimMontageArray.Num())
+		{
+			PlayAnimMontage(AttackAnimMontageArray[weaponRef->GetAttackAnimIndex()]);
+		}
+		weaponRef->Attack();
+	}
 }
 
 void AMainCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+	if (IsValid(WeaponActor->GetChildActor()))
+	{
+		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+		weaponRef->StopAttack();
+	}
 }
