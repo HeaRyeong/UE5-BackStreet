@@ -25,11 +25,7 @@ protected:
 	virtual void BeginPlay() override;
 
 //------ Global -------------------
-public:	
-	//true : Non-Melee 무기,  false : Melee 무기
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Setup")
-		bool bHasProjectile;
-
+public:
 	UPROPERTY(VisibleDefaultsOnly)
 		USceneComponent* DefaultSceneRoot;
 
@@ -39,67 +35,70 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* HitEffectParticle;
 
+	//Weapon의 종합 Stat
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+		FWeaponStatStruct WeaponStat;
+
+	//공격 처리
 	UFUNCTION()
 		void Attack();
 
+	//공격 마무리 처리
 	UFUNCTION()
 		void StopAttack();
 
+	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
-		void InitMeleeWeaponStat(bool bIsMeleeWeapon, FMeleeWeaponStatStruct NewMeleeStat);
+		void InitWeaponStat(bool WeaponType, FWeaponStatStruct NewStat);
 
-	UFUNCTION(BlueprintCallable)
-		void InitRangedWeaponStat(bool bIsMeleeWeapon, FProjectileStatStruct NewProjectileStat);
-
-//------ Projectile 무기-------------
+//------ Projectile 관련-------------
 public:
+	//발사체를 생성
 	UFUNCTION()
 		class AProjectileBase* CreateProjectile();
 
+	//발사체 초기화
 	UFUNCTION()
 		void FireProjectile(); 
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		int32 GetAttackAnimIndex() { return bHasProjectile ? 0 : GetCurrentMeleeComboCnt(); }
-
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		FProjectileStatStruct ProjectileStat;
-
 	//SoftObjRef로 대체 예정
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
 
-//-------- Melee 무기 ------------
+//-------- Melee 관련 ------------
 public:
+	//Linetrace를 통한 근접 공격
 	UFUNCTION()
 		void MeleeAttack();
 
+	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		int32 GetCurrentMeleeComboCnt() { return MeleeComboCnt; }
 
+	//Melee Combo 초기화
 	UFUNCTION()
 		void ResetMeleeCombo();
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		FMeleeWeaponStatStruct MeleeStat;
-
+	//근접 공격 Interval
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Setup")
 		float MeleeAtkInterval = 0.5f;
 
+	//현재 MeleeCombo 수
 	UPROPERTY(BlueprintReadOnly)
 		int32 MeleeComboCnt = 0;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Setup")
-		int32 MeleeMaxComboCnt = 3;
-
 private:
+	//캐릭터 Ref
 	UPROPERTY()
 		class ACharacterBase* OwnerCharacterRef;
 
 	UPROPERTY()
 		FTimerHandle MeleeAtkTimerHandle;
+
+	UPROPERTY()
+		FTimerHandle MeleeComboTimerHandle;
 
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;

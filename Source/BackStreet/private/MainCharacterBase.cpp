@@ -86,17 +86,20 @@ void AMainCharacterBase::Dash()
 
 void AMainCharacterBase::Attack()
 {
+	if (CharacterState.bIsAttacking) return;
+
 	Super::Attack();
 	if (IsValid(WeaponActor->GetChildActor()))
 	{
 		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 
-		UE_LOG(LogTemp, Warning, TEXT("idx : %d"), weaponRef->GetAttackAnimIndex());
-		if (weaponRef->GetAttackAnimIndex() < AttackAnimMontageArray.Num())
+		if (AttackAnimMontageArray.Num() > 0)
 		{
-			PlayAnimMontage(AttackAnimMontageArray[weaponRef->GetAttackAnimIndex()]);
+			const int32 nextAnimIdx = weaponRef->GetCurrentMeleeComboCnt() % AttackAnimMontageArray.Num();
+			//UE_LOG(LogTemp, Warning, TEXT("idx : %d"), nextAnimIdx);
+			PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
+			weaponRef->Attack();
 		}
-		weaponRef->Attack();
 	}
 }
 

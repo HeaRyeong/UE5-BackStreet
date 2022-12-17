@@ -33,42 +33,25 @@ void AWeaponBase::BeginPlay()
 
 void AWeaponBase::Attack()
 {
-	if (bHasProjectile)
+	//발사체가 있는 무기라면 발사
+	if (WeaponStat.bHasProjectile) 
 	{
 		FireProjectile();
 	}
-	else
-	{
-		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		MeleeAttack();
-		MeleeComboCnt = (MeleeComboCnt + 1) % MeleeMaxComboCnt;
-	}
+	GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
+	GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetMeleeCombo, 1.0f, false, 1.0f);
+	MeleeAttack();
+	MeleeComboCnt = (MeleeComboCnt + 1);
 }
 
 void AWeaponBase::StopAttack()
 {
-	if (!bHasProjectile)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("STOP ATK TIMER"));
-		GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
-		ResetMeleeCombo();
-	}
+	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
 }
 
-void AWeaponBase::InitMeleeWeaponStat(bool bIsMeleeWeapon, FMeleeWeaponStatStruct NewMeleeStat)
+void AWeaponBase::InitWeaponStat(bool WeaponType, FWeaponStatStruct NewStat)
 {
-	if (bIsMeleeWeapon)
-	{
-		MeleeStat = NewMeleeStat;
-	}
-}
-
-void AWeaponBase::InitRangedWeaponStat(bool bIsMeleeWeapon, FProjectileStatStruct NewProjectileStat)
-{
-	if (!bIsMeleeWeapon)
-	{
-		ProjectileStat = NewProjectileStat;
-	}
+	WeaponStat = NewStat;
 }
 
 AProjectileBase* AWeaponBase::CreateProjectile()
@@ -90,6 +73,7 @@ void AWeaponBase::FireProjectile()
 {
 	AProjectileBase* newProjectile = CreateProjectile();
 
+	//스폰한 발사체가 Valid 하다면 발사
 	if (IsValid(newProjectile))
 	{
 		newProjectile->ActivateProjectileMovement();
@@ -103,14 +87,22 @@ void AWeaponBase::MeleeAttack()
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
+	//LineTrace를 통해 hit 된 물체들을 추적
 	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
-	if (hitResult.bBlockingHit && IsValid(HitEffectParticle))
+	
+	//hit 되었다면?
+	if (hitResult.bBlockingHit)
 	{
-		FTransform emitterSpawnTransform(FQuat(0.0f), FVector(1.0f), hitResult.Location);
+		//데미지를 주고
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
 
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
-		linetraceCollisionQueryParams.AddIgnoredActor(hitResult.GetActor());
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), MeleeStat.WeaponDamage, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
+		//효과 이미터 출력
+		if (IsValid(HitEffectParticle))
+		{
+			FTransform emitterSpawnTransform(FQuat(0.0f), FVector(1.0f), hitResult.Location);
+			linetraceCollisionQueryParams.AddIgnoredActor(hitResult.GetActor());
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
+		}
 	}
 }
 

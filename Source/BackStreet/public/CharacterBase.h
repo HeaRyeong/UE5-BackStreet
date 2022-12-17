@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeleOneParam, bool, NewState);
 
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
@@ -31,6 +32,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+// ------- 델리게이트 -----------
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDeleOneParam UpdateAttackState;
 
 // ------- 캐릭터 컴포넌트 -------------
 public:
