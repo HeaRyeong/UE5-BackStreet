@@ -3,3 +3,5 @@
 #pragma once
 
 #include "EngineMinimal.h"
+#include "WeaponStatStructBase.h"
+#include "CharacterInfoStructBase.h"

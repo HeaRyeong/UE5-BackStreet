@@ -7,6 +7,7 @@
 #include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
+#define MAX_AMMO_LIMIT_CNT 2000
 
 UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
@@ -19,6 +20,9 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION()
+		void InitOwnerCharacterRef(class ACharacterBase* NewCharacterRef);
 
 protected:
 	// Called when the game starts or when spawned
@@ -49,7 +53,7 @@ public:
 
 	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
-		void InitWeaponStat(bool WeaponType, FWeaponStatStruct NewStat);
+		void InitWeaponStat(FWeaponStatStruct NewStat);
 
 //------ Projectile 관련-------------
 public:
@@ -57,14 +61,45 @@ public:
 	UFUNCTION()
 		class AProjectileBase* CreateProjectile();
 
-	//발사체 초기화
+	//발사체 초기화 및 발사를 시도 
 	UFUNCTION()
-		void FireProjectile(); 
+		bool TryFireProjectile();
+
+	//남은 탄환의 개수를 반환 - Stat.MaxAmmoCount
+	UFUNCTION(BlueprintCallable)
+		int32 GetLeftAmmoCount() { return MaxAmmoCount; };
+
+	//새 탄창으로 장전함, 탄창의 개수가 충분하지 않다면 false 반환
+	UFUNCTION()
+		bool TryLoadMagazine();
+
+	//탄환의 개수를 더함 (MaxAmmoCount까지)
+	UFUNCTION()
+		void AddAmmo(int32 Count);
+
+	//탄창의 개수를 더함 (+= MaxAmmoPerMagazine*Count)
+	UFUNCTION()
+		void AddMagazine(int32 Count);
+
+	UFUNCTION()
+		void SetInfiniteAmmoMode(bool NewMode) { bInfiniteAmmo = NewMode; }
 
 protected:
 	//SoftObjRef로 대체 예정
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
+
+	//현재 탄창에 있는 발사체 수
+	UPROPERTY(BlueprintReadOnly)
+		int32 CurrentAmmoCount = 0;
+
+	//가지고 있는 최대 발사체 수
+	UPROPERTY(BlueprintReadOnly)
+		int32 MaxAmmoCount = 0;
+
+	//무한 버프
+	UPROPERTY()
+		bool bInfiniteAmmo = false;
 
 //-------- Melee 관련 ------------
 public:
@@ -81,10 +116,6 @@ public:
 		void ResetMeleeCombo();
 
 protected:
-	//근접 공격 Interval
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Setup")
-		float MeleeAtkInterval = 0.5f;
-
 	//현재 MeleeCombo 수
 	UPROPERTY(BlueprintReadOnly)
 		int32 MeleeComboCnt = 0;

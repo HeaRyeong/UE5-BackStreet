@@ -41,15 +41,15 @@ public:
 
 	//근접 공격이 가능한 지? 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bCanMeleeAtk;
+		bool bCanMeleeAtk = true;
 
 	//공격 속도 Rate
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float WeaponAtkSpeedRate = 1.0f;
+		float WeaponAtkSpeedRate = 1.0f;
 
 	//무기 데미지
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float WeaponDamage = 0.2f;
+		float WeaponDamage = 0.2f;
 
 	//무기는 각 하나의 디버프만 가짐 (임시)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -62,13 +62,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bHasProjectile;
 
-	//현재 탄창에 있는 발사체 수
+	//탄창이 필요없는지? (ex. 기본 투사체 등)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 CurrentAmmo;
-
-	//가지고 있는 최대 발사체 수
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 MaxAmmo;
+		bool bInfiniteMagazine;
 
 	//한 탄창에 최대 발사체 수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

@@ -56,19 +56,34 @@ public:
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION()
+		void ResetAtkIntervalTimer();
+
+	//디버프 데미지를 입힘 (일회성)
+	UFUNCTION()
 		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
 
+	//플레이어가 체력을 회복함 (일회성)
 	UFUNCTION()
 		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
 
+// ------ 무기 관련 ----------------
+public:
+	//UFUNCTION()
+		//void ChangeWeapon();
+
+	UFUNCTION()
+		class AWeaponBase* GetWeaponActorRef();
+
 // ------ 캐릭터 버프 / 디버프 ---------------
 public:
+	//버프와 디버프를 건다
 	UFUNCTION(BlueprintCallable)
 		void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 
+	//버프 or 디버프 상태를 초기화한다
 	UFUNCTION()
 		void ResetStatBuffState(bool bIsDebuff, uint8 BuffType);
 
@@ -76,12 +91,15 @@ public:
 	UFUNCTION()
 		void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
 
+	//모든 버프 or 디버프의 타이머를 해제한다
 	UFUNCTION()
 		void ClearAllBuffTimer(bool bIsDebuff);
 
+	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetDebuffIsActive(ECharacterDebuffType DebuffType);
 
+	//버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetBuffIsActive(ECharacterBuffType BuffType);
 
@@ -111,4 +129,7 @@ protected:
 
 	UPROPERTY()
 		FTimerHandle DelayHandle;
+
+	UPROPERTY()
+		FTimerHandle AtkIntervalHandle;
 };

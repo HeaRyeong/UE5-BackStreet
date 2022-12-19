@@ -27,8 +27,6 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OwnerCharacterRef = Cast<ACharacterBase>(GetOwner());
 }
 
 void AWeaponBase::Attack()
@@ -36,7 +34,7 @@ void AWeaponBase::Attack()
 	//발사체가 있는 무기라면 발사
 	if (WeaponStat.bHasProjectile) 
 	{
-		FireProjectile();
+		TryFireProjectile();
 	}
 	GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 	GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetMeleeCombo, 1.0f, false, 1.0f);
@@ -49,7 +47,7 @@ void AWeaponBase::StopAttack()
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
 }
 
-void AWeaponBase::InitWeaponStat(bool WeaponType, FWeaponStatStruct NewStat)
+void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
 {
 	WeaponStat = NewStat;
 }
@@ -69,16 +67,44 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	return newProjectile;
 }
 
-void AWeaponBase::FireProjectile()
+bool AWeaponBase::TryLoadMagazine()
 {
+	if (bInfiniteAmmo || MaxAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
+
+	int32 addAmmoCnt = CurrentAmmoCount - MaxAmmoCount % WeaponStat.MaxAmmoPerMagazine;
+	CurrentAmmoCount += addAmmoCnt; 
+	MaxAmmoCount -= addAmmoCnt;
+
+	return true;
+}
+
+void AWeaponBase::AddAmmo(int32 Count)
+{
+	if (bInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	MaxAmmoCount = (MaxAmmoCount + Count) % MAX_AMMO_LIMIT_CNT;
+}
+
+void AWeaponBase::AddMagazine(int32 Count)
+{
+	if (bInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	MaxAmmoCount = (MaxAmmoCount + WeaponStat.MaxAmmoPerMagazine * Count) % MAX_AMMO_LIMIT_CNT;
+}
+
+bool AWeaponBase::TryFireProjectile()
+{
+	if (!bInfiniteAmmo && CurrentAmmoCount == 0) return false;
+
 	AProjectileBase* newProjectile = CreateProjectile();
 
 	//스폰한 발사체가 Valid 하다면 발사
 	if (IsValid(newProjectile))
 	{
+		if(!bInfiniteAmmo) CurrentAmmoCount -= 1;
 		newProjectile->ActivateProjectileMovement();
 		newProjectile->SetSpawnInstigator(newProjectile->GetInstigator()->GetController());
+		return true;
 	}
+	return false;
 }
 
 void AWeaponBase::MeleeAttack()
@@ -91,7 +117,7 @@ void AWeaponBase::MeleeAttack()
 	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
 	
 	//hit 되었다면?
-	if (hitResult.bBlockingHit)
+	if (hitResult.bBlockingHit && IsValid(OwnerCharacterRef))
 	{
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
@@ -117,5 +143,11 @@ void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
+{
+	if (!IsValid(NewCharacterRef)) return;
+	OwnerCharacterRef = NewCharacterRef;
 }
 

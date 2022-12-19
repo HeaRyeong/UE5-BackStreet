@@ -86,7 +86,7 @@ void AMainCharacterBase::Dash()
 
 void AMainCharacterBase::Attack()
 {
-	if (CharacterState.bIsAttacking) return;
+	if (!CharacterState.bCanAttack) return;
 
 	Super::Attack();
 	if (IsValid(WeaponActor->GetChildActor()))
