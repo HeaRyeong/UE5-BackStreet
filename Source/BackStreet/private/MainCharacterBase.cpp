@@ -29,6 +29,8 @@ AMainCharacterBase::AMainCharacterBase()
 	GetCharacterMovement()->RotationRate = { 0.0f, 0.0f, 750.0f };
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->GravityScale = 2.5f;
+
+	this->Tags = { "Player" };
 }
 
 // Called when the game starts or when spawned
