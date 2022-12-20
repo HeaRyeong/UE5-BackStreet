@@ -19,6 +19,8 @@ ACharacterBase::ACharacterBase()
 
 	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
 	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
+
+	this->Tags.Add("Character");
 }
 
 // Called when the game starts or when spawned
@@ -26,6 +28,7 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	InitWeapon();
 	InitCharacterState();
 }
 
@@ -112,6 +115,14 @@ void ACharacterBase::ResetAtkIntervalTimer()
 {
 	CharacterState.bCanAttack = true;
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+}
+
+void ACharacterBase::InitWeapon()
+{
+	if (IsValid(GetWeaponActorRef()))
+	{
+		GetWeaponActorRef()->InitOwnerCharacterRef(this);
+	}
 }
 
 AWeaponBase* ACharacterBase::GetWeaponActorRef()

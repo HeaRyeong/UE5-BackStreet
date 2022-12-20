@@ -36,10 +36,14 @@ void AWeaponBase::Attack()
 	{
 		TryFireProjectile();
 	}
-	GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-	GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetMeleeCombo, 1.0f, false, 1.0f);
-	MeleeAttack();
-	MeleeComboCnt = (MeleeComboCnt + 1);
+	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
+	if (WeaponStat.bCanMeleeAtk)
+	{
+		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetMeleeCombo, 1.0f, false, 1.0f);
+		MeleeAttack();
+		MeleeComboCnt = (MeleeComboCnt + 1);
+	}
 }
 
 void AWeaponBase::StopAttack()
@@ -59,11 +63,14 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + GetActorRightVector() * 25.0f;
-	FRotator SpawnRotation = GetActorRotation();
+	FRotator SpawnRotation = OwnerCharacterRef->GetActorRotation();
+	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorForwardVector() * 100.0f;
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorRightVector() * 25.0f;
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
+	if(IsValid(newProjectile)) newProjectile->SetSpawnInstigator(OwnerCharacterRef->GetController());
 	return newProjectile;
 }
 
@@ -101,7 +108,6 @@ bool AWeaponBase::TryFireProjectile()
 	{
 		if(!bInfiniteAmmo) CurrentAmmoCount -= 1;
 		newProjectile->ActivateProjectileMovement();
-		newProjectile->SetSpawnInstigator(newProjectile->GetInstigator()->GetController());
 		return true;
 	}
 	return false;

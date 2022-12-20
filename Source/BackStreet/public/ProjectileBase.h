@@ -26,6 +26,9 @@ protected:
 
 public:
 	UFUNCTION()
+		void InitProjectile(FProjectileStatStruct NewStat, class ACharacterBase* NewCharacterRef);
+
+	UFUNCTION()
 		void OnProjectileBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 								, bool bFromSweep, const FHitResult& SweepResult);
 
@@ -36,6 +39,9 @@ public:
 		void SetSpawnInstigator(AController* NewInstigator);
 
 public:	
+	//UPROPERTY(EditDefaultsOnly)
+	//	USceneComponent* DefaultSceneRoot;
+
 	UPROPERTY(VisibleDefaultsOnly)
 		USphereComponent* SphereCollision;
 
@@ -55,4 +61,7 @@ protected:
 private: 
 	UPROPERTY()
 		AController* SpawnInstigator;
+
+	UPROPERTY()
+		class ACharacterBase* OwnerCharacterRef;
 };

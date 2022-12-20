@@ -74,6 +74,11 @@ public:
 	//UFUNCTION()
 		//void ChangeWeapon();
 
+	//무기 관련 설정을 초기화
+	UFUNCTION()
+		void InitWeapon();
+
+	//무기 Ref를 반환
 	UFUNCTION()
 		class AWeaponBase* GetWeaponActorRef();
 

@@ -70,11 +70,11 @@ public:
 		int32 GetLeftAmmoCount() { return MaxAmmoCount; };
 
 	//새 탄창으로 장전함, 탄창의 개수가 충분하지 않다면 false 반환
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		bool TryLoadMagazine();
 
 	//탄환의 개수를 더함 (MaxAmmoCount까지)
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void AddAmmo(int32 Count);
 
 	//탄창의 개수를 더함 (+= MaxAmmoPerMagazine*Count)
@@ -91,14 +91,14 @@ protected:
 
 	//현재 탄창에 있는 발사체 수
 	UPROPERTY(BlueprintReadOnly)
-		int32 CurrentAmmoCount = 0;
+		int32 CurrentAmmoCount = 1;
 
 	//가지고 있는 최대 발사체 수
 	UPROPERTY(BlueprintReadOnly)
 		int32 MaxAmmoCount = 0;
 
-	//무한 버프
-	UPROPERTY()
+	//무한 버프 (임시), WeaponStat 추가 예정
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		bool bInfiniteAmmo = false;
 
 //-------- Melee 관련 ------------

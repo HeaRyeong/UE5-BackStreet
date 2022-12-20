@@ -30,7 +30,7 @@ AMainCharacterBase::AMainCharacterBase()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->GravityScale = 2.5f;
 
-	this->Tags = { "Player" };
+	this->Tags.Add("Player");
 }
 
 // Called when the game starts or when spawned
