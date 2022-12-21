@@ -53,9 +53,6 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 {
 	if (!IsValid(OtherActor) || OtherActor == OwnerCharacterRef
 		|| !OtherActor->ActorHasTag("Character")) return;
-
-	const FVector l = SweepResult.Location;
-	UE_LOG(LogTemp, Warning, TEXT("%.2f %.2f %.2f"), l.X, l.Y, l.Z);
 	
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);

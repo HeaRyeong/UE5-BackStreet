@@ -59,6 +59,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMainCharacterBase::Dash);
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::Attack);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -84,6 +85,11 @@ void AMainCharacterBase::Dash()
 	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([&]() {
 		CharacterState.bIsRolling = false;
 	}), 0.5f, false);
+}
+
+void AMainCharacterBase::TryReload()
+{
+	Super::TryReload();
 }
 
 void AMainCharacterBase::Attack()

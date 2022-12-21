@@ -39,6 +39,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void Roll();
 
+	UFUNCTION()
+		virtual void TryReload() override;
+
 	UFUNCTION(BlueprintCallable)
 		virtual void Attack() override;
 

@@ -7,8 +7,6 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeleOneParam, bool, NewState);
-
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -29,14 +27,11 @@ public:
 
 	virtual void StopAttack();
 
+	virtual void TryReload();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-// ------- 델리게이트 -----------
-public:
-	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDeleOneParam UpdateAttackState;
 
 // ------- 캐릭터 컴포넌트 -------------
 public:
@@ -45,9 +40,11 @@ public:
 
 // ------- Character Action 기본 ------- 
 public:
+	//캐릭터의 상태 정보를 초기화
 	UFUNCTION()
 		void InitCharacterState();
 
+	//캐릭터의 스탯을 업데이트
 	UFUNCTION(BlueprintCallable)
 		void UpdateCharacterStat(FCharacterStatStruct NewStat);
 
@@ -55,6 +52,7 @@ public:
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
+	//공격Action 사이의 Interval을 관리하는 타이머를 해제
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
@@ -79,7 +77,7 @@ public:
 		void InitWeapon();
 
 	//무기 Ref를 반환
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		class AWeaponBase* GetWeaponActorRef();
 
 // ------ 캐릭터 버프 / 디버프 ---------------
@@ -122,6 +120,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* RollAnimMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* ReloadAnimMontage;
+
 // ------ 그 외 캐릭터 프로퍼티 ---------------
 protected:
 	//캐릭터의 스탯
@@ -135,6 +136,10 @@ protected:
 	UPROPERTY()
 		FTimerHandle DelayHandle;
 
+	//공격 간 딜레이 핸들
 	UPROPERTY()
 		FTimerHandle AtkIntervalHandle;
+
+	UPROPERTY()
+		FTimerHandle ReloadTimerHandle;
 };

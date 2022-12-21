@@ -74,14 +74,24 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	return newProjectile;
 }
 
-bool AWeaponBase::TryLoadMagazine()
+bool AWeaponBase::TryReload()
 {
-	if (bInfiniteAmmo || MaxAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
+	if (!GetCanReload()) return false;
 
-	int32 addAmmoCnt = CurrentAmmoCount - MaxAmmoCount % WeaponStat.MaxAmmoPerMagazine;
+	int32 addAmmoCnt = FMath::Min(MaxAmmoCount, WeaponStat.MaxAmmoPerMagazine);
+	if (addAmmoCnt + CurrentAmmoCount > WeaponStat.MaxAmmoPerMagazine)
+		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - CurrentAmmoCount);
+
 	CurrentAmmoCount += addAmmoCnt; 
 	MaxAmmoCount -= addAmmoCnt;
 
+	return true;
+}
+
+bool AWeaponBase::GetCanReload()
+{
+	if (bInfiniteAmmo || !WeaponStat.bHasProjectile) return false;
+	if (MaxAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
 	return true;
 }
 
@@ -99,7 +109,11 @@ void AWeaponBase::AddMagazine(int32 Count)
 
 bool AWeaponBase::TryFireProjectile()
 {
-	if (!bInfiniteAmmo && CurrentAmmoCount == 0) return false;
+	if (CurrentAmmoCount == 0)
+	{
+		TryReload();
+		return false;
+	}
 
 	AProjectileBase* newProjectile = CreateProjectile();
 

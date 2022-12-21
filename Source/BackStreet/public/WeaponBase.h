@@ -65,13 +65,16 @@ public:
 	UFUNCTION()
 		bool TryFireProjectile();
 
+	//새 탄창으로 장전함, 탄창의 개수가 충분하지 않다면 false 반환
+	UFUNCTION(BlueprintCallable)
+		bool TryReload();
+
 	//남은 탄환의 개수를 반환 - Stat.MaxAmmoCount
 	UFUNCTION(BlueprintCallable)
 		int32 GetLeftAmmoCount() { return MaxAmmoCount; };
 
-	//새 탄창으로 장전함, 탄창의 개수가 충분하지 않다면 false 반환
-	UFUNCTION(BlueprintCallable)
-		bool TryLoadMagazine();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetCanReload();
 
 	//탄환의 개수를 더함 (MaxAmmoCount까지)
 	UFUNCTION(BlueprintCallable)

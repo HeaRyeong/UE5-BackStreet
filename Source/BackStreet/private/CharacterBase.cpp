@@ -3,6 +3,7 @@
 
 #include "../public/CharacterBase.h"
 #include "../public/WeaponBase.h"
+#include "Animation/AnimMontage.h"
 
 
 /*----  UPROPERTY 내에서는 다차원 배열을 지원하지 않음 ----*/
@@ -109,6 +110,32 @@ void ACharacterBase::Attack()
 void ACharacterBase::StopAttack()
 {
 	CharacterState.bIsAttacking = false;
+}
+
+void ACharacterBase::TryReload()
+{
+	if (IsValid(GetWeaponActorRef()))
+	{
+		if (!GetWeaponActorRef()->GetCanReload())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
+			return;
+		}
+
+		float reloadTime = 0.75f;
+		if (IsValid(ReloadAnimMontage)) reloadTime = PlayAnimMontage(ReloadAnimMontage) / 2.0f;
+
+		CharacterState.bCanAttack = false;
+		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
+			GetWeaponActorRef()->TryReload();
+			CharacterState.bCanAttack = true;
+		}), 1.0f, false, reloadTime);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MELEE_WEAPON CAN'T RELOAD"));
+		return;
+	}
 }
 
 void ACharacterBase::ResetAtkIntervalTimer()
