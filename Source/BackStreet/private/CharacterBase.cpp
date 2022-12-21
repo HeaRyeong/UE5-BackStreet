@@ -2,10 +2,15 @@
 
 
 #include "../public/CharacterBase.h"
+#include "../public/WeaponBase.h"
+#include "Animation/AnimMontage.h"
 
 
+/*----  UPROPERTY 내에서는 다차원 배열을 지원하지 않음 ----*/
 FTimerHandle BuffTimerHandle[2][10];
 float BuffRemainingTime[2][10];
+/*----------------------------------------------------*/
+
 
 // Sets default values
 ACharacterBase::ACharacterBase()
@@ -13,6 +18,10 @@ ACharacterBase::ACharacterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
+	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
+
+	this->Tags.Add("Character");
 }
 
 // Called when the game starts or when spawned
@@ -20,6 +29,7 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	InitWeapon();
 	InitCharacterState();
 }
 
@@ -27,6 +37,7 @@ void ACharacterBase::InitCharacterState()
 {
 	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
 	CharacterState.CharacterCurrHP = CharacterStat.CharacterMaxHP;
+	CharacterState.bCanAttack = true;
 }
 
 void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
@@ -88,6 +99,68 @@ void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffTy
 	}
 }
 
+void ACharacterBase::Attack()
+{
+	if (!CharacterState.bCanAttack || CharacterState.bIsAttacking) return;
+	CharacterState.bIsAttacking = true;
+	CharacterState.bCanAttack = false;
+	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer, 1.0f, false, 1.0f - CharacterStat.CharacterAtkSpeed);
+}
+
+void ACharacterBase::StopAttack()
+{
+	CharacterState.bIsAttacking = false;
+}
+
+void ACharacterBase::TryReload()
+{
+	if (IsValid(GetWeaponActorRef()))
+	{
+		if (!GetWeaponActorRef()->GetCanReload())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
+			return;
+		}
+
+		float reloadTime = 0.75f;
+		if (IsValid(ReloadAnimMontage)) reloadTime = PlayAnimMontage(ReloadAnimMontage) / 2.0f;
+
+		CharacterState.bCanAttack = false;
+		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
+			GetWeaponActorRef()->TryReload();
+			CharacterState.bCanAttack = true;
+		}), 1.0f, false, reloadTime);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MELEE_WEAPON CAN'T RELOAD"));
+		return;
+	}
+}
+
+void ACharacterBase::ResetAtkIntervalTimer()
+{
+	CharacterState.bCanAttack = true;
+	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+}
+
+void ACharacterBase::InitWeapon()
+{
+	if (IsValid(GetWeaponActorRef()))
+	{
+		GetWeaponActorRef()->InitOwnerCharacterRef(this);
+	}
+}
+
+AWeaponBase* ACharacterBase::GetWeaponActorRef()
+{
+	if (IsValid(WeaponActor->GetChildActor()))
+	{
+		return Cast<AWeaponBase>(WeaponActor->GetChildActor());
+	}
+	return nullptr;
+}
+
 void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	FTimerDelegate TimerDelegate;
@@ -102,6 +175,8 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 	if (GetWorldTimerManager().IsTimerActive(timerHandle)) return;
 
 	BuffRemainingTime[bIsDebuff][(int)BuffType] = TotalTime;
+
+	/*---- 디버프 타이머 세팅 ----------------------------*/
 	if(bIsDebuff)
 	{
 		CharacterState.CharacterDebuffState |= (1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
@@ -141,6 +216,8 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			break;
 		}
 	}
+
+	/*---- 버프 타이머 세팅 ----------------------------*/
 	else
 	{
 		CharacterState.CharacterBuffState |= (1 << (int)BuffType);
@@ -157,21 +234,29 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 		case ECharacterBuffType::E_AttackUp:
 		case ECharacterBuffType::E_Invincibility:
 		case ECharacterBuffType::E_SpeedUp:
-			if (BuffType == (uint8)ECharacterDebuffType::E_Sleep)
+			if (BuffType == (uint8)ECharacterBuffType::E_DefenseUp)
 			{
 				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
 			}
-			else if (BuffType == (uint8)ECharacterDebuffType::E_Slow)
+			else if (BuffType == (uint8)ECharacterBuffType::E_AttackUp)
 			{
-				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
+				CharacterState.CharacterCurrAtkMultiplier *= FMath::Abs(Variable);
 			}
-			else if (BuffType == (uint8)ECharacterDebuffType::E_AttackDown)
+			else if (BuffType == (uint8)ECharacterBuffType::E_Invincibility)
 			{
-				CharacterState.CharacterCurrDefense = 100.0f;
+				CharacterState.bIsInvincibility = true;
 			}
-			else if (BuffType == (uint8)ECharacterDebuffType::E_DefenseDown)
+			else if (BuffType == (uint8)ECharacterBuffType::E_SpeedUp)
 			{
-				CharacterState.CharacterCurrDefense *= FMath::Abs(Variable);
+				GetCharacterMovement()->MaxWalkSpeed *= 2;
+			}
+			else if (BuffType == (uint8)ECharacterBuffType::E_InfiniteAmmo)
+			{
+				if (IsValid(GetWeaponActorRef()))
+				{
+					CharacterState.bInfiniteAmmo = true;
+					GetWeaponActorRef()->SetInfiniteAmmoMode(true);
+				}
 			}
 			TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType);
 			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
@@ -215,6 +300,10 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType)
 		case ECharacterBuffType::E_Invincibility:
 			CharacterState.bIsInvincibility = false;
 			ClearAllBuffTimer(true);
+			break;
+		case ECharacterBuffType::E_InfiniteAmmo:
+			CharacterState.bInfiniteAmmo = false;
+			GetWeaponActorRef()->SetInfiniteAmmoMode(false);
 			break;
 		case ECharacterBuffType::E_SpeedUp:
 			GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
