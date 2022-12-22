@@ -40,21 +40,9 @@ public:
 
 // ------- Character Action 기본 ------- 
 public:
-	//캐릭터의 상태 정보를 초기화
-	UFUNCTION()
-		void InitCharacterState();
-
-	//캐릭터의 스탯을 업데이트
-	UFUNCTION(BlueprintCallable)
-		void UpdateCharacterStat(FCharacterStatStruct NewStat);
-
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
-
-	//공격Action 사이의 Interval을 관리하는 타이머를 해제
-	UFUNCTION()
-		void ResetAtkIntervalTimer();
 
 	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION()
@@ -66,6 +54,19 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
+
+// ------- Character Stat/State ------- 
+public:
+	//캐릭터의 상태 정보를 초기화
+	UFUNCTION()
+		void InitCharacterState();
+
+	//캐릭터의 스탯을 업데이트
+	UFUNCTION(BlueprintCallable)
+		void UpdateCharacterStat(FCharacterStatStruct NewStat);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FCharacterStatStruct GetCharacterStat() { return CharacterStat; }
 
 // ------ 무기 관련 ----------------
 public:
@@ -79,6 +80,10 @@ public:
 	//무기 Ref를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		class AWeaponBase* GetWeaponActorRef();
+
+	//공격Action 사이의 Interval을 관리하는 타이머를 해제
+	UFUNCTION()
+		void ResetAtkIntervalTimer();
 
 // ------ 캐릭터 버프 / 디버프 ---------------
 public:
@@ -130,7 +135,7 @@ protected:
 		FCharacterStatStruct CharacterStat;
 
 	//캐릭터의 현재 상태
-	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStateStruct CharacterState;
 
 	UPROPERTY()
