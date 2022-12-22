@@ -2,7 +2,7 @@
 
 
 #include "../public/MainCharacterBase.h"
-#include "../public/ProjectileBase.h"
+#include "../public/WeaponBase.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 
@@ -29,6 +29,8 @@ AMainCharacterBase::AMainCharacterBase()
 	GetCharacterMovement()->RotationRate = { 0.0f, 0.0f, 750.0f };
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->GravityScale = 2.5f;
+
+	this->Tags.Add("Player");
 }
 
 // Called when the game starts or when spawned
@@ -56,7 +58,8 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMainCharacterBase::Dash);
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AMainCharacterBase::Fire);
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::Attack);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -84,21 +87,36 @@ void AMainCharacterBase::Dash()
 	}), 0.5f, false);
 }
 
-void AMainCharacterBase::Fire()
+void AMainCharacterBase::TryReload()
 {
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this; //Projectile의 소유자는 Player
-	SpawnParams.Instigator = GetInstigator();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	Super::TryReload();
+}
 
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + GetActorRightVector() * 25.0f;
-	FRotator SpawnRotation = GetActorRotation();
-	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
+void AMainCharacterBase::Attack()
+{
+	if (!CharacterState.bCanAttack) return;
 
-	AProjectileBase * Projectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
-	if (Projectile)
+	Super::Attack();
+	if (IsValid(WeaponActor->GetChildActor()))
 	{
-		Projectile->ActivateProjectileMovement();
-		Projectile->SetSpawnInstigator(GetController());
+		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+
+		if (AttackAnimMontageArray.Num() > 0)
+		{
+			const int32 nextAnimIdx = weaponRef->GetCurrentMeleeComboCnt() % AttackAnimMontageArray.Num();
+			//UE_LOG(LogTemp, Warning, TEXT("idx : %d"), nextAnimIdx);
+			PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
+			weaponRef->Attack();
+		}
+	}
+}
+
+void AMainCharacterBase::StopAttack()
+{
+	Super::StopAttack();
+	if (IsValid(WeaponActor->GetChildActor()))
+	{
+		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+		weaponRef->StopAttack();
 	}
 }
