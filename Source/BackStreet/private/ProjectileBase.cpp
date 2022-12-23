@@ -57,7 +57,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
 	UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-								SpawnInstigator, this, nullptr);
+								  SpawnInstigator, this, nullptr);
 	Destroy();
 }
 

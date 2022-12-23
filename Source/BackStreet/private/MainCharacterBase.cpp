@@ -94,21 +94,8 @@ void AMainCharacterBase::TryReload()
 
 void AMainCharacterBase::Attack()
 {
-	if (!CharacterState.bCanAttack) return;
-
 	Super::Attack();
-	if (IsValid(WeaponActor->GetChildActor()))
-	{
-		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-
-		if (AttackAnimMontageArray.Num() > 0)
-		{
-			const int32 nextAnimIdx = weaponRef->GetCurrentMeleeComboCnt() % AttackAnimMontageArray.Num();
-			//UE_LOG(LogTemp, Warning, TEXT("idx : %d"), nextAnimIdx);
-			PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
-			weaponRef->Attack();
-		}
-	}
+	
 }
 
 void AMainCharacterBase::StopAttack()

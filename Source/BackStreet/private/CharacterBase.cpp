@@ -52,10 +52,11 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	DamageAmount = DamageAmount - DamageAmount * CharacterStat.CharacterDefense;
 	if (DamageAmount <= 0.0f || !IsValid(DamageCauser)) return 0.0f;
 	if (CharacterState.bIsInvincibility) return 0.0f;
+
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	CharacterState.CharacterCurrHP -= DamageAmount;
-	CharacterState.CharacterCurrHP = FMath::Max(0.0f, CharacterState.CharacterCurrHP - DamageAmount);
+	CharacterState.CharacterCurrHP = CharacterState.CharacterCurrHP - DamageAmount;
+	CharacterState.CharacterCurrHP = FMath::Max(0.0f, CharacterState.CharacterCurrHP);
 	if (CharacterState.CharacterCurrHP == 0.0f)
 	{
 		Die();
@@ -73,7 +74,6 @@ float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AAc
 	if (!IsValid(Causer) || BuffRemainingTime[1][(int)DebuffType] <= 0.0f) return 0.0f;
 
 	BuffRemainingTime[1][(int)DebuffType] -= 1.0f;
-
 	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
 
 	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
@@ -99,12 +99,44 @@ void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffTy
 	}
 }
 
+void ACharacterBase::Die()
+{
+	if (!IsValid(DieAnimMontage)) return;
+
+	CharacterState.bIsInvincibility = true;
+	ClearAllBuffTimer(true);
+	ClearAllBuffTimer(false);
+	ClearAllTimerHandle();
+	
+	PlayAnimMontage(DieAnimMontage);
+	GetCharacterMovement()->Deactivate();
+	bUseControllerRotationYaw = false;
+
+	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
+		//GameModeRef->SpawnItemOnLocation(GetActorLocation(), ItemID);
+		Destroy();
+	}), 1.0f, false, DieAnimMontage->GetPlayLength());
+}
+
 void ACharacterBase::Attack()
 {
 	if (!CharacterState.bCanAttack || CharacterState.bIsAttacking) return;
 	CharacterState.bIsAttacking = true;
 	CharacterState.bCanAttack = false;
-	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer, 1.0f, false, 1.0f - CharacterStat.CharacterAtkSpeed);
+
+	if (IsValid(WeaponActor->GetChildActor()))
+	{
+		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+
+		if (AttackAnimMontageArray.Num() > 0)
+		{
+			const int32 nextAnimIdx = weaponRef->GetCurrentMeleeComboCnt() % AttackAnimMontageArray.Num();
+			PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
+			weaponRef->Attack();
+		}
+		GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
+										, 1.0f, false, 1.0f - CharacterStat.CharacterAtkSpeed);
+	}
 }
 
 void ACharacterBase::StopAttack()
@@ -346,6 +378,15 @@ bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
 {
 	if (CharacterState.CharacterBuffState & (1 << (int)BuffType)) return true;
 	return false;
+}
+
+void ACharacterBase::ClearAllTimerHandle()
+{
+	ClearAllBuffTimer(false);
+	ClearAllBuffTimer(true);
+	GetWorldTimerManager().ClearTimer(DelayHandle);
+	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+	GetWorldTimerManager().ClearTimer(ReloadTimerHandle);
 }
 
 // Called every frame

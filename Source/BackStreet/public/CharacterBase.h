@@ -52,7 +52,7 @@ public:
 	UFUNCTION()
 		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION()
 		void Die();
 
 // ------- Character Stat/State ------- 
@@ -128,8 +128,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* ReloadAnimMontage;
 
-// ------ 그 외 캐릭터 프로퍼티 ---------------
+// ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
 protected:
+	UFUNCTION()
+		void ClearAllTimerHandle();
+
 	//캐릭터의 스탯
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStatStruct CharacterStat;

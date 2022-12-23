@@ -123,6 +123,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 		int32 MeleeComboCnt = 0;
 
+	UPROPERTY()
+		bool bIsMeleeAtkHit = false;
+
 private:
 	//Ä³¸¯ÅÍ Ref
 	UPROPERTY()

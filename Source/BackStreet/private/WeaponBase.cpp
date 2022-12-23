@@ -49,6 +49,7 @@ void AWeaponBase::Attack()
 void AWeaponBase::StopAttack()
 {
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
+	bIsMeleeAtkHit = false;
 }
 
 void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
@@ -129,23 +130,29 @@ bool AWeaponBase::TryFireProjectile()
 
 void AWeaponBase::MeleeAttack()
 {	
+	if (bIsMeleeAtkHit && IsValid(OwnerCharacterRef)) return;
+
 	FHitResult hitResult;
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
+	linetraceCollisionQueryParams.bDebugQuery = true;
+
 	//LineTrace를 통해 hit 된 물체들을 추적
-	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
+	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Pawn, linetraceCollisionQueryParams);
 	
 	//hit 되었다면?
-	if (hitResult.bBlockingHit && IsValid(OwnerCharacterRef))
+	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character") && hitResult.GetActor() != OwnerCharacterRef)
 	{
 		//데미지를 주고
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
+										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
+		bIsMeleeAtkHit = true;
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))
 		{
-			FTransform emitterSpawnTransform(FQuat(0.0f), FVector(1.0f), hitResult.Location);
+			FTransform emitterSpawnTransform(FQuat(0.0f), hitResult.Location, FVector(1.0f));
 			linetraceCollisionQueryParams.AddIgnoredActor(hitResult.GetActor());
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
 		}
@@ -169,5 +176,6 @@ void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
 {
 	if (!IsValid(NewCharacterRef)) return;
 	OwnerCharacterRef = NewCharacterRef;
+	linetraceCollisionQueryParams.AddIgnoredActor(NewCharacterRef);
 }
 
