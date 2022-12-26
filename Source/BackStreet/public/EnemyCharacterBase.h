@@ -15,6 +15,9 @@ class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable)
+		virtual void TryAttack() override;
+
+	UFUNCTION(BlueprintCallable)
 		virtual void Attack() override;
 
 	UFUNCTION(BlueprintCallable)

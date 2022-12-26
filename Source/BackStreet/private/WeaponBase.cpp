@@ -40,16 +40,15 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetMeleeCombo, 1.0f, false, 1.0f);
-		MeleeAttack();
-		MeleeComboCnt = (MeleeComboCnt + 1);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.0f, false, 1.0f);
+		ComboCnt = (ComboCnt + 1);
 	}
 }
 
 void AWeaponBase::StopAttack()
 {
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
-	bIsMeleeAtkHit = false;
+	linetraceCollisionQueryParams.ClearIgnoredActors();
 }
 
 void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
@@ -130,24 +129,23 @@ bool AWeaponBase::TryFireProjectile()
 
 void AWeaponBase::MeleeAttack()
 {	
-	if (bIsMeleeAtkHit && IsValid(OwnerCharacterRef)) return;
+	if (!IsValid(OwnerCharacterRef)) return;
 
 	FHitResult hitResult;
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
-	linetraceCollisionQueryParams.bDebugQuery = true;
-
 	//LineTrace를 통해 hit 된 물체들을 추적
-	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Pawn, linetraceCollisionQueryParams);
+	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
 	
+	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+
 	//hit 되었다면?
 	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character") && hitResult.GetActor() != OwnerCharacterRef)
 	{
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		bIsMeleeAtkHit = true;
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))
@@ -159,10 +157,9 @@ void AWeaponBase::MeleeAttack()
 	}
 }
 
-void AWeaponBase::ResetMeleeCombo()
+void AWeaponBase::ResetCombo()
 {
-	MeleeComboCnt = 0;
-	linetraceCollisionQueryParams.ClearIgnoredActors();
+	ComboCnt = 0;
 }
 
 // Called every frame

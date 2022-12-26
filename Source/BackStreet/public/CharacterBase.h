@@ -23,6 +23,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
+	virtual void TryAttack();
+
+	//AnimNotify에 Binding 되어 실제 공격을 수행
 	virtual void Attack();
 
 	virtual void StopAttack();

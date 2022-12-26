@@ -112,19 +112,16 @@ public:
 
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		int32 GetCurrentMeleeComboCnt() { return MeleeComboCnt; }
+		int32 GetCurrentComboCnt() { return ComboCnt; }
 
 	//Melee Combo 초기화
 	UFUNCTION()
-		void ResetMeleeCombo();
+		void ResetCombo();
 
 protected:
 	//현재 MeleeCombo 수
 	UPROPERTY(BlueprintReadOnly)
-		int32 MeleeComboCnt = 0;
-
-	UPROPERTY()
-		bool bIsMeleeAtkHit = false;
+		int32 ComboCnt = 0;
 
 private:
 	//캐릭터 Ref

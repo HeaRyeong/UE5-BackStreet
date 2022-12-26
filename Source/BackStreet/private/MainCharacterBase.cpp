@@ -58,7 +58,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMainCharacterBase::Dash);
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
-	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::Attack);
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 }
 
@@ -76,7 +76,7 @@ void AMainCharacterBase::MoveRight(float Value)
 
 void AMainCharacterBase::Dash()
 {
-	if (CharacterState.bIsRolling || !IsValid(RollAnimMontage)) return;
+	if (CharacterState.bIsRolling || !IsValid(RollAnimMontage) || CharacterState.bIsAttacking) return;
 	
 	PlayAnimMontage(RollAnimMontage);
 	LaunchCharacter(GetMesh()->GetForwardVector() + FVector( 0.0f, 0.0f, 500.0f ), false, false);
@@ -84,6 +84,7 @@ void AMainCharacterBase::Dash()
 
 	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([&]() {
 		CharacterState.bIsRolling = false;
+		CharacterState.bCanAttack = true;
 	}), 0.5f, false);
 }
 
@@ -92,11 +93,16 @@ void AMainCharacterBase::TryReload()
 	Super::TryReload();
 }
 
+void AMainCharacterBase::TryAttack()
+{
+	Super::TryAttack();
+}
+
 void AMainCharacterBase::Attack()
 {
 	Super::Attack();
-	
 }
+
 
 void AMainCharacterBase::StopAttack()
 {

@@ -3,6 +3,11 @@
 
 #include "../public/EnemyCharacterBase.h"
 
+void AEnemyCharacterBase::TryAttack()
+{
+	Super::TryAttack();
+}
+
 void AEnemyCharacterBase::Attack()
 {
 	Super::Attack();

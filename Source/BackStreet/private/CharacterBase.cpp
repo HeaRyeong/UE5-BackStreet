@@ -118,30 +118,45 @@ void ACharacterBase::Die()
 	}), 1.0f, false, DieAnimMontage->GetPlayLength());
 }
 
-void ACharacterBase::Attack()
+void ACharacterBase::TryAttack()
 {
+	if (AttackAnimMontageArray.Num() <= 0) return;
+	if (!IsValid(WeaponActor->GetChildActor())) return;
 	if (!CharacterState.bCanAttack || CharacterState.bIsAttacking) return;
-	CharacterState.bIsAttacking = true;
-	CharacterState.bCanAttack = false;
 
-	if (IsValid(WeaponActor->GetChildActor()))
+	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+	if (IsValid(weaponRef))
 	{
-		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+		CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
+		CharacterState.bIsAttacking = true;
 
-		if (AttackAnimMontageArray.Num() > 0)
-		{
-			const int32 nextAnimIdx = weaponRef->GetCurrentMeleeComboCnt() % AttackAnimMontageArray.Num();
-			PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
-			weaponRef->Attack();
-		}
-		GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, 1.0f - CharacterStat.CharacterAtkSpeed);
+		const int32 nextAnimIdx = weaponRef->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
+		UE_LOG(LogTemp, Warning, TEXT("Current Combo : %d  / Anim Idx : %d"), weaponRef->GetCurrentComboCnt(), weaponRef->GetCurrentComboCnt() % AttackAnimMontageArray.Num());
+		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
 	}
 }
 
+void ACharacterBase::Attack()
+{
+	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
+										, 1.0f, false, 1.0f - CharacterStat.CharacterAtkSpeed);
+
+	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+	if (IsValid(weaponRef))
+	{
+		weaponRef->Attack();
+	}
+}
+ 
 void ACharacterBase::StopAttack()
 {
 	CharacterState.bIsAttacking = false;
+	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
+	if (IsValid(weaponRef))
+	{
+		weaponRef->StopAttack();
+	}
 }
 
 void ACharacterBase::TryReload()
@@ -174,6 +189,7 @@ void ACharacterBase::ResetAtkIntervalTimer()
 {
 	CharacterState.bCanAttack = true;
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+	UE_LOG(LogTemp, Warning, TEXT("RESET ATK INTERVAL"));
 }
 
 void ACharacterBase::InitWeapon()
@@ -402,4 +418,5 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
+
 
