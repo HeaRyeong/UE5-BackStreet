@@ -3,11 +3,9 @@
 
 #include "WeaponBase.h"
 #include "CharacterBase.h"
-#include "CollisionQueryParams.h"
 #include "../public/ProjectileBase.h"
 
-FTimerHandle MeleeAtkDelayHandle;
-FCollisionQueryParams linetraceCollisionQueryParams;
+
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -48,7 +46,8 @@ void AWeaponBase::Attack()
 void AWeaponBase::StopAttack()
 {
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
-	linetraceCollisionQueryParams.ClearIgnoredActors();
+	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
+	MeleeLineTraceQueryParams.ClearIgnoredActors();
 }
 
 void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
@@ -129,16 +128,14 @@ bool AWeaponBase::TryFireProjectile()
 
 void AWeaponBase::MeleeAttack()
 {	
-	if (!IsValid(OwnerCharacterRef)) return;
-
 	FHitResult hitResult;
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
 	//LineTrace를 통해 hit 된 물체들을 추적
-	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, linetraceCollisionQueryParams);
+	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
 	
-	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
 
 	//hit 되었다면?
 	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character") && hitResult.GetActor() != OwnerCharacterRef)
@@ -151,7 +148,7 @@ void AWeaponBase::MeleeAttack()
 		if (IsValid(HitEffectParticle))
 		{
 			FTransform emitterSpawnTransform(FQuat(0.0f), hitResult.Location, FVector(1.0f));
-			linetraceCollisionQueryParams.AddIgnoredActor(hitResult.GetActor());
+			MeleeLineTraceQueryParams.AddIgnoredActor(hitResult.GetActor());
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
 		}
 	}
@@ -173,6 +170,6 @@ void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
 {
 	if (!IsValid(NewCharacterRef)) return;
 	OwnerCharacterRef = NewCharacterRef;
-	linetraceCollisionQueryParams.AddIgnoredActor(NewCharacterRef);
+	MeleeLineTraceQueryParams.AddIgnoredActor(NewCharacterRef);
 }
 

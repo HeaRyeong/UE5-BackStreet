@@ -3,6 +3,41 @@
 #include "Engine/DataTable.h"
 #include "CharacterInfoStructBase.generated.h"
 
+UENUM(BlueprintType)
+enum class ECharacterDebuffType : uint8
+{
+	E_Flame			UMETA(DisplayName = "Flame"),
+	E_Poison		UMETA(DisplayName = "Poison"),
+	E_Slow			UMETA(DisplayName = "Slow"),
+	E_Sleep			UMETA(DisplayName = "Sleep"),
+	E_DefenseDown	UMETA(DisplayName = "DefenseDown"),
+	E_AttackDown	UMETA(DisplayName = "AttackDown")
+};
+
+UENUM(BlueprintType)
+enum class ECharacterBuffType : uint8
+{
+	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
+	E_Healing			UMETA(DisplayName = "Healing"),
+	E_FastAtk			UMETA(DisplayName = "FastAtk"),
+	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
+	E_AttackUp			UMETA(DisplayName = "AttackUp"),
+	E_Invincibility		UMETA(DisplayName = "Invincibility"),
+	E_InfiniteAmmo		UMETA(DisplayName = "InfiniteAmmo")
+};
+
+UENUM(BlueprintType)
+enum class ECharacterActionType : uint8
+{
+	E_Idle			UMETA(DisplayName = "Idle"),
+	E_Attack		UMETA(DisplayName = "Attack"),
+	E_Defense		UMETA(DisplayName = "Defense"),
+	E_Roll			UMETA(DisplayName = "Roll"),
+	E_Jump			UMETA(DisplayName = "Jump"),
+	E_Reload		UMETA(DisplayName = "Reload"),
+	E_Die			UMETA(DisplayName = "Die")
+};
+
 USTRUCT(BlueprintType)
 struct FCharacterStatStruct
 {
@@ -44,13 +79,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bCanAttack = false;
 
-	//현재 구르고 있는지?
-	UPROPERTY(BlueprintReadOnly)
-		bool bIsRolling = false;
-
-	//현재 공격을 하고 있는지?
-	UPROPERTY(BlueprintReadOnly)
-		bool bIsAttacking = false;;
+	UPROPERTY(BlueprintReadWrite)
+		ECharacterActionType CharacterActionState;
 
 	UPROPERTY(BlueprintReadOnly)
 		bool bIsInvincibility = false;
@@ -72,25 +102,3 @@ public:
 		float CharacterCurrDefense = 0.0f;
 };
 
-UENUM(BlueprintType)
-enum class ECharacterDebuffType : uint8
-{
-	E_Flame			UMETA(DisplayName = "Flame"),
-	E_Poison		UMETA(DisplayName = "Poison"),
-	E_Slow			UMETA(DisplayName = "Slow"),
-	E_Sleep			UMETA(DisplayName = "Sleep"),
-	E_DefenseDown	UMETA(DisplayName = "DefenseDown"),
-	E_AttackDown	UMETA(DisplayName = "AttackDown")
-};
-
-UENUM(BlueprintType)
-enum class ECharacterBuffType : uint8
-{
-	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
-	E_Healing			UMETA(DisplayName = "Healing"),
-	E_FastAtk			UMETA(DisplayName = "FastAtk"),
-	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
-	E_AttackUp			UMETA(DisplayName = "AttackUp"),
-	E_Invincibility		UMETA(DisplayName = "Invincibility"),
-	E_InfiniteAmmo		UMETA(DisplayName = "InfiniteAmmo")
-};

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "BackStreet.h"
-#include "CollisionQueryParams.h"
 #include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
@@ -133,7 +132,9 @@ private:
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
-
+		
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
+
+	FCollisionQueryParams MeleeLineTraceQueryParams;
 };

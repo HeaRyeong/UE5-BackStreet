@@ -38,6 +38,7 @@ void ACharacterBase::InitCharacterState()
 	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
 	CharacterState.CharacterCurrHP = CharacterStat.CharacterMaxHP;
 	CharacterState.bCanAttack = true;
+	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 }
 
 void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
@@ -122,13 +123,13 @@ void ACharacterBase::TryAttack()
 {
 	if (AttackAnimMontageArray.Num() <= 0) return;
 	if (!IsValid(WeaponActor->GetChildActor())) return;
-	if (!CharacterState.bCanAttack || CharacterState.bIsAttacking) return;
+	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
 
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 	if (IsValid(weaponRef))
 	{
 		CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
-		CharacterState.bIsAttacking = true;
+		CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
 		const int32 nextAnimIdx = weaponRef->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
 		UE_LOG(LogTemp, Warning, TEXT("Current Combo : %d  / Anim Idx : %d"), weaponRef->GetCurrentComboCnt(), weaponRef->GetCurrentComboCnt() % AttackAnimMontageArray.Num());
@@ -151,7 +152,7 @@ void ACharacterBase::Attack()
  
 void ACharacterBase::StopAttack()
 {
-	CharacterState.bIsAttacking = false;
+	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 	if (IsValid(weaponRef))
 	{
@@ -172,10 +173,10 @@ void ACharacterBase::TryReload()
 		float reloadTime = 0.75f;
 		if (IsValid(ReloadAnimMontage)) reloadTime = PlayAnimMontage(ReloadAnimMontage) / 2.0f;
 
-		CharacterState.bCanAttack = false;
+		CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
 			GetWeaponActorRef()->TryReload();
-			CharacterState.bCanAttack = true;
+			CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 		}), 1.0f, false, reloadTime);
 	}
 	else

@@ -44,6 +44,10 @@ public:
 
 // ------- Character Action 기본 ------- 
 public:
+	//플레이어가 현재 해당 Action을 수행하고 있는지 반환
+	UFUNCTION(BlueprintCallable)
+		bool GetIsActionActive(ECharacterActionType Type) { return CharacterState.CharacterActionState == Type; }
+	
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;

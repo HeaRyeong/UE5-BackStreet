@@ -76,15 +76,14 @@ void AMainCharacterBase::MoveRight(float Value)
 
 void AMainCharacterBase::Dash()
 {
-	if (CharacterState.bIsRolling || !IsValid(RollAnimMontage) || CharacterState.bIsAttacking) return;
+	if (!IsValid(RollAnimMontage) || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
 	
 	PlayAnimMontage(RollAnimMontage);
 	LaunchCharacter(GetMesh()->GetForwardVector() + FVector( 0.0f, 0.0f, 500.0f ), false, false);
-	CharacterState.bIsRolling = true; 
+	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 
 	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([&]() {
-		CharacterState.bIsRolling = false;
-		CharacterState.bCanAttack = true;
+		CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	}), 0.5f, false);
 }
 
