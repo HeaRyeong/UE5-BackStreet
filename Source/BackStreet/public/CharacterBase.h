@@ -48,6 +48,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		bool GetIsActionActive(ECharacterActionType Type) { return CharacterState.CharacterActionState == Type; }
 	
+	//플레이어의 ActionState를 Idle로 전환한다.
+	UFUNCTION(BlueprintCallable)
+		void ResetActionState();
+
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;

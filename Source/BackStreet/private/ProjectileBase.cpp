@@ -44,34 +44,29 @@ void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBa
 	if (IsValid(NewCharacterRef))
 	{
 		OwnerCharacterRef = NewCharacterRef;
+		SpawnInstigator = OwnerCharacterRef->GetController();
 		ProjectileStat = NewStat;
+		UE_LOG(LogTemp, Warning, TEXT("INIT PROJECTILE"));
 	}
 }
 
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!IsValid(OtherActor) || OtherActor == OwnerCharacterRef
-		|| !OtherActor->ActorHasTag("Character")) return;
-	
+	if (!ProjectileMovement->IsActive() || OtherActor == OwnerCharacterRef) return;
+	if (OtherActor->ActorHasTag("Character"))
+	{
+		UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
+			SpawnInstigator, this, nullptr);
+	}
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
-	UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-								  SpawnInstigator, this, nullptr);
 	Destroy();
 }
 
 void AProjectileBase::ActivateProjectileMovement()
 {
 	ProjectileMovement->Activate();
-}
-
-void AProjectileBase::SetSpawnInstigator(AController* NewInstigator)
-{
-	if (IsValid(NewInstigator))
-	{
-		SpawnInstigator = NewInstigator;
-	}
 }
 
 // Called every frame

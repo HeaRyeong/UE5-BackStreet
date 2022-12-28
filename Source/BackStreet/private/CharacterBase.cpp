@@ -47,6 +47,15 @@ void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
 	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
 }
 
+void ACharacterBase::ResetActionState()
+{
+	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+	if (!GetWorldTimerManager().IsTimerActive(AtkIntervalHandle))
+	{
+		CharacterState.bCanAttack = true;
+	}
+}
+
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator
 								, AActor* DamageCauser)
 {
@@ -152,7 +161,7 @@ void ACharacterBase::Attack()
  
 void ACharacterBase::StopAttack()
 {
-	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+	ResetActionState();
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 	if (IsValid(weaponRef))
 	{
@@ -176,7 +185,7 @@ void ACharacterBase::TryReload()
 		CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
 			GetWeaponActorRef()->TryReload();
-			CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+			ResetActionState();
 		}), 1.0f, false, reloadTime);
 	}
 	else

@@ -69,8 +69,15 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
-	if(IsValid(newProjectile)) newProjectile->SetSpawnInstigator(OwnerCharacterRef->GetController());
-	return newProjectile;
+
+	if (IsValid(newProjectile))
+	{
+		newProjectile->InitProjectile(WeaponStat.ProjectileStat, OwnerCharacterRef);
+		UE_LOG(LogTemp, Warning, TEXT("PROJECTILE CREATE"));
+		return newProjectile;
+	}
+
+	return nullptr;
 }
 
 bool AWeaponBase::TryReload()

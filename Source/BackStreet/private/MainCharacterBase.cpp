@@ -83,7 +83,7 @@ void AMainCharacterBase::Dash()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 
 	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([&]() {
-		CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+		ResetActionState();
 	}), 0.5f, false);
 }
 
