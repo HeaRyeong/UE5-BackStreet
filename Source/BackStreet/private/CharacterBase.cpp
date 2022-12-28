@@ -21,6 +21,7 @@ ACharacterBase::ACharacterBase()
 	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
 	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
 
+	
 	this->Tags.Add("Character");
 }
 
