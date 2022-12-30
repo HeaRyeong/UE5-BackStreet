@@ -2,51 +2,17 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "BackStreet.h"
+#include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
-
-USTRUCT(BlueprintType)
-struct FPlayerStatStruct
-{
-public:
-	GENERATED_USTRUCT_BODY()
-
-	//PlayerMaxHP는 1.0f
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.5f, UIMax = 10.0f))
-		float CharacterMaxHP = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.1f, UIMax = 10.0f))
-		float CharacterAtkMultiplier = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 100.0f, UIMax = 1000.0f))
-		float CharacterMoveSpeed = 400.0f;
-};
-
-USTRUCT(BlueprintType)
-struct FPlayerStateStruct
-{
-public:
-	GENERATED_USTRUCT_BODY()
-
-	//현재 구르고 있는지?
-	UPROPERTY(BlueprintReadOnly)
-		bool bIsRolling = false;
-
-	//현재 공격을 하고 있는지?
-	UPROPERTY(BlueprintReadOnly)
-		bool bIsAttacking = false;;
-
-	//PlayerMaxHP는 1.0f
-	UPROPERTY(BlueprintReadOnly)
-		float CharacterCurrHP;
-};
 
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
+//----- 오버라이트 함수 ----------
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
@@ -57,42 +23,93 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Attack();
+
+	virtual void StopAttack();
+
+	virtual void TryReload();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+// ------- 캐릭터 컴포넌트 -------------
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		UChildActorComponent* WeaponActor;
+
+// ------- Character Action 기본 ------- 
+public:
+	//캐릭터의 상태 정보를 초기화
 	UFUNCTION()
 		void InitCharacterState();
 
+	//캐릭터의 스탯을 업데이트
 	UFUNCTION(BlueprintCallable)
-		void UpdateCharacterStat(FPlayerStatStruct NewStat);
+		void UpdateCharacterStat(FCharacterStatStruct NewStat);
 
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
+	//공격Action 사이의 Interval을 관리하는 타이머를 해제
 	UFUNCTION()
-		float TakeDebuffDamage(float DamageAmount);
+		void ResetAtkIntervalTimer();
 
-	void SetDebuffTimer(float Rate, AActor* Causer, FTimerHandle TimerHandle);
-
-	UFUNCTION(BlueprintCallable)
-		void SetDebuffTimer(float Rate, AActor* Causer);
-
+	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION()
-		void ClearDebuffTimer();
+		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
 
-	UFUNCTION(BlueprintImplementableEvent) 
+	//플레이어가 체력을 회복함 (일회성)
+	UFUNCTION()
+		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
+
+	UFUNCTION(BlueprintImplementableEvent)
 		void Die();
 
-protected:
-	//SoftObjRef로 대체 예정
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
-		TSubclassOf<class AProjectileBase> ProjectileClass;
+// ------ 무기 관련 ----------------
+public:
+	//UFUNCTION()
+		//void ChangeWeapon();
 
+	//무기 관련 설정을 초기화
+	UFUNCTION()
+		void InitWeapon();
+
+	//무기 Ref를 반환
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		class AWeaponBase* GetWeaponActorRef();
+
+// ------ 캐릭터 버프 / 디버프 ---------------
+public:
+	//버프와 디버프를 건다
+	UFUNCTION(BlueprintCallable)
+		void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+
+	//버프 or 디버프 상태를 초기화한다
+	UFUNCTION()
+		void ResetStatBuffState(bool bIsDebuff, uint8 BuffType);
+
+	//특정 Debuff의 타이머를 해제한다.
+	UFUNCTION()
+		void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
+
+	//모든 버프 or 디버프의 타이머를 해제한다
+	UFUNCTION()
+		void ClearAllBuffTimer(bool bIsDebuff);
+
+	//디버프가 활성화 되어있는지 반환
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetDebuffIsActive(ECharacterDebuffType DebuffType);
+
+	//버프가 활성화 되어있는지 반환
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetBuffIsActive(ECharacterBuffType BuffType);
+
+// ----- 캐릭터 애니메이션 -------------------
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* AttackAnimMontage;
+		TArray<UAnimMontage*> AttackAnimMontageArray;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* HitAnimMontage;
@@ -103,23 +120,26 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* RollAnimMontage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* ReloadAnimMontage;
+
+// ------ 그 외 캐릭터 프로퍼티 ---------------
 protected:
-	//Action 타이머 핸들
+	//캐릭터의 스탯
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		FCharacterStatStruct CharacterStat;
+
+	//캐릭터의 현재 상태
+	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
+		FCharacterStateStruct CharacterState;
+
 	UPROPERTY()
 		FTimerHandle DelayHandle;
 
-	//Debuff는 최대 3개까지 가능
+	//공격 간 딜레이 핸들
 	UPROPERTY()
-		FTimerHandle DebuffTimerHandle[3];
+		FTimerHandle AtkIntervalHandle;
 
 	UPROPERTY()
-		float DebuffRemainingTime[3];
-
-	//캐릭터의 스탯
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
-		FPlayerStatStruct CharacterStat;
-	
-	//캐릭터의 현재 상태
-	UPROPERTY(BlueprintReadOnly, Category = "Gameplay")
-		FPlayerStateStruct CharacterState;
+		FTimerHandle ReloadTimerHandle;
 };

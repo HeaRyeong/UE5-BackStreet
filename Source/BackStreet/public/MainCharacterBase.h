@@ -2,11 +2,10 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "BackStreet.h"
 #include "CharacterBase.h"
 #include "GameFramework/Character.h"
 #include "MainCharacterBase.generated.h"
-
 
 UCLASS()
 class BACKSTREET_API AMainCharacterBase : public ACharacterBase
@@ -35,14 +34,19 @@ public:
 		void MoveRight(float Value);
 
 	UFUNCTION()
-		void Fire();
-
-	UFUNCTION()
 		void Dash();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void Roll();
 
+	UFUNCTION()
+		virtual void TryReload() override;
+
+	UFUNCTION(BlueprintCallable)
+		virtual void Attack() override;
+
+	UFUNCTION(BlueprintCallable)
+		virtual void StopAttack() override;
 
 public:
 	//플레이어 메인 카메라 붐
