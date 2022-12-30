@@ -46,6 +46,8 @@ void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBa
 		OwnerCharacterRef = NewCharacterRef;
 		SpawnInstigator = OwnerCharacterRef->GetController();
 		ProjectileStat = NewStat;
+		ProjectileMovement->InitialSpeed = NewStat.ProjectileSpeed;
+		ProjectileMovement->MaxSpeed = NewStat.ProjectileSpeed;
 		UE_LOG(LogTemp, Warning, TEXT("INIT PROJECTILE"));
 	}
 }

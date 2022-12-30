@@ -73,7 +73,6 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	if (IsValid(newProjectile))
 	{
 		newProjectile->InitProjectile(WeaponStat.ProjectileStat, OwnerCharacterRef);
-		UE_LOG(LogTemp, Warning, TEXT("PROJECTILE CREATE"));
 		return newProjectile;
 	}
 
@@ -96,26 +95,26 @@ bool AWeaponBase::TryReload()
 
 bool AWeaponBase::GetCanReload()
 {
-	if (bInfiniteAmmo || !WeaponStat.bHasProjectile) return false;
+	if (WeaponStat.bIsInfiniteAmmo || !WeaponStat.bHasProjectile) return false;
 	if (MaxAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
 	return true;
 }
 
 void AWeaponBase::AddAmmo(int32 Count)
 {
-	if (bInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	if (WeaponStat.bIsInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
 	MaxAmmoCount = (MaxAmmoCount + Count) % MAX_AMMO_LIMIT_CNT;
 }
 
 void AWeaponBase::AddMagazine(int32 Count)
 {
-	if (bInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	if (WeaponStat.bIsInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
 	MaxAmmoCount = (MaxAmmoCount + WeaponStat.MaxAmmoPerMagazine * Count) % MAX_AMMO_LIMIT_CNT;
 }
 
 bool AWeaponBase::TryFireProjectile()
 {
-	if (CurrentAmmoCount == 0)
+	if (CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
 	{
 		TryReload();
 		return false;
@@ -126,7 +125,7 @@ bool AWeaponBase::TryFireProjectile()
 	//스폰한 발사체가 Valid 하다면 발사
 	if (IsValid(newProjectile))
 	{
-		if(!bInfiniteAmmo) CurrentAmmoCount -= 1;
+		if(!WeaponStat.bIsInfiniteAmmo) CurrentAmmoCount -= 1;
 		newProjectile->ActivateProjectileMovement();
 		return true;
 	}
@@ -150,6 +149,7 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
+		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

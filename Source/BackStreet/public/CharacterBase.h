@@ -105,7 +105,7 @@ public:
 
 	//버프 or 디버프 상태를 초기화한다
 	UFUNCTION()
-		void ResetStatBuffState(bool bIsDebuff, uint8 BuffType);
+		void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
 
 	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION()
