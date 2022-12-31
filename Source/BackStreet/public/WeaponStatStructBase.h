@@ -37,7 +37,8 @@ struct FWeaponStatStruct
 {
 public:
 	GENERATED_USTRUCT_BODY()
-		
+	
+	
 	//----- 근접 관련 Property --------------------
 
 	//근접 공격이 가능한 지? 

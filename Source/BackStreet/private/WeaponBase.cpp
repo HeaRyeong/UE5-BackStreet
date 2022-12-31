@@ -142,7 +142,8 @@ void AWeaponBase::MeleeAttack()
 	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
 
 	//hit 되었다면?
-	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character") && hitResult.GetActor() != OwnerCharacterRef)
+	if (hitResult.bBlockingHit && hitResult.GetActor() != OwnerCharacterRef
+		&& hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1]))
 	{
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
