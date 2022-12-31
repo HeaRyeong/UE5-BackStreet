@@ -5,8 +5,6 @@
 #include "CharacterBase.h"
 #include "../public/ProjectileBase.h"
 
-
-
 // Sets default values
 AWeaponBase::AWeaponBase()
 {

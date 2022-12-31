@@ -114,6 +114,7 @@ void ACharacterBase::Die()
 {
 	if (!IsValid(DieAnimMontage)) return;
 
+	CharacterState.CharacterActionState = ECharacterActionType::E_Die;
 	CharacterStat.bIsInvincibility = true;
 	ClearAllBuffTimer(true);
 	ClearAllBuffTimer(false);
@@ -252,6 +253,7 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 
 		//----스탯 조정 디버프-------------------
 		case ECharacterDebuffType::E_Sleep:
+			CharacterState.CharacterActionState = ECharacterActionType::E_Sleep;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			break;
 		case ECharacterDebuffType::E_Slow:
@@ -352,6 +354,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			break;
 		case ECharacterDebuffType::E_Sleep:
 			//WakeUp Animation
+			CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 			break;
 		case ECharacterDebuffType::E_AttackDown:
