@@ -3,27 +3,44 @@
 #pragma once
 #include "Tile.h"
 #include "CoreMinimal.h"
+#include "DirectionEnumInfo.h"
+#include "Grid.generated.h"
 
-/**
- * 
- */
-class BACKSTREET_API FGrid
+
+UCLASS()
+class BACKSTREET_API AGrid :public AActor
 {
+	GENERATED_BODY()
 public:
-	int Width;
-	int Hight;
-	int CellSize;
-	FTile* CurrentTile;
-	FTile* GridArray;
-	TArray<FTile*> Tracks;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Width;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int Hight;
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		ATile* CurrentTile;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<ATile*> GridArray;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<ATile*> Tracks;
 
 public:
-	FTile* GetCurrentTile();
-	void CreateMaze(int width, int hight, int cellSize);
+	UFUNCTION(BlueprintCallable)
+		ATile* GetCurrentTile();
+	UFUNCTION(BlueprintCallable)
+		void CreateMaze(int _width, int _hight);
+	UFUNCTION(BlueprintCallable)
+		ATile* MoveCurrentTile(uint8 Dir);
 
-private:
-	void RecursiveBacktracking();
-	FTile* GetTile(int x, int y);
-	FTile* GetRandomNeighbourTile(FTile* tile);
-	void VisitTile(FTile* currenttile, FTile* nextTile);
+public:
+	UFUNCTION(BlueprintCallable)
+		void RecursiveBacktracking();
+	UFUNCTION(BlueprintCallable)
+		ATile* GetTile(int x, int y);
+	UFUNCTION(BlueprintCallable)
+		ATile* GetRandomNeighbourTile(ATile* tile);
+	UFUNCTION(BlueprintCallable)
+		void VisitTile(ATile* _currenttile, ATile* _nextTile);
+
+
 };

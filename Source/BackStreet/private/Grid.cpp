@@ -1,50 +1,46 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Grid.h"
 
-#include <stdlib.h>
-#include <time.h>
-#include <iostream>
-
-void FGrid::CreateMaze(int width, int hight, int cellSize)
+void AGrid::CreateMaze(int _width, int _hight)
 {
-	Width = width;
-	Hight = hight;
-	CellSize = cellSize;
-
-	GridArray = new FTile[width * hight];
-
-	for (int x = 0; x < width; x++)
+	Width = _width;
+	Hight = _hight;
+	UWorld* world = GetWorld();
+	for (int y = 0; y < 5; y++)
 	{
-		for (int y = 0; y < hight; y++)
+		for (int x = 0; x < 5; x++)
 		{
-			GridArray[(y * width) + x].InitTile(x, y);
+			FActorSpawnParameters spawnParams;
+			FRotator rotator;
+			FVector spawnLocation = FVector(x * 5000, y * 5000, 0);
 
+			ATile* tile = GetWorld()->SpawnActor<ATile>(ATile::StaticClass(), spawnLocation, rotator, spawnParams);
+			tile->InitTile(x, y);
+			GridArray.Push(tile);
 		}
 
 	}
+
 	// starting point
-	Tracks.Add(&(GridArray[0]));
-	CurrentTile = &(GridArray[0]);
+	Tracks.Add(GridArray[0]);
+	CurrentTile = GridArray[0];
 	RecursiveBacktracking();
-	for (int x = 0; x < width; x++)
+
+	for (int y = 0; y < 5; y++)
 	{
-		for (int y = 0; y < hight; y++)
+		for (int x = 0; x < 5; x++)
 		{
-			GridArray[(y * width) + x].GateCount();
-
+			GridArray[y * 5 + x]->CountGate();
 		}
-
 	}
 }
 
-void FGrid::RecursiveBacktracking()
+void AGrid::RecursiveBacktracking()
 {
 	if (Tracks.Num() == 0) return;
 
-	FTile* currenttile = Tracks[Tracks.Num() - 1];
-	FTile* nexttile = GetRandomNeighbourTile(currenttile);
+	ATile* currenttile = Tracks[Tracks.Num() - 1];
+	ATile* nexttile = GetRandomNeighbourTile(currenttile);
 
 	if (nexttile != nullptr)
 	{
@@ -60,24 +56,24 @@ void FGrid::RecursiveBacktracking()
 	RecursiveBacktracking();
 }
 
-FTile* FGrid::GetTile(int x, int y)
+ATile* AGrid::GetTile(int x, int y)
 {
 	if (x >= 0 && x < Width && y >= 0 && y < Hight)
 	{
-		return &(GridArray[(y * Width) + x]);
+		return (GridArray[(y * Width) + x]);
 	}
 
 	return nullptr;
 }
 
-FTile* FGrid::GetRandomNeighbourTile(FTile* tile)
+ATile* AGrid::GetRandomNeighbourTile(ATile* tile)
 {
-	FTile* upTile = GetTile(tile->x, tile->y + 1);
-	FTile* downTile = GetTile(tile->x, tile->y - 1);
-	FTile* leftTile = GetTile(tile->x - 1, tile->y);
-	FTile* rightTile = GetTile(tile->x + 1, tile->y);
+	ATile* upTile = GetTile(tile->x, tile->y + 1);
+	ATile* downTile = GetTile(tile->x, tile->y - 1);
+	ATile* leftTile = GetTile(tile->x - 1, tile->y);
+	ATile* rightTile = GetTile(tile->x + 1, tile->y);
 
-	TArray<FTile*> neighbourTiles;
+	TArray<ATile*> neighbourTiles;
 	if (upTile != nullptr && !upTile->IsVisited()) neighbourTiles.Add(upTile);
 	if (downTile != nullptr && !downTile->IsVisited()) neighbourTiles.Add(downTile);
 	if (leftTile != nullptr && !leftTile->IsVisited()) neighbourTiles.Add(leftTile);
@@ -85,37 +81,65 @@ FTile* FGrid::GetRandomNeighbourTile(FTile* tile)
 
 	if (neighbourTiles.Num() == 0)return nullptr;
 
-	srand(time(NULL));
-	return neighbourTiles[rand() % neighbourTiles.Num()];
+	int ItemType = FMath::RandRange(0, neighbourTiles.Num() - 1);
+
+	return neighbourTiles[ItemType];
 }
 
-void FGrid::VisitTile(FTile* currentTile, FTile* nextTile)
+ATile* AGrid::MoveCurrentTile(uint8 Dir)
 {
-	if (currentTile->x < nextTile->x)
+	switch ((EDirection)Dir)
 	{
-		currentTile->right = true;
-		nextTile->left = true;
+	case EDirection::E_UP:
+		CurrentTile = GetTile(CurrentTile->x, CurrentTile->y + 1);
+		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
+		break;
+	case EDirection::E_DOWN:
+		CurrentTile = GetTile(CurrentTile->x, CurrentTile->y - 1);
+		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
+		break;
+	case EDirection::E_LEFT:
+		CurrentTile = GetTile(CurrentTile->x - 1, CurrentTile->y);
+		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
+		break;
+	case EDirection::E_RIGHT:
+		CurrentTile = GetTile(CurrentTile->x + 1, CurrentTile->y);
+		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
+		break;
+	default:
+		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
+		break;
 	}
-	if (currentTile->x > nextTile->x)
-	{
-		currentTile->left = true;
-		nextTile->right = true;
-	}
-	if (currentTile->y < nextTile->y)
-	{
-		currentTile->up = true;
-		nextTile->down = true;
-	}
-	if (currentTile->y > nextTile->y)
-	{
-		currentTile->down = true;
-		nextTile->up = true;
-	}
-
-	Tracks.Add(nextTile);
+	return CurrentTile;
 }
 
-FTile* FGrid::GetCurrentTile()
+void AGrid::VisitTile(ATile* _currentTile, ATile* _nextTile)
+{
+	if (_currentTile->x < _nextTile->x)
+	{
+		_currentTile->Gate[(uint8)(EDirection::E_RIGHT)] = true;
+		_nextTile->Gate[(uint8)(EDirection::E_LEFT)] = true;
+	}
+	if (_currentTile->x > _nextTile->x)
+	{
+		_currentTile->Gate[(uint8)(EDirection::E_LEFT)] = true;
+		_nextTile->Gate[(uint8)(EDirection::E_RIGHT)] = true;
+	}
+	if (_currentTile->y < _nextTile->y)
+	{
+		_currentTile->Gate[(uint8)(EDirection::E_UP)] = true;
+		_nextTile->Gate[(uint8)(EDirection::E_DOWN)] = true;
+	}
+	if (_currentTile->y > _nextTile->y)
+	{
+		_currentTile->Gate[(uint8)(EDirection::E_DOWN)] = true;
+		_nextTile->Gate[(uint8)(EDirection::E_UP)] = true;
+	}
+
+	Tracks.Add(_nextTile);
+}
+
+ATile* AGrid::GetCurrentTile()
 {
 	return CurrentTile;
 }

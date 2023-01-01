@@ -64,7 +64,7 @@ public:
 	UFUNCTION()
 		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
 
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent)
 		void Die();
 
 // ------ 무기 관련 ----------------
@@ -126,7 +126,7 @@ protected:
 // ------ 그 외 캐릭터 프로퍼티 ---------------
 protected:
 	//캐릭터의 스탯
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStatStruct CharacterStat;
 
 	//캐릭터의 현재 상태
