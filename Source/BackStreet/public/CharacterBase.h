@@ -110,8 +110,7 @@ public:
 	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION()
 		void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
-
-	//모든 버프 or 디버프의 타이머를 해제한다
+	
 	UFUNCTION()
 		void ClearAllBuffTimer(bool bIsDebuff);
 
@@ -142,8 +141,8 @@ protected:
 
 // ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
 protected:
-	UFUNCTION()
-		void ClearAllTimerHandle();
+	//UFUNCTION()
+		virtual void ClearAllTimerHandle();
 
 	//캐릭터의 스탯
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
