@@ -3,7 +3,7 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/WeaponBase.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "../public/MainCharacterController.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 
@@ -39,7 +39,7 @@ void AMainCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	PlayerControllerRef = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
 // Called every frame
@@ -107,27 +107,12 @@ void AMainCharacterBase::TryAttack()
 	if (CharacterState.CharacterActionState == ECharacterActionType::E_Idle
 		|| CharacterState.CharacterActionState == ECharacterActionType::E_Attack)
 	{
-		FVector traceStartLocation = FollowingCamera->GetComponentLocation();
-		FVector traceEndLocation, mouseDirection;
-		FHitResult hitResult;
-
-		PlayerControllerRef->DeprojectMousePositionToWorld(traceEndLocation, mouseDirection);
-		traceEndLocation += (mouseDirection * 5000.0f);
-
-		GetWorld()->LineTraceSingleByChannel(hitResult, traceStartLocation, traceEndLocation
-												, ECollisionChannel::ECC_Visibility);
-		if (hitResult.bBlockingHit)
-		{
-			FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), hitResult.Location);
-		
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-			GetCapsuleComponent()->SetWorldRotation(UKismetMathLibrary::MakeRotator(0.0f, 0.0f, newRotation.Yaw));
-
-			GetWorld()->GetTimerManager().ClearTimer(RotationFixTimerHandle);
-			GetWorld()->GetTimerManager().SetTimer(RotationFixTimerHandle, FTimerDelegate::CreateLambda([&]() {
-				GetCharacterMovement()->bOrientRotationToMovement = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		GetCapsuleComponent()->SetWorldRotation(PlayerControllerRef->GetAimingRotation());
+		GetWorld()->GetTimerManager().ClearTimer(RotationFixTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(RotationFixTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			GetCharacterMovement()->bOrientRotationToMovement = true;
 			}), 1.0f, false);
-		}
 	}
 }
 
