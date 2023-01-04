@@ -21,7 +21,11 @@ public:
 		void UpdateTargetPerception(AActor* Actor, FAIStimulus Stimulus);
 
 protected:
+	//실행할 BT를 지정
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 		UBehaviorTree* BehaviorTree;
 
+	//AI가 현재 내리고 있는 BT 액션 상태를 나타앰
+	UPROPERTY(BlueprintReadWrite)
+		EAIBehaviorType AIBehaviorState;
 };

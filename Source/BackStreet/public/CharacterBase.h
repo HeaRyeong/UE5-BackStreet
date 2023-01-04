@@ -149,7 +149,7 @@ protected:
 		FCharacterStatStruct CharacterStat;
 
 	//캐릭터의 현재 상태
-	UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
 		FCharacterStateStruct CharacterState;
 
 	UPROPERTY()

@@ -32,6 +32,18 @@ enum class ECharacterBuffType : uint8
 };
 
 UENUM(BlueprintType)
+enum class EAIBehaviorType : uint8
+{
+	E_Idle			UMETA(DisplayName = "Idle"),
+	E_Patrol		UMETA(DisplayName = "Patrol"),
+	E_Detect		UMETA(DisplayName = "Detect"),
+	E_Chase			UMETA(DisplayName = "Chase"),
+	E_Attack		UMETA(DisplayName = "Attack"),
+	E_Return		UMETA(DisplayName = "Return"),
+	E_Sleep			UMETA(DisplayName = "Sleep")
+};
+
+UENUM(BlueprintType)
 enum class ECharacterActionType : uint8
 {
 	E_Idle			UMETA(DisplayName = "Idle"),
@@ -91,6 +103,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bCanAttack = false;
 
+	//캐릭터의 행동 정보
 	UPROPERTY(BlueprintReadWrite)
 		ECharacterActionType CharacterActionState;
 

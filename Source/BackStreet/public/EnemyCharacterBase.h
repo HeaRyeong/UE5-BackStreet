@@ -25,4 +25,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
+
+public:
+	//월드 내에 배치된 Spline을 지정해준다.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|AI")
+		class AAIPatrolPath* PatrolPathSplineRef;
 };
