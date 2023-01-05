@@ -17,6 +17,10 @@ public:
 	AEnemyCharacterBase();
 
 public:
+	UFUNCTION()
+		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
+			, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION(BlueprintCallable)
 		virtual void TryAttack() override;
 
@@ -26,8 +30,4 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
-public:
-	//월드 내에 배치된 Spline을 지정해준다.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|AI")
-		class AAIPatrolPath* PatrolPathSplineRef;
 };

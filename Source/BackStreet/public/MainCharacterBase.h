@@ -43,6 +43,10 @@ public:
 	UFUNCTION()
 		virtual void TryReload() override;
 
+	UFUNCTION()
+		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
+			, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION(BlueprintCallable)
 		virtual void TryAttack() override;
 
@@ -74,4 +78,7 @@ private:
 	//초기화 시에는 다시 Movement 방향으로 캐릭터의 Rotation을 Set
 	UPROPERTY()
 		FTimerHandle RotationFixTimerHandle;
+
+	UPROPERTY()
+		FTimerHandle RollTimerHandle;
 };

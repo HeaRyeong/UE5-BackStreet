@@ -2,12 +2,20 @@
 
 
 #include "../public/EnemyCharacterBase.h"
+#include "../public/BackStreetGameModeBase.h"
 #include "../public/WeaponBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
 	this->Tags.Add("Enemy");
 }
+
+float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	return damageAmount;
+}
+
 
 void AEnemyCharacterBase::TryAttack()
 {

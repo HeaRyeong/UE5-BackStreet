@@ -4,6 +4,7 @@
 #include "../public/MainCharacterBase.h"
 #include "../public/WeaponBase.h"
 #include "../public/MainCharacterController.h"
+#include "../public/BackStreetGameModeBase.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 
@@ -90,7 +91,7 @@ void AMainCharacterBase::Dash()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 	PlayAnimMontage(RollAnimMontage);
 
-	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([&]() {
+	GetWorld()->GetTimerManager().SetTimer(RollTimerHandle, FTimerDelegate::CreateLambda([&]() {
 		ResetActionState();
 	}), 0.5f, false);
 }
@@ -98,6 +99,18 @@ void AMainCharacterBase::Dash()
 void AMainCharacterBase::TryReload()
 {
 	Super::TryReload();
+}
+
+float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (damageAmount > 0.0f)
+	{
+		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, GetActorLocation());
+	}
+
+	return damageAmount;
 }
 
 void AMainCharacterBase::TryAttack()
@@ -136,5 +149,6 @@ void AMainCharacterBase::ClearAllTimerHandle()
 {
 	Super::ClearAllTimerHandle();
 
-	GetWorld()->GetTimerManager().ClearTimer(RotationFixTimerHandle);
+	GetWorldTimerManager().ClearTimer(RotationFixTimerHandle);
+	GetWorldTimerManager().ClearTimer(RollTimerHandle);
 }

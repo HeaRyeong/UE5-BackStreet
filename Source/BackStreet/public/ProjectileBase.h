@@ -59,6 +59,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 		UParticleSystem* HitParticle;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "VFX")
+		TSubclassOf<UCameraShakeBase> CameraShakeEffect;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		struct FProjectileStatStruct ProjectileStat;
 
@@ -71,4 +74,7 @@ private:
 
 	UPROPERTY()
 		class ACharacterBase* OwnerCharacterRef;
+
+	UPROPERTY()
+		class ABackStreetGameModeBase* GamemodeRef;
 };

@@ -68,14 +68,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 		bool TryReload();
 
-	//남은 탄환의 개수를 반환 - Stat.MaxAmmoCount
+	//남은 탄환의 개수를 반환 - Stat.TotalAmmoCount
 	UFUNCTION(BlueprintCallable)
-		int32 GetLeftAmmoCount() { return MaxAmmoCount; };
+		int32 GetLeftAmmoCount() { return TotalAmmoCount; };
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetCanReload();
 
-	//탄환의 개수를 더함 (MaxAmmoCount까지)
+	//탄환의 개수를 더함 (TotalAmmoCount까지)
 	UFUNCTION(BlueprintCallable)
 		void AddAmmo(int32 Count);
 
@@ -97,7 +97,11 @@ protected:
 
 	//가지고 있는 최대 발사체 수
 	UPROPERTY(BlueprintReadOnly)
-		int32 MaxAmmoCount = 0;
+		int32 TotalAmmoCount = 0;
+
+	//공격 범위를 Get
+	UFUNCTION(BlueprintCallable)
+		float GetAttackRange();
 
 //-------- Melee 관련 ------------
 public:
@@ -132,5 +136,9 @@ private:
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
 
-	FCollisionQueryParams MeleeLineTraceQueryParams;
+	UPROPERTY()
+		class ABackStreetGameModeBase* GamemodeRef;
+
+	//UPROPERTY
+		FCollisionQueryParams MeleeLineTraceQueryParams;
 };

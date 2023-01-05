@@ -52,7 +52,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ResetActionState();
 
-	UFUNCTION()
+	//UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -141,6 +141,9 @@ protected:
 
 // ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
 protected:
+	UFUNCTION()
+		void InitGamemodeRef();
+
 	//UFUNCTION()
 		virtual void ClearAllTimerHandle();
 
@@ -153,8 +156,9 @@ protected:
 		FCharacterStateStruct CharacterState;
 
 	UPROPERTY()
-		FTimerHandle DelayHandle;
+		class ABackStreetGameModeBase* GamemodeRef;
 
+private:
 	//공격 간 딜레이 핸들
 	UPROPERTY()
 		FTimerHandle AtkIntervalHandle;

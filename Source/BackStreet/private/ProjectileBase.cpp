@@ -3,6 +3,7 @@
 
 #include "../public/ProjectileBase.h"
 #include "../public/CharacterBase.h"
+#include "../public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -40,8 +41,11 @@ AProjectileBase::AProjectileBase()
 void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnProjectileBeginOverlap);
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AProjectileBase::OnTargetBeginOverlap);
+
+	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
 void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBase* NewCharacterRef)
@@ -60,12 +64,23 @@ void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBa
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!ProjectileMovement->IsActive() || OtherActor == OwnerCharacterRef) return;
+	if (!ProjectileMovement->IsActive() || OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
 	if (OtherActor->ActorHasTag("Character"))
 	{
-		UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-			SpawnInstigator, this, nullptr);
+		//폭발하는 발사체라면?
+		if (ProjectileStat.bIsExplosive)
+		{
+			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ProjectileStat.ProjectileDamage, ProjectileStat.ProjectileDamage / 2.0f
+														, SweepResult.Location, 100.0f, 200.0f, 25.0f, nullptr, {}, OwnerCharacterRef, OwnerCharacterRef->Controller);
 
+			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Explosion, SweepResult.Location, 100.0f);
+		}
+		else
+		{
+			UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
+				SpawnInstigator, this, nullptr);
+		}
+		
 		Cast<ACharacterBase>(OtherActor)->SetBuffTimer(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };

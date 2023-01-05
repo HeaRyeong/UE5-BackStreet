@@ -4,11 +4,24 @@
 #include "CharacterInfoStructBase.h"
 #include "WeaponStatStructBase.generated.h"
 
+UENUM(BlueprintType)
+enum class ECameraShakeType : uint8
+{
+	E_None				UMETA(DisplayName = "None"),
+	E_Hit				UMETA(DisplayName = "Hit"),
+	E_Attack			UMETA(DisplayName = "Attack"),
+	E_Explosion			UMETA(DisplayName = "Explosion")
+};
+
 USTRUCT(BlueprintType)
 struct FProjectileStatStruct
 {
 public:
 	GENERATED_USTRUCT_BODY()
+
+	//폭발 타입의 발사체인지? (RadialDamage)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool bIsExplosive;
 
 	//발사체의 속도
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -31,15 +44,17 @@ public:
 		ECharacterDebuffType DebuffType;
 };
 
-
 USTRUCT(BlueprintType)
 struct FWeaponStatStruct
 {
 public:
 	GENERATED_USTRUCT_BODY()
 	
-	
 	//----- 근접 관련 Property --------------------
+
+	//근접 공격 범위
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float WeaponMeleeAtkRange = 160.0f;
 
 	//근접 공격이 가능한 지? 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -59,7 +74,6 @@ public:
 
 
 	//----- 발사체 관련 Property ------------------
-	
 	//무한 탄약인지?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bIsInfiniteAmmo;

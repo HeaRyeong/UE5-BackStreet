@@ -3,6 +3,7 @@
 
 #include "WeaponBase.h"
 #include "CharacterBase.h"
+#include "../public/BackStreetGameModeBase.h"
 #include "../public/ProjectileBase.h"
 
 // Sets default values
@@ -23,6 +24,8 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
 void AWeaponBase::Attack()
@@ -81,12 +84,12 @@ bool AWeaponBase::TryReload()
 {
 	if (!GetCanReload()) return false;
 
-	int32 addAmmoCnt = FMath::Min(MaxAmmoCount, WeaponStat.MaxAmmoPerMagazine);
+	int32 addAmmoCnt = FMath::Min(TotalAmmoCount, WeaponStat.MaxAmmoPerMagazine);
 	if (addAmmoCnt + CurrentAmmoCount > WeaponStat.MaxAmmoPerMagazine)
 		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - CurrentAmmoCount);
 
 	CurrentAmmoCount += addAmmoCnt; 
-	MaxAmmoCount -= addAmmoCnt;
+	TotalAmmoCount -= addAmmoCnt;
 
 	return true;
 }
@@ -94,20 +97,20 @@ bool AWeaponBase::TryReload()
 bool AWeaponBase::GetCanReload()
 {
 	if (WeaponStat.bIsInfiniteAmmo || !WeaponStat.bHasProjectile) return false;
-	if (MaxAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
+	if (TotalAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
 	return true;
 }
 
 void AWeaponBase::AddAmmo(int32 Count)
 {
-	if (WeaponStat.bIsInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
-	MaxAmmoCount = (MaxAmmoCount + Count) % MAX_AMMO_LIMIT_CNT;
+	if (WeaponStat.bIsInfiniteAmmo || TotalAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	TotalAmmoCount = (TotalAmmoCount + Count) % MAX_AMMO_LIMIT_CNT;
 }
 
 void AWeaponBase::AddMagazine(int32 Count)
 {
-	if (WeaponStat.bIsInfiniteAmmo || MaxAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
-	MaxAmmoCount = (MaxAmmoCount + WeaponStat.MaxAmmoPerMagazine * Count) % MAX_AMMO_LIMIT_CNT;
+	if (WeaponStat.bIsInfiniteAmmo || TotalAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	TotalAmmoCount = (TotalAmmoCount + WeaponStat.MaxAmmoPerMagazine * Count) % MAX_AMMO_LIMIT_CNT;
 }
 
 bool AWeaponBase::TryFireProjectile()
@@ -130,6 +133,16 @@ bool AWeaponBase::TryFireProjectile()
 	return false;
 }
 
+float AWeaponBase::GetAttackRange()
+{
+	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo || (CurrentAmmoCount == 0.0f && TotalAmmoCount == 0.0f))
+	{
+		return WeaponStat.WeaponMeleeAtkRange;
+	}
+
+	return 700.0f;
+}
+
 void AWeaponBase::MeleeAttack()
 {	
 	FHitResult hitResult;
@@ -149,6 +162,11 @@ void AWeaponBase::MeleeAttack()
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
 		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+
+		if (hitResult.GetActor()->ActorHasTag("Enemy"))
+		{
+			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, OwnerCharacterRef->GetActorLocation());
+		}
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

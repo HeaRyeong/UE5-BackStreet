@@ -3,6 +3,7 @@
 
 #include "../public/CharacterBase.h"
 #include "../public/WeaponBase.h"
+#include "../public/BackStreetGameModeBase.h"
 #include "Animation/AnimMontage.h"
 
 
@@ -30,6 +31,7 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	InitGamemodeRef();
 	InitWeapon();
 	InitCharacterState();
 }
@@ -448,11 +450,15 @@ bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
 	return false;
 }
 
+void ACharacterBase::InitGamemodeRef()
+{
+	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+}
+
 void ACharacterBase::ClearAllTimerHandle()
 {
 	ClearAllBuffTimer(false);
 	ClearAllBuffTimer(true);
-	GetWorldTimerManager().ClearTimer(DelayHandle);
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandle);
 }
