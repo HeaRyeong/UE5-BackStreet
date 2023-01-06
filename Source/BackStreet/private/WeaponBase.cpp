@@ -63,8 +63,9 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FRotator SpawnRotation = OwnerCharacterRef->GetActorRotation();
+	FRotator SpawnRotation = OwnerCharacterRef->GetActorRotation(); 
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
+	SpawnRotation.Pitch = 0.0f;
 	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorForwardVector() * 100.0f;
 	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorRightVector() * 25.0f;
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
@@ -86,7 +87,9 @@ bool AWeaponBase::TryReload()
 
 	int32 addAmmoCnt = FMath::Min(TotalAmmoCount, WeaponStat.MaxAmmoPerMagazine);
 	if (addAmmoCnt + CurrentAmmoCount > WeaponStat.MaxAmmoPerMagazine)
+	{
 		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - CurrentAmmoCount);
+	}
 
 	CurrentAmmoCount += addAmmoCnt; 
 	TotalAmmoCount -= addAmmoCnt;
@@ -126,7 +129,10 @@ bool AWeaponBase::TryFireProjectile()
 	//스폰한 발사체가 Valid 하다면 발사
 	if (IsValid(newProjectile))
 	{
-		if(!WeaponStat.bIsInfiniteAmmo) CurrentAmmoCount -= 1;
+		if (!WeaponStat.bIsInfiniteAmmo)
+		{
+			CurrentAmmoCount -= 1;
+		}
 		newProjectile->ActivateProjectileMovement();
 		return true;
 	}
@@ -139,7 +145,6 @@ float AWeaponBase::GetAttackRange()
 	{
 		return WeaponStat.WeaponMeleeAtkRange;
 	}
-
 	return 700.0f;
 }
 
@@ -152,7 +157,7 @@ void AWeaponBase::MeleeAttack()
 	//LineTrace를 통해 hit 된 물체들을 추적
 	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
 	
-	//	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
 
 	//hit 되었다면?
 	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
@@ -161,7 +166,7 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.02f);
 
 		if (hitResult.GetActor()->ActorHasTag("Enemy"))
 		{
