@@ -12,35 +12,39 @@ class BACKSTREET_API AGrid :public AActor
 {
 	GENERATED_BODY()
 public:
+	// 챕터 크기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int Width;
+		int32 Width;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int Hight;
+		int32 Hight;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ATile* CurrentTile;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<ATile*> GridArray;
+		TArray<ATile*> StageArray;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<ATile*> Tracks;
+		TArray<ATile*> Tracks; // Maze 생성관련 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<ATile*> MissionStageArray; // 추후 미션 Class 파서 타일 대신 미션으로 관리할듯..?
 
 public:
 	UFUNCTION(BlueprintCallable)
+		void CreateMaze(int32 WidthPara, int32 HightPara);
+	UFUNCTION(BlueprintCallable)
+		ATile* GetTile(int32 XPos, int32 YPos);
+	UFUNCTION(BlueprintCallable)
 		ATile* GetCurrentTile();
 	UFUNCTION(BlueprintCallable)
-		void CreateMaze(int _width, int _hight);
-	UFUNCTION(BlueprintCallable)
 		ATile* MoveCurrentTile(uint8 Dir);
+	UFUNCTION(BlueprintCallable)
+		void RemoveChapter();
 
 public:
 	UFUNCTION(BlueprintCallable)
 		void RecursiveBacktracking();
 	UFUNCTION(BlueprintCallable)
-		ATile* GetTile(int x, int y);
+		ATile* GetRandomNeighbourTile(ATile* Tile);
 	UFUNCTION(BlueprintCallable)
-		ATile* GetRandomNeighbourTile(ATile* tile);
-	UFUNCTION(BlueprintCallable)
-		void VisitTile(ATile* _currenttile, ATile* _nextTile);
-
+		void VisitTile(ATile* CurrentTilePara, ATile* NextTilePara);
 
 };

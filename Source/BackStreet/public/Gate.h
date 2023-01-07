@@ -26,6 +26,8 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	UFUNCTION()
+		void OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION(BlueprintCallable)
 		ULevelStreaming* UpdateGateInfo(); // return 언로드시킬 level instance
 	UFUNCTION(BlueprintCallable)

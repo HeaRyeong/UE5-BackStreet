@@ -15,24 +15,33 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 
 void ABackStreetGameModeBase::InitGame()
 {
+	RemainChapter = 2;
+	InitChapter();
+
+}
+
+void ABackStreetGameModeBase::InitChapter()
+{
+	if (Chapter != nullptr)
+		Chapter->RemoveChapter();
 
 	FActorSpawnParameters spawnParams;
 	FRotator rotator;
 	FVector spawnLocation = FVector::ZeroVector;
 
-	Map = GetWorld()->SpawnActor<AGrid>(AGrid::StaticClass(), spawnLocation, rotator, spawnParams);
-	Map->CreateMaze(5, 5);
+	Chapter = GetWorld()->SpawnActor<AGrid>(AGrid::StaticClass(), spawnLocation, rotator, spawnParams);
+	Chapter->CreateMaze(3, 3);
 
-	CurrTile = Map->GetCurrentTile();
-	StageLevel = 1;
+	CurrTile = Chapter->GetCurrentTile();
+	RemainChapter--;
 
 }
 
 
 void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
 {
-	Map->MoveCurrentTile(NextDir);
-	CurrTile = Map->GetCurrentTile();
+	Chapter->MoveCurrentTile(NextDir);
+	CurrTile = Chapter->GetCurrentTile();
 	//UE_LOG(LogTemp, Log, TEXT("[AtestGameMode::CalculateLoc()] CurrentTransform : %s"), *Map->GetCurrentTile()->GetActorLocation().ToString());
 }
 

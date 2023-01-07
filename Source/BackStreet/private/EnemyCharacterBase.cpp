@@ -26,9 +26,9 @@ void AEnemyCharacterBase::BeginPlay()
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-	FStageEnemyRankStruct* StageTableRow = EnemyRankDataTable->FindRow<FStageEnemyRankStruct>(FName(*(FString::FormatAsNumber(GameModeRef->StageLevel))), FString(""));
+	FStageEnemyRankStruct* StageTableRow = EnemyRankDataTable->FindRow<FStageEnemyRankStruct>(FName(*(FString::FormatAsNumber(TileRef->StageLevel))), FString(""));
 
-	if (!TileRef->IsClear)
+	if (!TileRef->bIsClear)
 	{
 		// Ω∫≈» º≥¡§
 		FCharacterStatStruct NewStat;

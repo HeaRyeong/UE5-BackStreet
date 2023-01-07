@@ -21,7 +21,7 @@ public:
 public:
 	AEnemyCharacterBase();
 	UFUNCTION(BlueprintCallable)
-	void InitEnemyStat();
+		void InitEnemyStat();
 
 
 protected:
@@ -31,7 +31,7 @@ protected:
 public:
 	// 소속 타일
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class ATile* TileRef;
+		class ATile* TileRef;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class ABackStreetGameModeBase* GameModeRef;
+		class ABackStreetGameModeBase* GameModeRef;
 };

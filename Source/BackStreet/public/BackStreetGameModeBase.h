@@ -13,17 +13,15 @@ class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
-//public:
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-//		class UDataTable* StageDataTable;
+
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class AGrid* Map;
+		class AGrid* Chapter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATile* CurrTile;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int StageLevel;
+		int32 RemainChapter; // 남은 챕터 수 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 PreDir = (uint8)(EDirection::E_DOWN); // 다음 스테이지 기준으로 입구 게이트
 
@@ -31,6 +29,8 @@ public:
 	ABackStreetGameModeBase();
 	UFUNCTION(BlueprintCallable)
 		void InitGame();
+	UFUNCTION(BlueprintCallable)
+		void InitChapter();
 	UFUNCTION(BlueprintCallable)
 		void NextStage(uint8 Dir);
 	UFUNCTION(BlueprintCallable)

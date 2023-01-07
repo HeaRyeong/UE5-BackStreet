@@ -16,13 +16,14 @@ AGate::AGate()
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
 	OverlapVolume->SetupAttachment(RootComponent);
 
-
+	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGate::OverlapBegins);
 }
 
 // Called when the game starts or when spawned
 void AGate::BeginPlay()
 {
 	Super::BeginPlay();
+	CheckHaveToActive();
 	
 }
 
@@ -99,4 +100,20 @@ void AGate::CheckHaveToActive()
 		}
 	}
 
+}
+
+void AGate::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		ABackStreetGameModeBase* mode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		ATile* UnLoadTile = mode->CurrTile; // 이동하기전 스테이지 ( 이제 언로드 시킬 타일 )
+
+		UpdateGateInfo();
+		ATile* LoadTile = mode->CurrTile;
+		LoadTile->LoadLevel();
+		UnLoadTile->UnLoadLevel();
+		Destroy();
+
+	}
 }

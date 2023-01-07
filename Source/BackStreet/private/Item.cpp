@@ -42,7 +42,7 @@ void AItem::BeginPlay()
 	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	TileRef = GameModeRef->CurrTile;
 
-	if (TileRef->IsClear)
+	if (TileRef->bIsClear)
 		Destroy();
 	
 }
