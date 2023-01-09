@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include "Tile.h"
+#include "../public/Tile.h"
 #include "EngineUtils.h"
 #include "../public/BackStreetGameModeBase.h"
 #include "Engine/LevelStreaming.h"
@@ -11,10 +11,10 @@ ATile::ATile()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 }
 
-void ATile::InitTile(int XPos, int YPos)
+void ATile::InitTile(int XPosition, int YPosition)
 {
-	x = XPos;
-	y = YPos;
+	XPos = XPosition;
+	YPos = YPosition;
 
 	bIsMissionClear = bIsBossStage = bIsMainMission = bIsClear = false;
 	Gate.Add(false); // UP
@@ -22,7 +22,6 @@ void ATile::InitTile(int XPos, int YPos)
 	Gate.Add(false); // LEFT
 	Gate.Add(false); // RIGHT
 
-	UE_LOG(LogTemp, Log, TEXT("Tile location %s %d %d"), *this->GetActorLocation().ToString(), x, y);
 
 	StageLevel = FMath::RandRange(1, 5);
 	
@@ -78,7 +77,7 @@ void ATile::LoadLevel()
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
 		FString name = FString::FromInt(gamemode->RemainChapter);
 		name += FString(TEXT("Stage"));
-		name += FString::FromInt(y * 5 + x);
+		name += FString::FromInt(YPos * 5 + XPos);
 		LevelRef=UGameplayStatics::GetStreamingLevel(GetWorld(), LevelToLoad)->CreateInstance(name);
 		LevelRef->LevelTransform.SetLocation(this->GetActorLocation());
 

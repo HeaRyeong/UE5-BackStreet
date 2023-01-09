@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
-#include "Gate.generated.h"
+#include "GateBase.generated.h"
 
 UCLASS()
-class BACKSTREET_API AGate : public AActor
+class BACKSTREET_API AGateBase : public AActor
 {
 	GENERATED_BODY()
 public:
@@ -17,7 +17,7 @@ public:
 
 public:
 	// Sets default values for this actor's properties
-	AGate();
+	AGateBase();
 
 protected:
 	// Called when the game starts or when spawned

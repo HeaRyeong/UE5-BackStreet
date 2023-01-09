@@ -1,5 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include "Grid.h"
+#include "../public/Grid.h"
 
 void AGrid::CreateMaze(int32 WidthPara, int32 HightPara)
 {
@@ -88,11 +88,11 @@ void AGrid::RecursiveBacktracking()
 	RecursiveBacktracking();
 }
 
-ATile* AGrid::GetTile(int32 XPos, int32 YPos)
+ATile* AGrid::GetTile(int32 XPosition, int32 YPosition)
 {
-	if (XPos >= 0 && XPos < Width && YPos >= 0 && YPos < Hight)
+	if (XPosition >= 0 && XPosition < Width && YPosition >= 0 && YPosition < Hight)
 	{
-		return (StageArray[(YPos * Width) + XPos]);
+		return (StageArray[(YPosition * Width) + XPosition]);
 	}
 
 	return nullptr;
@@ -100,10 +100,10 @@ ATile* AGrid::GetTile(int32 XPos, int32 YPos)
 
 ATile* AGrid::GetRandomNeighbourTile(ATile* Tile)
 {
-	ATile* upTile = GetTile(Tile->x, Tile->y + 1);
-	ATile* downTile = GetTile(Tile->x, Tile->y - 1);
-	ATile* leftTile = GetTile(Tile->x - 1, Tile->y);
-	ATile* rightTile = GetTile(Tile->x + 1, Tile->y);
+	ATile* upTile = GetTile(Tile->XPos, Tile->YPos + 1);
+	ATile* downTile = GetTile(Tile->XPos, Tile->YPos - 1);
+	ATile* leftTile = GetTile(Tile->XPos - 1, Tile->YPos);
+	ATile* rightTile = GetTile(Tile->XPos + 1, Tile->YPos);
 
 	TArray<ATile*> neighbourTiles;
 	if (upTile != nullptr && !upTile->IsVisited()) neighbourTiles.Add(upTile);
@@ -123,19 +123,19 @@ ATile* AGrid::MoveCurrentTile(uint8 Dir)
 	switch ((EDirection)Dir)
 	{
 	case EDirection::E_UP:
-		CurrentTile = GetTile(CurrentTile->x, CurrentTile->y + 1);
+		CurrentTile = GetTile(CurrentTile->XPos, CurrentTile->YPos + 1);
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
-		CurrentTile = GetTile(CurrentTile->x, CurrentTile->y - 1);
+		CurrentTile = GetTile(CurrentTile->XPos, CurrentTile->YPos - 1);
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
-		CurrentTile = GetTile(CurrentTile->x - 1, CurrentTile->y);
+		CurrentTile = GetTile(CurrentTile->XPos - 1, CurrentTile->YPos);
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
-		CurrentTile = GetTile(CurrentTile->x + 1, CurrentTile->y);
+		CurrentTile = GetTile(CurrentTile->XPos + 1, CurrentTile->YPos);
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
 	default:
@@ -147,22 +147,22 @@ ATile* AGrid::MoveCurrentTile(uint8 Dir)
 
 void AGrid::VisitTile(ATile* CurrentTilePara, ATile* NextTilePara)
 {
-	if (CurrentTilePara->x < NextTilePara->x)
+	if (CurrentTilePara->XPos < NextTilePara->XPos)
 	{
 		CurrentTilePara->Gate[(uint8)(EDirection::E_RIGHT)] = true;
 		NextTilePara->Gate[(uint8)(EDirection::E_LEFT)] = true;
 	}
-	if (CurrentTilePara->x > NextTilePara->x)
+	if (CurrentTilePara->XPos > NextTilePara->XPos)
 	{
 		CurrentTilePara->Gate[(uint8)(EDirection::E_LEFT)] = true;
 		NextTilePara->Gate[(uint8)(EDirection::E_RIGHT)] = true;
 	}
-	if (CurrentTilePara->y < NextTilePara->y)
+	if (CurrentTilePara->YPos < NextTilePara->YPos)
 	{
 		CurrentTilePara->Gate[(uint8)(EDirection::E_UP)] = true;
 		NextTilePara->Gate[(uint8)(EDirection::E_DOWN)] = true;
 	}
-	if (CurrentTilePara->y > NextTilePara->y)
+	if (CurrentTilePara->YPos > NextTilePara->YPos)
 	{
 		CurrentTilePara->Gate[(uint8)(EDirection::E_DOWN)] = true;
 		NextTilePara->Gate[(uint8)(EDirection::E_UP)] = true;

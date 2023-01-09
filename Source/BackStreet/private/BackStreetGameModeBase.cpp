@@ -4,8 +4,8 @@
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
-#include "Grid.h"
-#include "Tile.h"
+#include "../public/Grid.h"
+#include "../public/Tile.h"
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
