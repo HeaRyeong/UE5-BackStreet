@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "BackStreet.h"
+#include "../public/BackStreet.h"
 #include "GameFramework/GameModeBase.h"
-#include "DirectionEnumInfo.h"
+#include "../public/DirectionEnumInfo.h"
 #include "BackStreetGameModeBase.generated.h"
 
 

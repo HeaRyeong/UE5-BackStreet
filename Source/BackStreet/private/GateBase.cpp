@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Gate.h"
-#include "BackStreetGameModeBase.h"
-#include "Tile.h"
+#include "../public/GateBase.h"
+#include "../public/BackStreetGameModeBase.h"
+#include "../public/Tile.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
-AGate::AGate()
+AGateBase::AGateBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -16,11 +16,11 @@ AGate::AGate()
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
 	OverlapVolume->SetupAttachment(RootComponent);
 
-	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGate::OverlapBegins);
+	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGateBase::OverlapBegins);
 }
 
 // Called when the game starts or when spawned
-void AGate::BeginPlay()
+void AGateBase::BeginPlay()
 {
 	Super::BeginPlay();
 	CheckHaveToActive();
@@ -28,14 +28,14 @@ void AGate::BeginPlay()
 }
 
 // Called every frame
-void AGate::Tick(float DeltaTime)
+void AGateBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
 
-ULevelStreaming* AGate::UpdateGateInfo()
+ULevelStreaming* AGateBase::UpdateGateInfo()
 {
 	// game mode 받아오기
 	ABackStreetGameModeBase* mode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -66,7 +66,7 @@ ULevelStreaming* AGate::UpdateGateInfo()
 }
 
 
-void AGate::CheckHaveToActive()
+void AGateBase::CheckHaveToActive()
 {
 	ABackStreetGameModeBase* mode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	ATile* tile = mode->CurrTile;
@@ -102,7 +102,7 @@ void AGate::CheckHaveToActive()
 
 }
 
-void AGate::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag("Player"))
 	{

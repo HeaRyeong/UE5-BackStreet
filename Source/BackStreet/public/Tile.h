@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item.h"
-#include "EnemyCharacterBase.h"
+#include "../public/Item.h"
+#include "../public/EnemyCharacterBase.h"
 #include "Tile.generated.h"
 
 
@@ -15,9 +15,9 @@ class BACKSTREET_API ATile :public AActor
 public:
 	// Grid에서 해당 타일의 좌표정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 x;
+		int32 XPos;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 y;
+		int32 YPos;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<bool> Gate; // Gate 존재 여부
 
@@ -57,7 +57,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitTile(int XPos, int hight);
+		void InitTile(int XPosition, int YPosition);
 	UFUNCTION(BlueprintCallable)
 		bool IsVisited();
 	UFUNCTION(BlueprintCallable)

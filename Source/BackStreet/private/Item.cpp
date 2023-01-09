@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-#include "Item.h"
-#include "BackStreetGameModeBase.h"
-#include "Tile.h"
-#include "CharacterBase.h"
-#include "ItemInfoStruct.h"
-#include "WeaponStatStructBase.h"
-#include "WeaponBase.h"
+#include "../public/Item.h"
+#include "../public/BackStreetGameModeBase.h"
+#include "../public/Tile.h"
+#include "../public/CharacterBase.h"
+#include "../public/ItemInfoStruct.h"
+#include "../public/WeaponStatStructBase.h"
+#include "../public/WeaponBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 

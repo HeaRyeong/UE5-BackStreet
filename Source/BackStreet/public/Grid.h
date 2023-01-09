@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "Tile.h"
+#include "../public/Tile.h"
 #include "CoreMinimal.h"
-#include "DirectionEnumInfo.h"
+#include "../public/DirectionEnumInfo.h"
 #include "Grid.generated.h"
 
 
@@ -31,7 +31,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void CreateMaze(int32 WidthPara, int32 HightPara);
 	UFUNCTION(BlueprintCallable)
-		ATile* GetTile(int32 XPos, int32 YPos);
+		ATile* GetTile(int32 XPosition, int32 YPosition);
 	UFUNCTION(BlueprintCallable)
 		ATile* GetCurrentTile();
 	UFUNCTION(BlueprintCallable)
