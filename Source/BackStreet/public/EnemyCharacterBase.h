@@ -13,10 +13,30 @@ UCLASS()
 class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 {
 	GENERATED_BODY()
+
+	
 public:
 	AEnemyCharacterBase();
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 public:
+	// 소속 타일
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class ATile* TileRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class ABackStreetGameModeBase* GameModeRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UDataTable* EnemyRankDataTable;
+
+public:
+	UFUNCTION(BlueprintCallable)
+		void InitEnemyStat();
+
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;

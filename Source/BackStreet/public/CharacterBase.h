@@ -148,7 +148,7 @@ protected:
 		virtual void ClearAllTimerHandle();
 
 	//캐릭터의 스탯
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStatStruct CharacterStat;
 
 	//캐릭터의 현재 상태
