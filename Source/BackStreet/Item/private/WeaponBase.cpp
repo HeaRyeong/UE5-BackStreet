@@ -39,9 +39,9 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.0f, false, 1.0f);
-		ComboCnt = (ComboCnt + 1);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
+	ComboCnt = (ComboCnt + 1);
 }
 
 void AWeaponBase::StopAttack()
@@ -63,13 +63,15 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FRotator SpawnRotation = OwnerCharacterRef->GetActorRotation(); 
+	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
-	SpawnRotation.Pitch = 0.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorForwardVector() * 100.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorRightVector() * 25.0f;
-	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 
+	SpawnRotation.Pitch = 0.0f;
+	SpawnRotation.Yaw += 90.0f;
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+
+	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
 
 	if (IsValid(newProjectile))
@@ -157,7 +159,7 @@ void AWeaponBase::MeleeAttack()
 	//LineTrace를 통해 hit 된 물체들을 추적
 	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
 	
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
 
 	//hit 되었다면?
 	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
@@ -166,12 +168,7 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.02f);
-
-		if (hitResult.GetActor()->ActorHasTag("Enemy"))
-		{
-			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, OwnerCharacterRef->GetActorLocation());
-		}
+		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

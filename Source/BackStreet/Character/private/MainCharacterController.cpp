@@ -3,6 +3,7 @@
 
 #include "../public/MainCharacterController.h"
 #include "../public/MainCharacterBase.h"
+#include "GameFramework/InputSettings.h"
 #include "Kismet/KismetMathLibrary.h"
 
 void AMainCharacterController::BeginPlay()
@@ -49,9 +50,26 @@ FRotator AMainCharacterController::GetRotationToCursor()
 	if (hitResult.bBlockingHit)
 	{
 		retRotation = UKismetMathLibrary::FindLookAtRotation(PlayerRef->GetMesh()->GetComponentLocation(), hitResult.Location);
-		retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw);
+		retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw + 270.0f);
 		return retRotation;
 	}
 
 	return FRotator();
+}
+
+
+
+bool AMainCharacterController::GetActionKeyIsDown(FName MappingName)
+{
+	TArray<FInputActionKeyMapping> actionKeyMappingList;
+	UInputSettings::GetInputSettings()->GetActionMappingByName(MappingName, actionKeyMappingList);
+
+	for (FInputActionKeyMapping& inputKey : actionKeyMappingList)
+	{
+		if (IsInputKeyDown(inputKey.Key))
+		{
+			return true;
+		}
+	}
+	return false;
 }

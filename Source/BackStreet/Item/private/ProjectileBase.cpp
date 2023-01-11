@@ -57,7 +57,6 @@ void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBa
 		ProjectileStat = NewStat;
 		ProjectileMovement->InitialSpeed = NewStat.ProjectileSpeed;
 		ProjectileMovement->MaxSpeed = NewStat.ProjectileSpeed;
-		UE_LOG(LogTemp, Warning, TEXT("INIT PROJECTILE"));
 	}
 }
 
@@ -77,7 +76,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		else
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-				SpawnInstigator, this, nullptr);
+				SpawnInstigator, OwnerCharacterRef, nullptr);
 		}
 		
 		Cast<ACharacterBase>(OtherActor)->SetBuffTimer(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);

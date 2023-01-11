@@ -86,7 +86,9 @@ void AMainCharacterBase::Dash()
 	newDirection.Y = GetInputAxisValue(FName("MoveRight"));
 
 	FRotator newRotation = { 0, FMath::Atan2(newDirection.Y, newDirection.X) * 180.0f / 3.141592, 0.0f};
-	GetCapsuleComponent()->SetWorldRotation(newRotation);
+	newRotation.Yaw += 270.0f;
+
+	GetMesh()->SetWorldRotation(newRotation);
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 	PlayAnimMontage(RollAnimMontage);
@@ -115,18 +117,16 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 void AMainCharacterBase::TryAttack()
 {
+	if (!PlayerControllerRef->GetActionKeyIsDown("Attack")) return; 
+
+	//공격을 하고, 커서 위치로 Rotation을 조정
 	Super::TryAttack();
-	
-	if (CharacterState.CharacterActionState == ECharacterActionType::E_Idle
-		|| CharacterState.CharacterActionState == ECharacterActionType::E_Attack)
-	{
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		GetCapsuleComponent()->SetWorldRotation(PlayerControllerRef->GetAimingRotation());
-		GetWorld()->GetTimerManager().ClearTimer(RotationFixTimerHandle);
-		GetWorld()->GetTimerManager().SetTimer(RotationFixTimerHandle, FTimerDelegate::CreateLambda([&]() {
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			}), 1.0f, false);
-	}
+	RotateToCursor();
+
+	//Pressed 상태를 0.2s 뒤에 체크해서 계속 눌려있다면 Attack 반복
+	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
+	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this
+						, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
 }
 
 void AMainCharacterBase::Attack()
@@ -145,10 +145,33 @@ void AMainCharacterBase::StopAttack()
 	}
 }
 
+void AMainCharacterBase::RotateToCursor()
+{
+	if (CharacterState.CharacterActionState != ECharacterActionType::E_Idle
+		&& CharacterState.CharacterActionState != ECharacterActionType::E_Attack) return;
+
+	FRotator newRotation = PlayerControllerRef->GetAimingRotation();
+	if (newRotation != FRotator())
+	{
+		newRotation.Pitch = newRotation.Roll = 0.0f;
+		GetMesh()->SetWorldRotation(newRotation);
+	}
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+
+	GetWorld()->GetTimerManager().ClearTimer(RotationFixTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(RotationFixTimerHandle, FTimerDelegate::CreateLambda([&]() {
+		newRotation = GetCapsuleComponent()->GetComponentRotation();
+		newRotation.Yaw += 270.0f;
+		GetMesh()->SetWorldRotation(newRotation);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}), 1.0f, false);
+}
+
 void AMainCharacterBase::ClearAllTimerHandle()
 {
 	Super::ClearAllTimerHandle();
 
 	GetWorldTimerManager().ClearTimer(RotationFixTimerHandle);
-	GetWorldTimerManager().ClearTimer(RollTimerHandle);
+	GetWorldTimerManager().ClearTimer(RollTimerHandle); 
+	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
 }

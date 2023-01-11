@@ -136,6 +136,7 @@ void ACharacterBase::TryAttack()
 {
 	if (AttackAnimMontageArray.Num() <= 0) return;
 	if (!IsValid(WeaponActor->GetChildActor())) return;
+	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
 
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
@@ -209,6 +210,8 @@ void ACharacterBase::InitWeapon()
 	if (IsValid(GetWeaponActorRef()))
 	{
 		GetWeaponActorRef()->InitOwnerCharacterRef(this);
+		WeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
+		WeaponActor->SetRelativeLocation(FVector(0.0f), false);
 	}
 }
 

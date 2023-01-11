@@ -47,6 +47,13 @@ void AEnemyCharacterBase::InitEnemyStat()
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	UE_LOG(LogTemp, Warning, TEXT("CamEffect"))
+	if (IsValid(DamageCauser) && DamageCauser->ActorHasTag("Player"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SUCCESS!!"))
+		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation());
+	}
 	return damageAmount;
 }
 

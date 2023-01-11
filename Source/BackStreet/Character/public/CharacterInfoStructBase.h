@@ -63,7 +63,7 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsInvincibility = false;
+		bool bIsInvincibility = false;
 
 	UPROPERTY(BlueprintReadOnly)
 		bool bInfiniteAmmo = false;

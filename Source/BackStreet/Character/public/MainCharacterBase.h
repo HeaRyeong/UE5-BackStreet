@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	UFUNCTION()
+		void RotateToCursor();
+
 // -------- 자원 관리 ---------
 public:
 	//UFUNCTION()
@@ -79,6 +82,11 @@ private:
 	UPROPERTY()
 		FTimerHandle RotationFixTimerHandle;
 
+	//공격 반복 작업 타이머
+	UPROPERTY()
+		FTimerHandle AttackLoopTimerHandle;
+
+	//구르기 딜레이 타이머
 	UPROPERTY()
 		FTimerHandle RollTimerHandle;
 };
