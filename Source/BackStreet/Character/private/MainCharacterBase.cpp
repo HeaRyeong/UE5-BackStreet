@@ -5,6 +5,8 @@
 #include "../public/MainCharacterController.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 
@@ -25,6 +27,11 @@ AMainCharacterBase::AMainCharacterBase()
 	FollowingCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FOLLOWING_CAMERA"));
 	FollowingCamera->SetupAttachment(CameraBoom);
 	FollowingCamera->bAutoActivate = false;
+
+	BuffNiagaraEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("BUFF_EFFECT"));
+	BuffNiagaraEmitter->SetupAttachment(GetMesh());
+	BuffNiagaraEmitter->SetRelativeLocation(FVector(0.0f, 0.0f, 45.0f));
+	BuffNiagaraEmitter->bAutoActivate = false;
 
 	this->bUseControllerRotationYaw = false;
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
@@ -165,6 +172,33 @@ void AMainCharacterBase::RotateToCursor()
 		GetMesh()->SetWorldRotation(newRotation);
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}), 1.0f, false);
+}
+
+void AMainCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	
+	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
+	
+	UE_LOG(LogTemp, Warning, TEXT("%d %d"), bIsDebuff ? 1 : 0, BuffType);
+	if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
+	{
+		BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
+		BuffNiagaraEmitter->Deactivate();
+		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffType], false);
+		BuffNiagaraEmitter->Activate();
+	}
+}	
+
+void AMainCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+{
+	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+
+	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
+	if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
+	{
+		BuffNiagaraEmitter->Deactivate();
+	}
 }
 
 void AMainCharacterBase::ClearAllTimerHandle()

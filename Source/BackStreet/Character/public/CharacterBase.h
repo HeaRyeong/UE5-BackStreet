@@ -12,7 +12,7 @@ class BACKSTREET_API ACharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
-//----- 오버라이트 함수 ----------
+//----- 기본 함수 ----------
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
@@ -22,16 +22,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
-	virtual void TryAttack();
-
-	//AnimNotify에 Binding 되어 실제 공격을 수행
-	virtual void Attack();
-
-	virtual void StopAttack();
-
-	virtual void TryReload();
 
 protected:
 	// Called when the game starts or when spawned
@@ -44,6 +34,19 @@ public:
 
 // ------- Character Action 기본 ------- 
 public:
+	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
+	virtual void TryAttack();
+
+	//AnimNotify에 Binding 되어 실제 공격을 수행
+	virtual void Attack();
+
+	virtual void StopAttack();
+
+	virtual void TryReload(); 
+	
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
+		, AController* EventInstigator, AActor* DamageCauser) override;
+
 	//플레이어가 현재 해당 Action을 수행하고 있는지 반환
 	UFUNCTION(BlueprintCallable)
 		bool GetIsActionActive(ECharacterActionType Type) { return CharacterState.CharacterActionState == Type; }
@@ -51,11 +54,7 @@ public:
 	//플레이어의 ActionState를 Idle로 전환한다.
 	UFUNCTION(BlueprintCallable)
 		void ResetActionState();
-
-	//UFUNCTION()
-		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
-			, AController* EventInstigator, AActor* DamageCauser) override;
-
+		
 	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION()
 		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
@@ -100,12 +99,9 @@ public:
 // ------ 캐릭터 버프 / 디버프 ---------------
 public:
 	//버프와 디버프를 건다
-	UFUNCTION(BlueprintCallable)
-		void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
-
+	virtual	void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 	//버프 or 디버프 상태를 초기화한다
-	UFUNCTION()
-		void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
+	virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
 
 	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION()
@@ -129,9 +125,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* HitAnimMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* DieAnimMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* RollAnimMontage;

@@ -26,6 +26,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+// ------- 컴포넌트 ----------
+public:
+	//플레이어 메인 카메라 붐
+	UPROPERTY(VisibleDefaultsOnly)
+		USpringArmComponent* CameraBoom;
+
+	//플레이어의 메인 카메라
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+		UCameraComponent* FollowingCamera;
+
 // ------- Character Action ------- 
 public:
 	UFUNCTION()
@@ -59,19 +69,32 @@ public:
 	UFUNCTION()
 		void RotateToCursor();
 
-// -------- 자원 관리 ---------
+// -------
+public: 
+	//버프 or 디버프 상태를 지정
+	UFUNCTION(BlueprintCallable)
+		virtual	void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
+
+	//버프 or 디버프 상태를 초기화한다
+	UFUNCTION(BlueprintCallable)
+		virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal) override;
+
+
+// -------- VFX -----------
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class UNiagaraComponent* BuffNiagaraEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		TArray<class UNiagaraSystem*> BuffNiagaraEffectList;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		TArray<class UNiagaraSystem*> DebuffNiagaraEffectList;
+
+// ------- 그 외 -----------
 public:
 	//UFUNCTION()
-		virtual void ClearAllTimerHandle() override;
-
-public:
-	//플레이어 메인 카메라 붐
-	UPROPERTY(VisibleDefaultsOnly)
-		USpringArmComponent* CameraBoom;
-	
-	//플레이어의 메인 카메라
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-		UCameraComponent* FollowingCamera;
+	virtual void ClearAllTimerHandle() override;
 
 private:
 	UPROPERTY()
