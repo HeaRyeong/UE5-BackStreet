@@ -42,8 +42,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void MeleeTest();
+
 	//傍拜 贸府
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void Attack();
 
 	//傍拜 付公府 贸府

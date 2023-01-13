@@ -114,7 +114,7 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (damageAmount > 0.0f)
+	if (damageAmount > 0.0f && DamageCauser->ActorHasTag("Enemy"))
 	{
 		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, GetActorLocation());
 	}
@@ -174,31 +174,51 @@ void AMainCharacterBase::RotateToCursor()
 	}), 1.0f, false);
 }
 
-void AMainCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool AMainCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
-	
-	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
-	
-	UE_LOG(LogTemp, Warning, TEXT("%d %d"), bIsDebuff ? 1 : 0, BuffType);
-	if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
+	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+
+	if(result)
 	{
-		BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
-		BuffNiagaraEmitter->Deactivate();
-		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffType], false);
-		BuffNiagaraEmitter->Activate();
+		TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
+
+		UE_LOG(LogTemp, Warning, TEXT("%d %d"), bIsDebuff ? 1 : 0, BuffType);
+		if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
+		{
+			BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
+			BuffNiagaraEmitter->Deactivate();
+			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffType], false);
+			BuffNiagaraEmitter->Activate();
+		}
 	}
+	return result;
 }	
 
 void AMainCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
 {
 	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+}
 
-	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
-	if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
+void AMainCharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
+{
+	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffType)
+		: GetBuffIsActive((ECharacterBuffType)BuffType))
 	{
-		BuffNiagaraEmitter->Deactivate();
+		DeactivateBuffNiagara();
 	}
+	Super::ClearBuffTimer(bIsDebuff, BuffType);
+}
+
+void AMainCharacterBase::ClearAllBuffTimer(bool bIsDebuff)
+{
+	Super::ClearAllBuffTimer(bIsDebuff);
+	DeactivateBuffNiagara();
+}
+
+void AMainCharacterBase::DeactivateBuffNiagara()
+{
+	BuffNiagaraEmitter->SetAsset(nullptr, false);
+	BuffNiagaraEmitter->Deactivate();
 }
 
 void AMainCharacterBase::ClearAllTimerHandle()

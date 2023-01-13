@@ -70,10 +70,10 @@ void AEnemyCharacterBase::StopAttack()
 	Super::StopAttack();
 }
 
-void AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
-
+	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	return result;
 }
 
 void AEnemyCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)

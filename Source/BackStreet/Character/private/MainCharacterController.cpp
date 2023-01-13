@@ -40,7 +40,7 @@ FRotator AMainCharacterController::GetRotationToCursor()
 
 	//마우스 커서 위치에서 바닥으로의 5000만큼의 위치가 Trace의 마지막 지점
 	DeprojectMousePositionToWorld(traceEndLocation, mouseDirection);
-	traceEndLocation += (mouseDirection * 5000.0f);
+	traceEndLocation += (mouseDirection * traceEndLocation.Z);
 
 	//카메라에서 커서의 바닥 위치까지 LineTrace를 진행 -> 실제 커서의 월드 상호작용 위치가 hitResult.Location에 담김
 	GetWorld()->LineTraceSingleByChannel(hitResult, traceStartLocation, traceEndLocation
@@ -56,8 +56,6 @@ FRotator AMainCharacterController::GetRotationToCursor()
 
 	return FRotator();
 }
-
-
 
 bool AMainCharacterController::GetActionKeyIsDown(FName MappingName)
 {

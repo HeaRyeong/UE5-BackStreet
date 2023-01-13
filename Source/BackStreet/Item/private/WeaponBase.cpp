@@ -38,7 +38,7 @@ void AWeaponBase::Attack()
 	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
 	if (WeaponStat.bCanMeleeAtk)
 	{
-		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
+		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.0001f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
 	ComboCnt = (ComboCnt + 1);
@@ -158,8 +158,10 @@ void AWeaponBase::MeleeAttack()
 
 	//LineTrace를 통해 hit 된 물체들을 추적
 	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
-	
-	//DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
+	UE_LOG(LogTemp, Warning, TEXT("MELEE TRACE!"));
+
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
 
 	//hit 되었다면?
 	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")

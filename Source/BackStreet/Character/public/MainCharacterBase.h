@@ -73,12 +73,19 @@ public:
 public: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	void SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
+		virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
 
 	//버프 or 디버프 상태를 초기화한다
 	UFUNCTION(BlueprintCallable)
 		virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal) override;
 
+	//특정 Debuff의 타이머를 해제한다.
+	UFUNCTION(BlueprintCallable)
+		virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType) override;
+
+	//모든 Buff/Debuff의 타이머를 해제
+	UFUNCTION(BlueprintCallable)
+		virtual void ClearAllBuffTimer(bool bIsDebuff) override;
 
 // -------- VFX -----------
 public:
@@ -90,6 +97,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		TArray<class UNiagaraSystem*> DebuffNiagaraEffectList;
+
+	UFUNCTION()
+		void DeactivateBuffNiagara();
 
 // ------- 그 외 -----------
 public:
