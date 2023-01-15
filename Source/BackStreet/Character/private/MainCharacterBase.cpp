@@ -126,6 +126,8 @@ void AMainCharacterBase::TryAttack()
 {
 	if (!PlayerControllerRef->GetActionKeyIsDown("Attack")) return; 
 
+	BlueprintAttackTest();
+
 	//공격을 하고, 커서 위치로 Rotation을 조정
 	Super::TryAttack();
 	RotateToCursor();

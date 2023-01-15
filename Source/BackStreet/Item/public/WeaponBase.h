@@ -42,7 +42,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
-	UFUNCTION(BlueprintImplementableEvent)
+	//Melee 오류 디버깅용 임시 함수
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void MeleeTest();
 
 	//공격 처리

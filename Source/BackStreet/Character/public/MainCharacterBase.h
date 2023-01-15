@@ -57,6 +57,9 @@ public:
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void BlueprintAttackTest();
+
 	UFUNCTION(BlueprintCallable)
 		virtual void TryAttack() override;
 

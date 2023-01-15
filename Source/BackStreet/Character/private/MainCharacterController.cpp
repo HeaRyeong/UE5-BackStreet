@@ -33,14 +33,14 @@ FRotator AMainCharacterController::GetRotationToCursor()
 
 	FRotator retRotation;
 	
-	//Trace의 시작은 플레이어의 FollowingCamera 위치
-	FVector traceStartLocation = PlayerRef->FollowingCamera->GetComponentLocation();
-	FVector traceEndLocation, mouseDirection;
+	//Trace의 시작은 마우스의 World Location
+	FVector traceStartLocation, traceEndLocation, mouseDirection;
 	FHitResult hitResult;
 
-	//마우스 커서 위치에서 바닥으로의 5000만큼의 위치가 Trace의 마지막 지점
-	DeprojectMousePositionToWorld(traceEndLocation, mouseDirection);
-	traceEndLocation += (mouseDirection * traceEndLocation.Z);
+	DeprojectMousePositionToWorld(traceStartLocation, mouseDirection);
+
+	//마우스 커서 위치에서 바닥으로의 INF만큼의 위치가 Trace의 마지막 지점
+	traceEndLocation = traceStartLocation + mouseDirection * 10000.0f;
 
 	//카메라에서 커서의 바닥 위치까지 LineTrace를 진행 -> 실제 커서의 월드 상호작용 위치가 hitResult.Location에 담김
 	GetWorld()->LineTraceSingleByChannel(hitResult, traceStartLocation, traceEndLocation
