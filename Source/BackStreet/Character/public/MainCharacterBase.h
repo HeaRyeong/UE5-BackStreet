@@ -96,6 +96,9 @@ public:
 		class UNiagaraComponent* BuffNiagaraEmitter;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class UNiagaraComponent* DirectionNiagaraEmitter;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		TArray<class UNiagaraSystem*> BuffNiagaraEffectList;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")

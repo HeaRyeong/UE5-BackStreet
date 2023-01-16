@@ -13,7 +13,7 @@
 // Sets default values
 AMainCharacterBase::AMainCharacterBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CAMERA_BOOM"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -32,6 +32,11 @@ AMainCharacterBase::AMainCharacterBase()
 	BuffNiagaraEmitter->SetupAttachment(GetMesh());
 	BuffNiagaraEmitter->SetRelativeLocation(FVector(0.0f, 0.0f, 45.0f));
 	BuffNiagaraEmitter->bAutoActivate = false;
+
+	DirectionNiagaraEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DIRECTION_EFFECT"));
+	DirectionNiagaraEmitter->SetupAttachment(GetMesh());
+	DirectionNiagaraEmitter->SetRelativeRotation({ 0.0f, 90.0f, 0.0f });
+
 
 	this->bUseControllerRotationYaw = false;
 	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
