@@ -51,7 +51,7 @@ public:
 		void Attack();
 
 	//공격 마무리 처리
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void StopAttack();
 
 	//Weapon Stat 초기화
@@ -121,6 +121,12 @@ public:
 	UFUNCTION()
 		void ResetCombo();
 
+	UFUNCTION()
+		TArray<FVector> GetCurrentMeleePointList();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Debug")
+		float SphereTraceRadius = 5.0f;
+
 protected:
 	//현재 MeleeCombo 수
 	UPROPERTY(BlueprintReadOnly)
@@ -143,6 +149,9 @@ private:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
-	//UPROPERTY
+	UPROPERTY()
+		TArray<FVector> MeleePrevTracePointList;
+
+	//UPROPERTY()
 		FCollisionQueryParams MeleeLineTraceQueryParams;
 };
