@@ -188,8 +188,7 @@ bool AMainCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Ca
 	if(result)
 	{
 		TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
-
-		UE_LOG(LogTemp, Warning, TEXT("%d %d"), bIsDebuff ? 1 : 0, BuffType);
+		
 		if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
 		{
 			BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));

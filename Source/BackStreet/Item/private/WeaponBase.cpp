@@ -158,10 +158,8 @@ void AWeaponBase::MeleeAttack()
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
-	//LineTrace를 통해 hit 된 물체들을 추적
-	//GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
-	//UKismetSystemLibrary::SphereTraceSingleByProfile(GetWorld(), StartLocation, EndLocation, SphereTraceRadius, FName("Pawn"), false
-	//												, MeleeIgnoreActorList, EDrawDebugTrace::ForDuration, hitResult, true);
+	//검로 Trace
+	//근접 무기의 각 지점에서 이전 월드 좌표 -> 현재 월드 좌표로 LineTrace를 진행 
 	TArray<FVector> currTracePositionList = GetCurrentMeleePointList();
 	if (MeleePrevTracePointList.Num() == MAX_LINETRACE_POS_COUNT)
 	{
@@ -184,10 +182,8 @@ void AWeaponBase::MeleeAttack()
 		}
 	}
 	MeleePrevTracePointList = currTracePositionList;
-	
-	UE_LOG(LogTemp, Warning, TEXT("MELEE TRACE!"));
 
-	//hit 되었다면?
+	//hitResult가 Valid하다면 아래 조건문에서 데미지를 가함
 	if (bIsMeleeTraceSucceed)
 	{
 		//데미지를 주고

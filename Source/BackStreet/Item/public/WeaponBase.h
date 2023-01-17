@@ -109,10 +109,6 @@ protected:
 
 //-------- Melee 관련 ------------
 public:
-	//Linetrace를 통한 근접 공격
-	UFUNCTION()
-		void MeleeAttack();
-
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		int32 GetCurrentComboCnt() { return ComboCnt; }
