@@ -45,9 +45,6 @@ public:
 		void MoveRight(float Value);
 
 	UFUNCTION()
-		void Dash();
-
-	UFUNCTION(BlueprintImplementableEvent)
 		void Roll();
 
 	UFUNCTION()
@@ -56,9 +53,6 @@ public:
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void BlueprintAttackTest();
 
 	UFUNCTION(BlueprintCallable)
 		virtual void TryAttack() override;
@@ -69,8 +63,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	//Rotation 조절 방식을 커서 위치로 한다
 	UFUNCTION()
 		void RotateToCursor();
+
+	//Rotation 조절 방식을 기본 방식인 Movement 방향으로 되돌린다
+	UFUNCTION(BlueprintCallable)
+		void ResetRotationToMovement();
 
 // -------
 public: 
@@ -119,7 +118,7 @@ private:
 	//공격 시, 마우스 커서의 위치로 캐릭터가 바라보는 로직을 초기화하는 타이머
 	//초기화 시에는 다시 Movement 방향으로 캐릭터의 Rotation을 Set
 	UPROPERTY()
-		FTimerHandle RotationFixTimerHandle;
+		FTimerHandle RotationResetTimerHandle;
 
 	//공격 반복 작업 타이머
 	UPROPERTY()
