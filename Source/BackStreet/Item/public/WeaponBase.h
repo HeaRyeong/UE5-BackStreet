@@ -113,6 +113,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		int32 GetCurrentComboCnt() { return ComboCnt; }
 
+	//근접 공격을 수행
+	UFUNCTION()
+		void MeleeAttack();
+
 	//Melee Combo 초기화
 	UFUNCTION()
 		void ResetCombo();

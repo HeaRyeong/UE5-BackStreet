@@ -45,6 +45,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 PreDir = (uint8)(EDirection::E_DOWN); // 다음 스테이지 기준으로 입구 게이트
 
+	UPROPERTY(BlueprintReadWrite)
+		bool bIsGamePaused = false;
+
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
 		TArray<TSubclassOf<UCameraShakeBase>> CameraShakeEffectList;
