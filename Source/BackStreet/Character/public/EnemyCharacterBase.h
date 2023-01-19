@@ -40,6 +40,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+// ---- 적 캐릭터 Ation ----
+	UFUNCTION(BlueprintCallable)
+		void Turn(float Angle);
+
 // ---- 디버프 / 버프 -----
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)

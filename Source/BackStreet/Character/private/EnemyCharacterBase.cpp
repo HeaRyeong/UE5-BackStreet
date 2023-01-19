@@ -13,6 +13,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	{
 		EnemyRankDataTable = DataTable.Object;
 	}
+	bUseControllerRotationYaw = false;
 	this->Tags.Add("Enemy");
 }
 
@@ -68,6 +69,23 @@ void AEnemyCharacterBase::Attack()
 void AEnemyCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+}
+
+void AEnemyCharacterBase::Turn(float Angle)
+{
+	FRotator newRotation =  GetActorRotation();
+	newRotation.Yaw += Angle;
+	SetActorRotation(newRotation);
+	
+	if (GetVelocity().Length() == 0.0f)
+	{
+		if (FMath::Abs(Angle) > 0.0f)
+		{
+			CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
+			return;
+		}
+	}
+	CharacterState.TurnDirection = 0;
 }
 
 bool AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)

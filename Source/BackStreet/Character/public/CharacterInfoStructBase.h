@@ -99,6 +99,10 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bCanAttack = false;
 
+	//0 : Idle,  1 : Left Turn,  2 : Right Turn
+	UPROPERTY(BlueprintReadOnly)
+		uint8 TurnDirection = 0;
+
 	//캐릭터의 행동 정보
 	UPROPERTY(BlueprintReadWrite)
 		ECharacterActionType CharacterActionState;
