@@ -47,6 +47,11 @@ void AEnemyCharacterBase::InitEnemyStat()
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (IsValid(DamageCauser) && DamageCauser->ActorHasTag("Player"))
+	{
+		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation());
+	}
 	return damageAmount;
 }
 
@@ -63,4 +68,16 @@ void AEnemyCharacterBase::Attack()
 void AEnemyCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+}
+
+bool AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	return result;
+}
+
+void AEnemyCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+{
+	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+
 }
