@@ -4,7 +4,6 @@
 
 #include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
-#include "WeaponStatStructBase.h"
 #include "ProjectileBase.generated.h"
 
 

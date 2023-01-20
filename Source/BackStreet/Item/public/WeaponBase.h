@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000

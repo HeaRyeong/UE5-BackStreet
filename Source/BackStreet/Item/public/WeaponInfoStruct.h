@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "../../Character/public/CharacterInfoStructBase.h"
-#include "WeaponStatStructBase.generated.h"
+#include "../../Character/public/CharacteInfoEnum.h"
+#include "ProjectileInfoStruct.h"
+#include "WeaponInfoStruct.generated.h"
 
 UENUM(BlueprintType)
 enum class ECameraShakeType : uint8
@@ -14,46 +15,25 @@ enum class ECameraShakeType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FProjectileStatStruct
+struct FWeaponStatStruct : public FTableRowBase
 {
 public:
 	GENERATED_USTRUCT_BODY()
 
-	//폭발 타입의 발사체인지? (RadialDamage)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bIsExplosive;
-
-	//발사체의 속도
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float ProjectileSpeed = 2000.0f;
-
-	//발사체의 데미지
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float ProjectileDamage = 0.2f;
-
-	//중력 스케일
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float GravityScale = 1.0f;
-
-	//유도가 되는지?
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bIsHoming = false;
-
-	//발사체는 각 하나의 디버프만 가짐
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		ECharacterDebuffType DebuffType;
-};
-
-USTRUCT(BlueprintType)
-struct FWeaponStatStruct
-{
-public:
-	GENERATED_USTRUCT_BODY()
+	//무기의 ID
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+		uint8 WeaponID;
 	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+		FName WeaponName;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+		FName Description;
+
 	//----- 근접 관련 Property --------------------
 
 	//근접 공격 범위
-		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float WeaponMeleeAtkRange = 160.0f;
 
 	//근접 공격이 가능한 지? 

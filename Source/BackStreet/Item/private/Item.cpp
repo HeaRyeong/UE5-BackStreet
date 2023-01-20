@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "../public/Item.h"
 #include "../public/ItemInfoStruct.h"
-#include "../public/WeaponStatStructBase.h"
+#include "../public/WeaponInfoStruct.h"
 #include "../public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/Tile.h"

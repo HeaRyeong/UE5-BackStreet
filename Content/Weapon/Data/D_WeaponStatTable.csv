@@ -1,0 +1,5 @@
+﻿,WeaponID,WeaponName,Description,WeaponMeleeAtkRange,bCanMeleeAtk,WeaponAtkSpeedRate,WeaponDamage,DebuffType,bIsInfiniteAmmo,bHasProjectile,bInfiniteMagazine,MaxAmmoPerMagazine,LoadingDelayTime,ProjectileStat
+0,100,유리병,흔히 볼 수 있는 유리병이다.,200,TRUE,1,0.3,0,FALSE,FALSE,FALSE,0,0,
+1,101,나무막대,누군가 버린 나무 막대이다.,200,TRUE,2,0.25,0,FALSE,FALSE,FALSE,0,0,
+2,102,페트병,흔한 페트병이다. 아주 가볍다.,200,TRUE,0.8,0.2,0,FALSE,FALSE,FALSE,0,0,
+3,103,테이저 스틱,로봇의 동력이 있어야 제대로 동작을 하는 테이저 스틱이다.,200,TRUE,1,0.3,E_Slow,FALSE,FALSE,FALSE,0,0,

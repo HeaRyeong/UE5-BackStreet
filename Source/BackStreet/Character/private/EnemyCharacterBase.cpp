@@ -2,7 +2,7 @@
 
 
 #include "../public/EnemyCharacterBase.h"
-#include "../public/CharacterInfoStructBase.h"
+#include "../public/CharacterInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/Tile.h"
 
@@ -30,7 +30,7 @@ void AEnemyCharacterBase::InitEnemyStat()
 	if (!IsValid(TileRef)) return;
 	FStageEnemyRankStruct* StageTableRow = EnemyRankDataTable->FindRow<FStageEnemyRankStruct>(FName(*(FString::FormatAsNumber(TileRef->StageLevel))), FString(""));
 
-	if (!TileRef->bIsClear)
+	if (!TileRef->bIsClear && StageTableRow != nullptr)
 	{
 		// Ω∫≈» º≥¡§
 		FCharacterStatStruct NewStat;

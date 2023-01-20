@@ -182,6 +182,14 @@ void ACharacterBase::ResetAtkIntervalTimer()
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 }
 
+void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+{
+	if (!IsValid(newWeaponClass)) return;
+	WeaponActor->DestroyChildActor();
+	WeaponActor->SetChildActorClass(newWeaponClass->GetClass());
+	newWeaponClass->Destroy();
+}
+
 void ACharacterBase::InitWeapon()
 {
 	if (IsValid(GetWeaponActorRef()))
