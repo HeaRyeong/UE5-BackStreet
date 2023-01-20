@@ -13,6 +13,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	{
 		EnemyRankDataTable = DataTable.Object;
 	}
+	bUseControllerRotationYaw = false;
 	this->Tags.Add("Enemy");
 }
 
@@ -48,10 +49,8 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	UE_LOG(LogTemp, Warning, TEXT("CamEffect"))
 	if (IsValid(DamageCauser) && DamageCauser->ActorHasTag("Player"))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SUCCESS!!"))
 		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation());
 	}
 	return damageAmount;
@@ -70,4 +69,33 @@ void AEnemyCharacterBase::Attack()
 void AEnemyCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+}
+
+void AEnemyCharacterBase::Turn(float Angle)
+{
+	FRotator newRotation =  GetActorRotation();
+	newRotation.Yaw += Angle;
+	SetActorRotation(newRotation);
+	
+	if (GetVelocity().Length() == 0.0f)
+	{
+		if (FMath::Abs(Angle) > 0.0f)
+		{
+			CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
+			return;
+		}
+	}
+	CharacterState.TurnDirection = 0;
+}
+
+bool AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	return result;
+}
+
+void AEnemyCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+{
+	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+
 }

@@ -42,12 +42,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
+	//Melee 오류 디버깅용 임시 함수
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void MeleeTest();
+
 	//공격 처리
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void Attack();
 
 	//공격 마무리 처리
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void StopAttack();
 
 	//Weapon Stat 초기화
@@ -105,17 +109,23 @@ protected:
 
 //-------- Melee 관련 ------------
 public:
-	//Linetrace를 통한 근접 공격
-	UFUNCTION()
-		void MeleeAttack();
-
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		int32 GetCurrentComboCnt() { return ComboCnt; }
 
+	//근접 공격을 수행
+	UFUNCTION()
+		void MeleeAttack();
+
 	//Melee Combo 초기화
 	UFUNCTION()
 		void ResetCombo();
+
+	UFUNCTION()
+		TArray<FVector> GetCurrentMeleePointList();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Debug")
+		float SphereTraceRadius = 5.0f;
 
 protected:
 	//현재 MeleeCombo 수
@@ -139,6 +149,9 @@ private:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
-	//UPROPERTY
+	UPROPERTY()
+		TArray<FVector> MeleePrevTracePointList;
+
+	//UPROPERTY()
 		FCollisionQueryParams MeleeLineTraceQueryParams;
 };
