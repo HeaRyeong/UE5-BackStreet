@@ -82,7 +82,7 @@ void AItem::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* Othe
 
 			NewStat.bCanMeleeAtk = WeaponItemTableRow->bCanMeleeAtk;
 			NewStat.WeaponAtkSpeedRate = WeaponItemTableRow->WeaponAtkSpeedRate;
-			NewStat.WeaponDamage = WeaponItemTableRow->WeaponDamage;
+			NewStat.WeaponDamageRate = WeaponItemTableRow->WeaponDamage;
 			NewStat.DebuffType = WeaponItemTableRow->DebuffType;
 			NewStat.bHasProjectile = WeaponItemTableRow->bHasProjectile;
 			NewStat.bInfiniteMagazine = WeaponItemTableRow->bInfiniteMagazine;
@@ -97,10 +97,10 @@ void AItem::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* Othe
 			NewProjectStat.bIsHoming = WeaponItemTableRow->bIsHoming;
 			NewProjectStat.DebuffType = WeaponItemTableRow->ProjectDebuffType;
 
-			NewStat.ProjectileStat = NewProjectStat;
+			//NewStat.ProjectileStat = NewProjectStat;
 
 			ACharacterBase* player = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			player->GetWeaponActorRef()->InitWeaponStat(NewStat);
+			player->GetWeaponActorRef()->UpdateWeaponStat(NewStat);
 			UE_LOG(LogTemp, Log, TEXT("Get Weapon %d"), WeaponType);
 			Destroy();
 		}

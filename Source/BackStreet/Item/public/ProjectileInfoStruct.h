@@ -11,10 +11,6 @@ struct FProjectileStatStruct : public FTableRowBase
 public:
 	GENERATED_USTRUCT_BODY()
 
-	//발사체의 ID
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-		uint8 ProjectileID;
-
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		FName ProjectileName;
 
