@@ -2,29 +2,64 @@
 
 
 #include "../public/MissionBase.h"
+#include "../public/TileBase.h"
+#include "../public/GridBase.h"
 
 // Sets default values
-AMissionBase::AMissionBase()
+UMissionBase::UMissionBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-}
-
-// Called every frame
-void AMissionBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+ 	
 
 }
 
 
-
-// Called when the game starts or when spawned
-void AMissionBase::BeginPlay()
+void UMissionBase::InitMission()
 {
-	Super::BeginPlay();
-	Type = FMath::RandRange(0, 1);
-	UE_LOG(LogTemp, Log, TEXT("Spawn Mission %d"),Type);
+	UE_LOG(LogTemp, Log, TEXT("Call InitMission "));
+	Type = FMath::RandRange(1, 3);
 }
 
+void UMissionBase::ClearCheck()
+{
+	switch (Type)
+	{
+	case 1:
+		if (ItemList.IsEmpty())
+		{
+			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
+			Tile->Chapter->Missions.Remove(this);
+			Tile->Chapter->CheckChapterClear();
+		}
+		else
+		{
+
+		}
+		break;
+	case 2:
+		if (MonsterList.IsEmpty())
+		{
+			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
+			Tile->Chapter->Missions.Remove(this);
+			Tile->Chapter->CheckChapterClear();
+		}
+		else
+		{
+
+		}
+		break;
+	case 3:
+		if (MonsterList.IsEmpty())
+		{
+			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
+			Tile->Chapter->Missions.Remove(this);
+			Tile->Chapter->CheckChapterClear();
+		}
+		else
+		{
+
+		}
+		break;
+	default:
+		break;
+	}
+}

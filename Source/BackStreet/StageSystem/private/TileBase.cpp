@@ -7,6 +7,10 @@
 #include "../../Character/public/EnemyCharacterBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
+#include "../../Item/public/ItemInfoStruct.h"
+#include "../../Character/public/CharacterInfoStructBase.h"
+#include "TimerManager.h"
+#include "../public/GridBase.h"
 #include "UObject/SoftObjectPath.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,16 +30,20 @@ void ATileBase::Tick(float DeltaTime)
 void ATileBase::BeginPlay()
 {
 	Super::BeginPlay();
+	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	GameMode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	AssetDataManagerRef = GameMode->AssetDataManager;
+	Chapter = GameMode->Chapter;
 
+	SelectMap();
 }
-
 
 void ATileBase::InitTile(int XPosition, int YPosition)
 {
 	XPos = XPosition;
 	YPos = YPosition;
 
-	bIsSpawned=bIsMissionClear = bIsBossStage = bIsMainMission = bIsClear = false;
+	bIsSpawned = bIsBossStage = bIsMainMission = bIsClear = false;
 	Gate.Add(false); // UP
 	Gate.Add(false); // DOWN
 	Gate.Add(false); // LEFT
@@ -43,14 +51,13 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 
 
 	StageLevel = FMath::RandRange(1, 5);
-	
+	ClearTime = 0;
 }
 
 bool ATileBase::IsVisited()
 {
 	return Gate[static_cast<int>(EDirection::E_UP)] || Gate[static_cast<int>(EDirection::E_DOWN)] || Gate[static_cast<int>(EDirection::E_LEFT)] || Gate[static_cast<int>(EDirection::E_RIGHT)];
 }
-
 
 void ATileBase::SelectMap()
 {
@@ -83,11 +90,15 @@ void ATileBase::InitMission(bool IsBoss)
 {
 	bIsMainMission = true;
 	bIsBossStage = IsBoss;
+	MissionInfo = NewObject<UMissionBase>(this);
+	MissionInfo->InitMission();
+	MissionInfo->Tile = this; 
+	Chapter->Missions.AddUnique(MissionInfo);
 }
 
 void ATileBase::LoadLevel()
 {
-	ABackStreetGameModeBase* gamemode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	
 	if (LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
@@ -95,13 +106,14 @@ void ATileBase::LoadLevel()
 		LevelRef->SetShouldBeVisible(true);
 
 		// 플레이어 위치 스폰 위치 수정 필요
-		ACharacter* myCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-		myCharacter->SetActorLocation(this->GetActorLocation()+ FVector(0, 0, 500));
+		MyCharacter->SetActorLocation(this->GetActorLocation()+ FVector(0, 0, 500));
+		// Timer
+		GetWorldTimerManager().UnPauseTimer(ClearTimerHandle);
 
 	}else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
-		FString name = FString::FromInt(gamemode->RemainChapter);
+		FString name = FString::FromInt(GameMode->RemainChapter);
 		name += FString(TEXT("Stage"));
 		name += FString::FromInt(YPos * 5 + XPos);
 		LevelRef=UGameplayStatics::GetStreamingLevel(GetWorld(), LevelToLoad)->CreateInstance(name);
@@ -111,9 +123,10 @@ void ATileBase::LoadLevel()
 		LevelRef->SetShouldBeVisible(true);
 
 		// 플레이어 위치 스폰 위치 수정 필요
-		ACharacter* myCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-		myCharacter->SetActorLocation(this->GetActorLocation()+FVector(0,0,500));
-		
+		MyCharacter->SetActorLocation(this->GetActorLocation()+FVector(0,0,500));
+		// Clear Timer 설정
+		GetWorldTimerManager().SetTimer(ClearTimerHandle, this, &ATileBase::SetReward, 60.0f, true);
+
 	}
 }
 
@@ -125,6 +138,9 @@ void ATileBase::UnLoadLevel()
 		LevelRef->SetShouldBeLoaded(false);
 		LevelRef->SetShouldBeVisible(false);
 		bIsSpawned = true;
+
+		// Pause Timer
+		GetWorldTimerManager().PauseTimer(ClearTimerHandle);
 	}
 	else
 	{
@@ -134,43 +150,11 @@ void ATileBase::UnLoadLevel()
 
 }
 
-void ATileBase::ClearCheck()
-{
-	if (MonsterList.IsEmpty())
-	{
-		bIsClear = true;
-
-		/*ABackStreetGameModeBase* gamemode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (gamemode->StageLevel < 6)
-		{
-			gamemode->StageLevel++;
-		}*/
-	}
-}
-
-
-void ATileBase::LoadMonsterAsset()
+void ATileBase::LoadMonster()
 {
 	UE_LOG(LogTemp, Log, TEXT("Spawn Monster Point : %d"), MonsterSpawnPoints.Num());
 
-	if (MonsterAssets.Num() > 0)
-	{
-		ABackStreetGameModeBase* GameMode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		AssetStreamingHandle = GameMode->StreamableManager.RequestAsyncLoad(MonsterAssets, FStreamableDelegate::CreateUObject(this, &ATileBase::SpawnMonster));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("MonsterAssets is Empty"));
-
-	}
-}
-
-void ATileBase::SpawnMonster()
-{
-	int32 MaxSpawn = 5;
-	UE_LOG(LogTemp, Log, TEXT("SpawnMonster Func Call"));
-
-	if(!bIsSpawned)
+	if (!bIsSpawned)
 	{
 		for (int i = 0; i < 100; i++)
 		{
@@ -183,53 +167,50 @@ void ATileBase::SpawnMonster()
 			MonsterSpawnPoints[SelectidxB] = Temp;
 
 		}
-
-		for (int i = 0; i < MaxSpawn; i++)
-		{
-
-			if (MonsterAssets[0].IsValid())
-			{
-				if (MonsterAssets[0].ResolveObject())
-				{
-					UBlueprint* Gen = Cast<UBlueprint>(MonsterAssets[0].ResolveObject());
-					MonsterList.AddUnique(GetWorld()->SpawnActor<AEnemyCharacterBase>(Gen->GeneratedClass, MonsterSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Log, TEXT("Wrong"));
-				}
-
-
-			}
-
-		}
+		AssetDataManagerRef->LoadMonsterAsset(MonsterSpawnPoints, this);
 	}
-
 
 }
 
-void ATileBase::LoadItemAsset()
+
+void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
+{
+	UE_LOG(LogTemp, Log, TEXT("Call MonsterDie()"));
+
+	if (Target->ActorHasTag("MissionMonster"))
+	{
+		MissionInfo->MonsterList.Remove(Target);
+		MissionInfo->ClearCheck();
+	}
+
+	MonsterList.Remove(Target);
+
+	if (MonsterList.IsEmpty())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Stage Clear"));
+		bIsClear = true;
+
+		// 스테이지 클리어 보상 처리
+		StageReward();
+		
+	}
+}
+
+void ATileBase::BindDelegate()
+{
+	for (ACharacterBase* enemy : MonsterList)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Binding Func"));
+		enemy->FDieDelegate.BindUFunction(this, FName("MonsterDie"));
+	}
+}
+
+void ATileBase::LoadItem()
 {
 	UE_LOG(LogTemp, Log, TEXT("Spawn Item Point : %d"), ItemSpawnPoints.Num());
 
-	if (ItemAssets.Num() > 0)
-	{
-		ABackStreetGameModeBase* GameMode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		AssetStreamingHandle = GameMode->StreamableManager.RequestAsyncLoad(ItemAssets, FStreamableDelegate::CreateUObject(this, &ATileBase::SpawnItem));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("ItemAssets is Empty"));
-
-	}
-}
-
-void ATileBase::SpawnItem()
-{
 	if (!bIsSpawned)
-	{
-		int32 MaxSpawn = 1;
-		UE_LOG(LogTemp, Log, TEXT("SpawnItem Func Call"));
+	{	
 		for (int i = 0; i < 100; i++)
 		{
 			int32 SelectidxA = FMath::RandRange(0, ItemSpawnPoints.Num() - 1);
@@ -242,49 +223,17 @@ void ATileBase::SpawnItem()
 
 		}
 
-		for (int i = 0; i < MaxSpawn; i++)
-		{
-
-			if (ItemAssets[0].IsValid())
-			{
-				UBlueprint* Gen = Cast<UBlueprint>(ItemAssets[0].ResolveObject());
-				GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, ItemSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
-
-			}
-
-		}
+		AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Buff, ItemSpawnPoints);
 	}
 }
 
-void ATileBase::SetMission()
-{
-	MissionInfo = Cast<AMissionBase>(GetWorld()->SpawnActor<AMissionBase>(this->GetActorLocation(), FRotator::ZeroRotator));
-}
 
 
 
 void ATileBase::LoadMissionAsset()
 {
-	UE_LOG(LogTemp, Log, TEXT("Spawn Mission Point : %d"), MissionSpawnPoints.Num());
-
-	if (MissionAssets.Num() > 0)
-	{
-		ABackStreetGameModeBase* GameMode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		AssetStreamingHandle = GameMode->StreamableManager.RequestAsyncLoad(MissionAssets, FStreamableDelegate::CreateUObject(this, &ATileBase::SpawnMission));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Mission Assets is Empty"));
-
-	}
-}
-
-void ATileBase::SpawnMission()
-{
-	if (!bIsSpawned)
-	{
-		int32 MaxSpawn = 1;
-		UE_LOG(LogTemp, Log, TEXT("SpawnMission Func Call"));
+	if(!bIsSpawned)
+	{	
 		for (int i = 0; i < 100; i++)
 		{
 			int32 SelectidxA = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
@@ -297,32 +246,108 @@ void ATileBase::SpawnMission()
 
 		}
 
-		for (int i = 0; i < MaxSpawn; i++)
+		if(MissionInfo->Type == 1) // 아이템 습득
 		{
-			if (MissionInfo->Type == 0)
+			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Mission, MissionSpawnPoints);
+		}
+		else if(MissionInfo->Type == 2)// 몬스터 잡기
+		{
+			if (!bIsSpawned)
 			{
-				if (MissionAssets[0].IsValid())
+				for (int i = 0; i < 100; i++)
 				{
-					UBlueprint* Gen = Cast<UBlueprint>(MissionAssets[0].ResolveObject());
-					GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, MissionSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
+					int32 SelectidxA = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
+					int32 SelectidxB = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
+					AActor* Temp;
+
+					Temp = MissionSpawnPoints[SelectidxA];
+					MissionSpawnPoints[SelectidxA] = MissionSpawnPoints[SelectidxB];
+					MissionSpawnPoints[SelectidxB] = Temp;
 
 				}
 
 			}
-			else
+			AssetDataManagerRef->LoadMissionMonsterAsset(MissionSpawnPoints, this, MissionInfo);
+		}
+		else // 보스
+		{
+			if (!bIsSpawned)
 			{
-				if (MissionAssets[1].IsValid())
+				for (int i = 0; i < 100; i++)
 				{
-					UBlueprint* Gen = Cast<UBlueprint>(MissionAssets[1].ResolveObject());
-					GetWorld()->SpawnActor<AEnemyCharacterBase>(Gen->GeneratedClass, MissionSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
+					int32 SelectidxA = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
+					int32 SelectidxB = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
+					AActor* Temp;
+
+					Temp = MissionSpawnPoints[SelectidxA];
+					MissionSpawnPoints[SelectidxA] = MissionSpawnPoints[SelectidxB];
+					MissionSpawnPoints[SelectidxB] = Temp;
 
 				}
 
 			}
-
-
+			AssetDataManagerRef->LoadMissionMonsterAsset(MissionSpawnPoints, this, MissionInfo);
 		}
 	}
-
+	
 }
 
+
+void ATileBase::StageReward()
+{
+	EStatUpCategoryInfo Type = (EStatUpCategoryInfo)FMath::RandRange(1, 5);
+	FCharacterStatStruct NewStat = MyCharacter->GetCharacterStat();
+	float RewardValue;
+
+	if (ClearTime < 1) // A등급
+	{
+		RewardValue = GameMode->ChapterStatValue + 0.3f;
+		UE_LOG(LogTemp, Log, TEXT("A Rank %f"),RewardValue);
+	}
+	else if (ClearTime < 3) // B등급
+	{
+		RewardValue = GameMode->ChapterStatValue + 0.2f;
+		UE_LOG(LogTemp, Log, TEXT("B Rank %f"), RewardValue);
+	}
+	else // C등급
+	{
+		RewardValue = GameMode->ChapterStatValue + 0.1f;
+		UE_LOG(LogTemp, Log, TEXT("C Rank %f"), RewardValue);
+	}
+
+	switch (Type)
+	{
+	case EStatUpCategoryInfo::E_None:
+		break;
+	case EStatUpCategoryInfo::E_MaxHp:
+		UE_LOG(LogTemp, Log, TEXT("MaxHp"));
+		NewStat.CharacterMaxHP += 0.1f + RewardValue;
+		break;
+	case EStatUpCategoryInfo::E_ATK:
+		UE_LOG(LogTemp, Log, TEXT("ATK"));
+		NewStat.CharacterAtkMultiplier += 0.1f + RewardValue;
+		break;
+	case EStatUpCategoryInfo::E_ATKSpeed:
+		UE_LOG(LogTemp, Log, TEXT("ATKSpeed"));
+		NewStat.CharacterAtkSpeed += 0.05f + (RewardValue * 0.1);
+		break;
+	case EStatUpCategoryInfo::E_MoveSpeed:
+		UE_LOG(LogTemp, Log, TEXT("MoveSpeed"));
+		NewStat.CharacterMoveSpeed += 20.0f + (RewardValue * 10);
+		break;
+	case EStatUpCategoryInfo::E_Defense:
+		UE_LOG(LogTemp, Log, TEXT("Defense"));
+		NewStat.CharacterDefense += 0.1f + RewardValue;
+		break;
+	default:
+		break;
+	}
+
+	MyCharacter->UpdateCharacterStat(NewStat);
+}
+
+void ATileBase::SetReward()
+{
+	UE_LOG(LogTemp, Log, TEXT("Call SetReward"));
+	ClearTime++;
+}

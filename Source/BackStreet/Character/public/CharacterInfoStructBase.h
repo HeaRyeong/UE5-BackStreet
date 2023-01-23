@@ -10,7 +10,7 @@ enum class ECharacterDebuffType : uint8
 	E_Flame				UMETA(DisplayName = "Flame"),
 	E_Poison			UMETA(DisplayName = "Poison"),
 	E_Slow				UMETA(DisplayName = "Slow"),
-	E_Sleep				UMETA(DisplayName = "Sleep"),
+	E_Stun			    UMETA(DisplayName = "Stun"),
 	E_AttackDown		UMETA(DisplayName = "AttackDown"),
 	E_DefenseDown		UMETA(DisplayName = "DefenseDown"),
 	E_SlowAtk			UMETA(DisplayName = "SlowAtk"),

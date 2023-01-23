@@ -7,6 +7,8 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
+DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
+
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -165,4 +167,10 @@ private:
 
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
+
+	// -------- Àû ·Îº¿ Á×À½ Ã³¸® °ü·Ã µ¨¸®°ÔÀÌÆ® --------
+
+public:
+	FEnemyDieDelegate FDieDelegate;
+
 };

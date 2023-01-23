@@ -65,8 +65,6 @@ void AGridBase::CreateMaze(int32 WidthPara, int32 HightPara)
 	}
 
 
-	for (ATileBase* Tile : StageArray)
-		Tile->SelectMap();
 }
 
 void AGridBase::RecursiveBacktracking()
@@ -89,7 +87,6 @@ void AGridBase::RecursiveBacktracking()
 
 	RecursiveBacktracking();
 }
-
 
 ATileBase* AGridBase::GetRandomNeighbourTile(ATileBase* Tile)
 {
@@ -137,7 +134,6 @@ ATileBase* AGridBase::MoveCurrentTile(uint8 Dir)
 	}
 	return CurrentTile;
 }
-
 
 void AGridBase::VisitTile(ATileBase* CurrentTilePara, ATileBase* NextTilePara)
 {
@@ -188,4 +184,12 @@ void AGridBase::RemoveChapter()
 		tile->Destroy();
 	}
 	Destroy();
+}
+
+void AGridBase::CheckChapterClear()
+{
+	if (Missions.IsEmpty())
+	{
+		bIsChapterClear = true;
+	}
 }

@@ -5,7 +5,7 @@
 #include "../public/BackStreet.h"
 #include "../../StageSystem/public/DirectionEnumInfo.h"
 #include "GameFramework/GameModeBase.h"
-#include "Engine/StreamableManager.h"
+#include "AssetManagerBase.h"
 #include "BackStreetGameModeBase.generated.h"
 
 
@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void MoveTile(uint8 NextDir);
 
+	UFUNCTION(BlueprintCallable)
+		void ClearChapter();
+
 	UFUNCTION()
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
 
@@ -40,13 +43,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATileBase* CurrTile;
 	// 남은 챕터 수 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 RemainChapter;
+
 	// 다음 스테이지 기준으로 입구 게이트
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		uint8 PreDir = (uint8)(EDirection::E_DOWN);
-	// 애셋 로딩 관련
-	FStreamableManager StreamableManager;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float ChapterStatValue;
+	// Asset관련
+public:
+	UPROPERTY(EditAnywhere)
+		class UAssetManagerBase* AssetDataManager;
+
+		FStreamableManager StreamableManager;
+
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")

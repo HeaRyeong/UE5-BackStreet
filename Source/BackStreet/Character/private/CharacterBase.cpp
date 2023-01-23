@@ -126,6 +126,17 @@ void ACharacterBase::Die()
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
 
+	if (this->ActorHasTag(FName("Enemy")))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Actor Has Tag Enemy"));
+		if (FDieDelegate.IsBound())
+		{
+			FDieDelegate.Execute(this);
+			FDieDelegate.Unbind();
+		}
+	}
+
+
 	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
 		//GameModeRef->SpawnItemOnLocation(GetActorLocation(), ItemID);
 		Destroy();
@@ -252,7 +263,7 @@ void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			return;
 
 		//----스탯 조정 디버프-------------------
-		case ECharacterDebuffType::E_Sleep:
+		case ECharacterDebuffType::E_Stun:
 			CharacterState.CharacterActionState = ECharacterActionType::E_Sleep;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			break;
@@ -352,7 +363,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 		case ECharacterDebuffType::E_Slow:
 			GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
 			break;
-		case ECharacterDebuffType::E_Sleep:
+		case ECharacterDebuffType::E_Stun:
 			//WakeUp Animation
 			CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);

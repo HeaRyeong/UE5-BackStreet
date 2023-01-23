@@ -3,8 +3,15 @@
 #include "../public/ItemInfoStruct.h"
 #include "../public/WeaponStatStructBase.h"
 #include "../public/WeaponBase.h"
+#include "../../StageSystem/public/MissionBase.h"
+#include "../public/ItemInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
+#include "../../Character/public/CharacterBase.h"
+#include "Components/BoxComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "../public/ItemDataAssetInfo.h"
 #include "../../Character/public/CharacterBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,21 +23,9 @@ AItemBase::AItemBase()
 	PrimaryActorTick.bCanEverTick = true;
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
+	NiagaraCompo = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 	OverlapVolume->SetupAttachment(RootComponent);
-	Mesh->SetupAttachment(RootComponent);
-
-	static ConstructorHelpers::FObjectFinder<UDataTable> BuffItenData(TEXT("/Game/Item/Data/D_BuffStat"));
-	static ConstructorHelpers::FObjectFinder<UDataTable> WeaponItenData(TEXT("/Game/Weapon/D_WeaponStat"));
-	if (BuffItenData.Succeeded())
-	{
-		BuffItemTable = BuffItenData.Object;
-	}
-	if (WeaponItenData.Succeeded())
-	{
-		WeaponItemTable = WeaponItenData.Object;
-	}
-
+	NiagaraCompo->SetupAttachment(RootComponent);
 	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OverlapBegins);
 
 }
@@ -40,53 +35,35 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 {
 	if (OtherActor->ActorHasTag(FName(TEXT("Player"))))
 	{
-		uint8 ItemType = FMath::RandRange(0, 1);
+		FBuffItemInfoStruct Stat;
 
-		if (ItemType == 0)
+		UE_LOG(LogTemp, Log, TEXT("Get Item %d"), Type);
+		switch (Type)
 		{
-			uint8 BuffType = FMath::RandRange(0, 6);
-
-			FBuffItemInfoStruct* BuffItemTableRow = BuffItemTable->FindRow<FBuffItemInfoStruct>(FName(*(FString::FormatAsNumber(BuffType))), FString(""));
-
-			ACharacterBase* player = Cast<ACharacterBase>(OtherActor);
-			player->SetBuffTimer(false, BuffType, this, BuffItemTableRow->Time, BuffItemTableRow->Value);
-
-			UE_LOG(LogTemp, Log, TEXT("Get Buff %d"), BuffType);
+		case EItemCategoryInfo::E_None:
+			break;
+		case EItemCategoryInfo::E_Weapon:
+			break;
+		case EItemCategoryInfo::E_Bullet:
+			break;
+		case EItemCategoryInfo::E_Buff:
+			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d" ), Stat.Type);
+			Stat = DA->BuffStat;
+			MyCharacter->SetBuffTimer(false, uint8(Stat.Type), this, Stat.Time, Stat.Time);
 			Destroy();
-		}
-		else
-		{
-			uint8 WeaponType = FMath::RandRange(0, 1);
-
-			FWeaponItemInfoStruct* WeaponItemTableRow = WeaponItemTable->FindRow<FWeaponItemInfoStruct>(FName(*(FString::FormatAsNumber(WeaponType))), FString(""));
-			FWeaponStatStruct NewStat;
-
-			NewStat.bCanMeleeAtk = WeaponItemTableRow->bCanMeleeAtk;
-			NewStat.WeaponAtkSpeedRate = WeaponItemTableRow->WeaponAtkSpeedRate;
-			NewStat.WeaponDamage = WeaponItemTableRow->WeaponDamage;
-			NewStat.DebuffType = WeaponItemTableRow->DebuffType;
-			NewStat.bHasProjectile = WeaponItemTableRow->bHasProjectile;
-			NewStat.bInfiniteMagazine = WeaponItemTableRow->bInfiniteMagazine;
-			NewStat.MaxAmmoPerMagazine = WeaponItemTableRow->MaxAmmoPerMagazine;
-			NewStat.LoadingDelayTime = WeaponItemTableRow->LoadingDelayTime;
-
-			FProjectileStatStruct NewProjectStat;
-
-			NewProjectStat.ProjectileSpeed = WeaponItemTableRow->ProjectileSpeed;
-			NewProjectStat.ProjectileDamage = WeaponItemTableRow->ProjectileDamage;
-			NewProjectStat.GravityScale = WeaponItemTableRow->GravityScale;
-			NewProjectStat.bIsHoming = WeaponItemTableRow->bIsHoming;
-			NewProjectStat.DebuffType = WeaponItemTableRow->ProjectDebuffType;
-
-			NewStat.ProjectileStat = NewProjectStat;
-
-			ACharacterBase* player = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			player->GetWeaponActorRef()->InitWeaponStat(NewStat);
-			UE_LOG(LogTemp, Log, TEXT("Get Weapon %d"), WeaponType);
+			break;
+		case EItemCategoryInfo::E_DeBuff:
+			break;
+		case EItemCategoryInfo::E_StatUp:
+			break;
+		case EItemCategoryInfo::E_Mission:
+			TileRef->MissionInfo->ItemList.Remove(this);
+			TileRef->MissionInfo->ClearCheck();
 			Destroy();
+			break;
+		default:
+			break;
 		}
-
-
 	}
 
 }
@@ -103,12 +80,22 @@ void AItemBase::Tick(float DeltaTime)
 void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
-	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	TileRef = GameModeRef->CurrTile;
-
-	if (IsValid(TileRef) && TileRef->bIsClear)
-		Destroy();
+	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	
 }
 
 
+void AItemBase::InitItem(EItemCategoryInfo SetType)
+{
+	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	TileRef = GameModeRef->CurrTile;
+	AssetManagerRef = GameModeRef->AssetDataManager;
+
+	Type = SetType;
+
+	if (SetType == EItemCategoryInfo::E_Mission)
+	{
+		TileRef->MissionInfo->ItemList.AddUnique(this);
+	}
+
+}

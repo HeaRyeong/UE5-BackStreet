@@ -9,22 +9,20 @@
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
-
+	AssetDataManager = CreateDefaultSubobject<UAssetManagerBase>(TEXT("AssetManager"));
 
 }
 
 void ABackStreetGameModeBase::InitGame()
 {
+	AssetDataManager->GameModeRef = this;
 	RemainChapter = 2;
+	ChapterStatValue = 0;
 	InitChapter();
-
 }
 
 void ABackStreetGameModeBase::InitChapter()
 {
-	if (IsValid(Chapter))
-		Chapter->RemoveChapter();
-
 	FActorSpawnParameters spawnParams;
 	FRotator rotator;
 	FVector spawnLocation = FVector::ZeroVector;
@@ -68,6 +66,23 @@ void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
 	CurrTile = Chapter->GetCurrentTile();
 }
 
+void ABackStreetGameModeBase::ClearChapter()
+{
+	if (IsValid(Chapter))
+		Chapter->RemoveChapter();
+
+	if (RemainChapter == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("GameClear"));
+
+	}
+	else
+	{
+		InitChapter();
+		ChapterStatValue += 0.1f;
+		CurrTile->LoadLevel();
+	}
+}
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)
 {
@@ -76,3 +91,4 @@ void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType,
 	Location = Location + FVector(-700.0f, 0.0f, 1212.0f); //캐릭터의 Camera의 위치에 맞게 변환
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius);
 }
+

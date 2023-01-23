@@ -6,7 +6,7 @@
 #include "TileBase.generated.h"
 
 
-UCLASS(Config=Game, defaultconfig)
+UCLASS()
 class BACKSTREET_API ATileBase :public AActor
 {
 	GENERATED_BODY()
@@ -53,8 +53,6 @@ public:
 		void LoadLevel();
 	UFUNCTION(BlueprintCallable)
 		void UnLoadLevel();
-	UFUNCTION(BlueprintCallable)
-		void ClearCheck();
 
 public:
 	// ULevelStreaming Instance Ref
@@ -63,67 +61,69 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<class AItemBase*> ItemList;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsClear;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsSpawned;
 
 
-	// ================ 몬스터 스폰 ==================
+	// ================ 몬스터 관련 ==================
 public:
 	UFUNCTION(BlueprintCallable)
-		void LoadMonsterAsset();
+		void LoadMonster();
 	UFUNCTION(BlueprintCallable)
-		void SpawnMonster();
+		void MonsterDie(AEnemyCharacterBase* Target);
+	UFUNCTION(BlueprintCallable)
+		void BindDelegate();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MonsterSpawnPoints;
-	UPROPERTY(Config)
-		TArray<FSoftObjectPath> MonsterAssets;
+
 
 	// =============== 아이템 스폰 ====================
 
 public:
 	UFUNCTION(BlueprintCallable)
-		void LoadItemAsset();
-	UFUNCTION(BlueprintCallable)
-		void SpawnItem();
-
+		void LoadItem();
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> ItemSpawnPoints;
-	UPROPERTY(Config)
-		TArray<FSoftObjectPath> ItemAssets;
+
 
 	// ==============		미션	=================
 public:
 	UFUNCTION(BlueprintCallable)
-		void SetMission();
-	UFUNCTION(BlueprintCallable)
 		void LoadMissionAsset();
-	UFUNCTION(BlueprintCallable)
-		void SpawnMission();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MissionSpawnPoints;
-	UPROPERTY(Config)
-		TArray<FSoftObjectPath> MissionAssets;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class AMissionBase* MissionInfo = nullptr;
+		class UMissionBase* MissionInfo = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsMainMission;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsBossStage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIsMissionClear;
-
 
 public:
-		// 애셋 로딩
-	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
+	// 스테이지 보상 관련
+	UFUNCTION()
+		void StageReward();
+	UFUNCTION()
+		void SetReward();
+public:
+	UPROPERTY()
+		FTimerHandle ClearTimerHandle;
+	UPROPERTY()
+		int32 ClearTime;
 
+	// ---- 참조 -----
+public:
+	class AGridBase* Chapter;
+	class ACharacterBase* MyCharacter;
+	class ABackStreetGameModeBase* GameMode;
+
+	UPROPERTY()
+		class UAssetManagerBase* AssetDataManagerRef;
 
 };

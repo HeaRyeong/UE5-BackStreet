@@ -48,12 +48,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void RemoveChapter();
 
+	UFUNCTION(BlueprintCallable)
+		void CheckChapterClear();
+
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool bIsChapterClear = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<class ATileBase*> StageArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<class ATileBase*> MissionStageArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<class UMissionBase*> Missions;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATileBase* CurrentTile;
