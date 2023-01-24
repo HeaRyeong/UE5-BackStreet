@@ -3,12 +3,13 @@
 
 #include "../public/EnemyCharacterBase.h"
 #include "../public/CharacterInfoStructBase.h"
+#include "../../StageSystem/public/StageInfoStructBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "../../StageSystem/public/Tile.h"
+#include "../../StageSystem/public/TileBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Character/EnemyCharacter/EnemyRank"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/D_StageEnemyRank"));
 	if (DataTable.Succeeded())
 	{
 		EnemyRankDataTable = DataTable.Object;

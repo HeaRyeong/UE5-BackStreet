@@ -9,6 +9,8 @@ enum class ECharacterDebuffType : uint8
 	E_None				UMETA(DisplayName = "None"),
 	E_Flame				UMETA(DisplayName = "Flame"),
 	E_Poison			UMETA(DisplayName = "Poison"),
+	E_Slow				UMETA(DisplayName = "Slow"),
+	E_Stun			    UMETA(DisplayName = "Stun"),
 	E_AttackDown		UMETA(DisplayName = "AttackDown"),
 	E_DefenseDown		UMETA(DisplayName = "DefenseDown"),
 	E_Slow				UMETA(DisplayName = "Slow"),
@@ -23,6 +25,8 @@ enum class ECharacterBuffType : uint8
 	E_AttackUp			UMETA(DisplayName = "AttackUp"),
 	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
 	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
+	E_FastAtk			UMETA(DisplayName = "FastAtk"),
+	E_FastProjectile	UMETA(DisplayName = "FastProjectile"),
 	E_Invincibility		UMETA(DisplayName = "Invincibility"),
 	E_InfiniteAmmo		UMETA(DisplayName = "InfiniteAmmo")
 };
