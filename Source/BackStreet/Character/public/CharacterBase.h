@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
+DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
+
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -104,7 +106,6 @@ public:
 	virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
-	//bForceClear : 강제로 타이머를 해제한다. 그렇지 않으면 RemainingTime만 0.0f로 만든다.
 	virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
 	
 	//모든 Buff/Debuff의 타이머를 해제
@@ -163,10 +164,17 @@ private:
 	UPROPERTY()
 		TArray<FTimerHandle> BuffDebuffTimerHandleList;
 
+private:
 	//공격 간 딜레이 핸들
 	UPROPERTY()
 		FTimerHandle AtkIntervalHandle;
 
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
+
+	// -------- 적 로봇 죽음 처리 관련 델리게이트 --------
+
+public:
+	FEnemyDieDelegate FDieDelegate;
+
 };

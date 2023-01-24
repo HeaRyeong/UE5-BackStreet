@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "../public/BackStreetGameModeBase.h"
-#include "../../StageSystem/public/Grid.h"
-#include "../../StageSystem/public/Tile.h"
+#include "../../StageSystem/public/GridBase.h"
+#include "../../StageSystem/public/TileBase.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
@@ -12,38 +12,29 @@
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
-
+	AssetDataManager = CreateDefaultSubobject<UAssetManagerBase>(TEXT("AssetManager"));
 
 }
 
 void ABackStreetGameModeBase::InitGame()
 {
+	AssetDataManager->GameModeRef = this;
 	RemainChapter = 2;
+	ChapterStatValue = 0;
 	InitChapter();
-
 }
 
 void ABackStreetGameModeBase::InitChapter()
 {
-	if (IsValid(Chapter))
-		Chapter->RemoveChapter();
-
 	FActorSpawnParameters spawnParams;
 	FRotator rotator;
 	FVector spawnLocation = FVector::ZeroVector;
 
-	Chapter = GetWorld()->SpawnActor<AGrid>(AGrid::StaticClass(), spawnLocation, rotator, spawnParams);
+	Chapter = GetWorld()->SpawnActor<AGridBase>(AGridBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	Chapter->CreateMaze(3, 3);
 
 	CurrTile = Chapter->GetCurrentTile();
 	RemainChapter--;
-}
-
-void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
-{
-	Chapter->MoveCurrentTile(NextDir);
-	CurrTile = Chapter->GetCurrentTile();
-	//UE_LOG(LogTemp, Log, TEXT("[AtestGameMode::CalculateLoc()] CurrentTransform : %s"), *Map->GetCurrentTile()->GetActorLocation().ToString());
 }
 
 void ABackStreetGameModeBase::NextStage(uint8 Dir)
@@ -70,6 +61,30 @@ void ABackStreetGameModeBase::NextStage(uint8 Dir)
 		break;
 	}
 	MoveTile(Dir);
+}
+
+void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
+{
+	Chapter->MoveCurrentTile(NextDir);
+	CurrTile = Chapter->GetCurrentTile();
+}
+
+void ABackStreetGameModeBase::ClearChapter()
+{
+	if (IsValid(Chapter))
+		Chapter->RemoveChapter();
+
+	if (RemainChapter == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("GameClear"));
+
+	}
+	else
+	{
+		InitChapter();
+		ChapterStatValue += 0.1f;
+		CurrTile->LoadLevel();
+	}
 }
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)

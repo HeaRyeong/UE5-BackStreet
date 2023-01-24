@@ -24,6 +24,14 @@ protected:
 
 // ----- 기본 함수들 ------
 public:
+	// 소속 타일
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class ATileBase* TileRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UDataTable* EnemyRankDataTable;
+
+public:
 	UFUNCTION(BlueprintCallable)
 		void InitEnemyStat();
 
@@ -52,15 +60,4 @@ public:
 	//버프 or 디버프 상태를 초기화한다
 	UFUNCTION(BlueprintCallable)
 		virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal) override;
-
-	
-// ---- 게임 플레이 ----- 
-public:
-	// 소속 타일
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ATile* TileRef;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UDataTable* EnemyRankDataTable;
-
 };

@@ -107,6 +107,16 @@ void ACharacterBase::Die()
 	
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
+
+	if (this->ActorHasTag(FName("Enemy")))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Actor Has Tag Enemy"));
+		if (FDieDelegate.IsBound())
+		{
+			FDieDelegate.Execute(this);
+			FDieDelegate.Unbind();
+}
+	}
 }
 
 void ACharacterBase::TryAttack()
@@ -221,6 +231,7 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 		GetWorldTimerManager().SetTimer(timerHandle, 1.0f, false, newTime);
 		return true;
 	}
+
 
 	/*---- 디버프 타이머 세팅 ----------------------------*/
 	if (bIsDebuff)

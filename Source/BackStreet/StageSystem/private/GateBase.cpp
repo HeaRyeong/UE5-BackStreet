@@ -2,7 +2,7 @@
 
 
 #include "../public/GateBase.h"
-#include "../public/Tile.h"
+#include "../public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -19,13 +19,6 @@ AGateBase::AGateBase()
 	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGateBase::OverlapBegins);
 }
 
-// Called when the game starts or when spawned
-void AGateBase::BeginPlay()
-{
-	Super::BeginPlay();
-	CheckHaveToActive();
-}
-
 // Called every frame
 void AGateBase::Tick(float DeltaTime)
 {
@@ -33,6 +26,28 @@ void AGateBase::Tick(float DeltaTime)
 
 }
 
+void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		ABackStreetGameModeBase* gamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		ATileBase* UnLoadTile = gamemodeRef->CurrTile; // 이동하기전 스테이지 ( 이제 언로드 시킬 타일 )
+
+		UpdateGateInfo();
+		ATileBase* LoadTile = gamemodeRef->CurrTile;
+		LoadTile->LoadLevel();
+		UnLoadTile->UnLoadLevel();
+		Destroy();
+	}
+}
+
+
+// Called when the game starts or when spawned
+void AGateBase::BeginPlay()
+{
+	Super::BeginPlay();
+	CheckHaveToActive();
+}
 
 ULevelStreaming* AGateBase::UpdateGateInfo()
 {
@@ -68,7 +83,7 @@ ULevelStreaming* AGateBase::UpdateGateInfo()
 void AGateBase::CheckHaveToActive()
 {
 	ABackStreetGameModeBase* gamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	ATile* tile = gamemodeRef->CurrTile;
+	ATileBase* tile = gamemodeRef->CurrTile;
 
 	if (IsValid(tile))
 	{
@@ -103,17 +118,3 @@ void AGateBase::CheckHaveToActive()
 	}
 }
 
-void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor->ActorHasTag("Player"))
-	{
-		ABackStreetGameModeBase* gamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		ATile* UnLoadTile = gamemodeRef->CurrTile; // 이동하기전 스테이지 ( 이제 언로드 시킬 타일 )
-
-		UpdateGateInfo();
-		ATile* LoadTile = gamemodeRef->CurrTile;
-		LoadTile->LoadLevel();
-		UnLoadTile->UnLoadLevel();
-		Destroy();
-	}
-}

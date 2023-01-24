@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+#include "../public/GridBase.h"
+#include "../public/TileBase.h"
 
-#include "../public/Grid.h"
-#include "../public/Tile.h"
-
-void AGrid::CreateMaze(int32 WidthPara, int32 HightPara)
+void AGridBase::CreateMaze(int32 WidthPara, int32 HightPara)
 {
 	Width = WidthPara;
 	Hight = HightPara;
@@ -16,7 +15,7 @@ void AGrid::CreateMaze(int32 WidthPara, int32 HightPara)
 			FRotator rotator;
 			FVector spawnLocation = FVector(x * 5000, y * 5000, 0);
 
-			ATile* tile = GetWorld()->SpawnActor<ATile>(ATile::StaticClass(), spawnLocation, rotator, spawnParams);
+			ATileBase* tile = GetWorld()->SpawnActor<ATileBase>(ATileBase::StaticClass(), spawnLocation, rotator, spawnParams);
 			tile->InitTile(x, y);
 			StageArray.Push(tile);
 		}
@@ -65,16 +64,14 @@ void AGrid::CreateMaze(int32 WidthPara, int32 HightPara)
 	}
 
 
-	for (ATile* Tile : StageArray)
-		Tile->SelectMap();
 }
 
-void AGrid::RecursiveBacktracking()
+void AGridBase::RecursiveBacktracking()
 {
 	if (Tracks.Num() == 0) return;
 
-	ATile* currenttile = Tracks[Tracks.Num() - 1];
-	ATile* nexttile = GetRandomNeighbourTile(currenttile);
+	ATileBase* currenttile = Tracks[Tracks.Num() - 1];
+	ATileBase* nexttile = GetRandomNeighbourTile(currenttile);
 
 	if (nexttile != nullptr)
 	{
@@ -90,24 +87,14 @@ void AGrid::RecursiveBacktracking()
 	RecursiveBacktracking();
 }
 
-ATile* AGrid::GetTile(int32 XPosition, int32 YPosition)
+ATileBase* AGridBase::GetRandomNeighbourTile(ATileBase* Tile)
 {
-	if (XPosition >= 0 && XPosition < Width && YPosition >= 0 && YPosition < Hight)
-	{
-		return (StageArray[(YPosition * Width) + XPosition]);
-	}
+	ATileBase* upTile = GetTile(Tile->XPos, Tile->YPos + 1);
+	ATileBase* downTile = GetTile(Tile->XPos, Tile->YPos - 1);
+	ATileBase* leftTile = GetTile(Tile->XPos - 1, Tile->YPos);
+	ATileBase* rightTile = GetTile(Tile->XPos + 1, Tile->YPos);
 
-	return nullptr;
-}
-
-ATile* AGrid::GetRandomNeighbourTile(ATile* Tile)
-{
-	ATile* upTile = GetTile(Tile->XPos, Tile->YPos + 1);
-	ATile* downTile = GetTile(Tile->XPos, Tile->YPos - 1);
-	ATile* leftTile = GetTile(Tile->XPos - 1, Tile->YPos);
-	ATile* rightTile = GetTile(Tile->XPos + 1, Tile->YPos);
-
-	TArray<ATile*> neighbourTiles;
+	TArray<ATileBase*> neighbourTiles;
 	if (upTile != nullptr && !upTile->IsVisited()) neighbourTiles.Add(upTile);
 	if (downTile != nullptr && !downTile->IsVisited()) neighbourTiles.Add(downTile);
 	if (leftTile != nullptr && !leftTile->IsVisited()) neighbourTiles.Add(leftTile);
@@ -120,7 +107,7 @@ ATile* AGrid::GetRandomNeighbourTile(ATile* Tile)
 	return neighbourTiles[ItemType];
 }
 
-ATile* AGrid::MoveCurrentTile(uint8 Dir)
+ATileBase* AGridBase::MoveCurrentTile(uint8 Dir)
 {
 	switch ((EDirection)Dir)
 	{
@@ -147,7 +134,7 @@ ATile* AGrid::MoveCurrentTile(uint8 Dir)
 	return CurrentTile;
 }
 
-void AGrid::VisitTile(ATile* CurrentTilePara, ATile* NextTilePara)
+void AGridBase::VisitTile(ATileBase* CurrentTilePara, ATileBase* NextTilePara)
 {
 	if (CurrentTilePara->XPos < NextTilePara->XPos)
 	{
@@ -173,17 +160,35 @@ void AGrid::VisitTile(ATile* CurrentTilePara, ATile* NextTilePara)
 	Tracks.Add(NextTilePara);
 }
 
-ATile* AGrid::GetCurrentTile()
+ATileBase* AGridBase::GetTile(int32 XPosition, int32 YPosition)
+{
+	if (XPosition >= 0 && XPosition < Width && YPosition >= 0 && YPosition < Hight)
+	{
+		return (StageArray[(YPosition * Width) + XPosition]);
+	}
+
+	return nullptr;
+}
+
+ATileBase* AGridBase::GetCurrentTile()
 {
 	return CurrentTile;
 }
 
-void AGrid::RemoveChapter()
+void AGridBase::RemoveChapter()
 {
-	for (ATile* tile : StageArray)
+	for (ATileBase* tile : StageArray)
 	{
 		if (!IsValid(tile)) continue;
 		tile->Destroy();
 	}
 	Destroy();
+}
+
+void AGridBase::CheckChapterClear()
+{
+	if (Missions.IsEmpty())
+	{
+		bIsChapterClear = true;
+	}
 }
