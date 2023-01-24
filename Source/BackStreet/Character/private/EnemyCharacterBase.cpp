@@ -2,7 +2,7 @@
 
 
 #include "../public/EnemyCharacterBase.h"
-#include "../public/CharacterInfoStructBase.h"
+#include "../public/CharacterInfoStruct.h"
 #include "../../StageSystem/public/StageInfoStructBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
