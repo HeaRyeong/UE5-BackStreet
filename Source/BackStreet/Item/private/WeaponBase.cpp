@@ -192,7 +192,7 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
+		Cast<ACharacterBase>(hitResult.GetActor())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

@@ -46,7 +46,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		case EItemCategoryInfo::E_Buff:
 			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d" ), Stat.Type);
 			Stat = DA->BuffStat;
-			MyCharacter->SetBuffTimer(false, uint8(Stat.Type), this, Stat.Time, Stat.Time);
+			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_DeBuff:

@@ -44,10 +44,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
-	//Melee 오류 디버깅용 임시 함수
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void MeleeTest();
-
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
 		void Attack();
@@ -59,6 +55,10 @@ public:
 	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
 		void UpdateWeaponStat(FWeaponStatStruct NewStat);
+
+	//공격 범위를 반환
+	UFUNCTION(BlueprintCallable)
+		float GetAttackRange();
 
 //------ Projectile 관련-------------
 public:
@@ -104,10 +104,6 @@ protected:
 	//가지고 있는 최대 발사체 수
 	UPROPERTY(BlueprintReadOnly)
 		int32 TotalAmmoCount = 0;
-
-	//공격 범위를 Get
-	UFUNCTION(BlueprintCallable)
-		float GetAttackRange();
 
 //-------- Melee 관련 ------------
 public:

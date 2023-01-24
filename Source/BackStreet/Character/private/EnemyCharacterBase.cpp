@@ -89,14 +89,14 @@ void AEnemyCharacterBase::Turn(float Angle)
 	CharacterState.TurnDirection = 0;
 }
 
-bool AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool AEnemyCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
 	return result;
 }
 
-void AEnemyCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+void AEnemyCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
-	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
 
 }
