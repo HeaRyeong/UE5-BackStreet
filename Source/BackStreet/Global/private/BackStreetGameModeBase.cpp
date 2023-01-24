@@ -3,6 +3,9 @@
 #include "../public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/Grid.h"
 #include "../../StageSystem/public/Tile.h"
+#include "../../Item/public/ProjectileBase.h"
+#include "../../Item/public/WeaponBase.h"
+#include "../../Character/public/CharacterBase.h"
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -75,4 +78,54 @@ void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType,
 
 	Location = Location + FVector(-700.0f, 0.0f, 1212.0f); //캐릭터의 Camera의 위치에 맞게 변환
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius);
+}
+
+void ABackStreetGameModeBase::UpdateCharacterStat(ACharacterBase* TargetCharacter, FCharacterStatStruct NewStat)
+{
+	if (IsValid(TargetCharacter))
+	{
+		TargetCharacter->UpdateCharacterStat(NewStat);
+	}
+}
+
+void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCharacter, const uint8 CharacterID)
+{
+	if (IsValid(TargetCharacter) && TargetCharacter->ActorHasTag("Enemy"))
+	{
+		//DataTable로 부터 Read
+	}
+}
+
+void ABackStreetGameModeBase::UpdateWeaponStat(AWeaponBase* TargetWeapon, FWeaponStatStruct NewStat)
+{
+	if (IsValid(TargetWeapon))
+	{
+		TargetWeapon->UpdateWeaponStat(NewStat);
+	}
+}
+
+void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, const uint8 WeaponID)
+{
+	if (IsValid(TargetWeapon))
+	{
+		FString rowName = FString::FromInt(WeaponID);
+		FWeaponStatStruct* newStat = WeaponStatTable->FindRow<FWeaponStatStruct>(FName(rowName), rowName);
+		if (newStat != nullptr)
+		{
+			TargetWeapon->UpdateWeaponStat(*newStat);
+		}
+	}
+}
+
+void ABackStreetGameModeBase::UpdateProjectileStatWithID(AProjectileBase* TargetProjectile, const uint8 ProjectileID)
+{
+	if (IsValid(TargetProjectile))
+	{
+		FString rowName = FString::FromInt(ProjectileID);
+		FProjectileStatStruct* newStat = ProjectileStatTable->FindRow<FProjectileStatStruct>(FName(rowName), rowName);
+		if (newStat != nullptr)
+		{
+			TargetProjectile->UpdateProjectileStat(*newStat);
+		}
+	}
 }

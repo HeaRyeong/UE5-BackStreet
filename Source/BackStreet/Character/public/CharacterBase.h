@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
@@ -81,8 +80,8 @@ public:
 
 // ------ 무기 관련 ----------------
 public:
-	//UFUNCTION()
-		//void ChangeWeapon();
+	UFUNCTION(BlueprintCallable)
+		void ChangeWeapon(AWeaponBase* newWeaponClass);
 
 	//무기 관련 설정을 초기화
 	UFUNCTION()

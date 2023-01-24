@@ -182,11 +182,19 @@ void ACharacterBase::ResetAtkIntervalTimer()
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 }
 
+void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+{
+	if (!IsValid(newWeaponClass)) return;
+	WeaponActor->DestroyChildActor();
+	WeaponActor->SetChildActorClass(newWeaponClass->GetClass());
+	newWeaponClass->Destroy();
+}
+
 void ACharacterBase::InitWeapon()
 {
 	if (IsValid(GetWeaponActorRef()))
 	{
-		GetWeaponActorRef()->InitOwnerCharacterRef(this);
+		GetWeaponActorRef()->InitWeapon(this);
 		WeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
 		WeaponActor->SetRelativeLocation(FVector(0.0f), false);
 	}
@@ -240,8 +248,7 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			CharacterStat.CharacterAtkSpeed *= Variable;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed;
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed *= Variable;
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate *= Variable;
 			}
 			break;
 		case ECharacterDebuffType::E_AttackDown:
@@ -275,8 +282,7 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			CharacterStat.CharacterAtkMultiplier *= Variable;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.WeaponDamage *= Variable;
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileDamage *= Variable;
+				GetWeaponActorRef()->WeaponStat.WeaponDamageRate *= Variable;
 			}
 			break;
 		case ECharacterBuffType::E_DefenseUp:
@@ -287,7 +293,7 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			CharacterStat.CharacterAtkSpeed *= Variable;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed *= Variable;
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate *= Variable;
 			}
 			break;
 		case ECharacterBuffType::E_Invincibility:
@@ -325,7 +331,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			CharacterStat.CharacterAtkSpeed /= ResetVal;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed /= ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate /= ResetVal;
 			}
 			break;
 		case ECharacterDebuffType::E_Stun:
@@ -336,8 +342,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			CharacterStat.CharacterAtkMultiplier /= ResetVal;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.WeaponDamage /= ResetVal;
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileDamage /= ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponDamageRate /= ResetVal;
 			}
 			break;
 		case ECharacterDebuffType::E_DefenseDown:
@@ -359,8 +364,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			CharacterStat.CharacterAtkMultiplier /= ResetVal;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.WeaponDamage /= ResetVal;
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileDamage /= ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponDamageRate /= ResetVal;
 			}
 			break;
 		case ECharacterBuffType::E_SpeedUp:
@@ -368,7 +372,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			CharacterStat.CharacterAtkSpeed /= ResetVal;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed /= ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate /= ResetVal;
 			}
 			break;
 		case ECharacterBuffType::E_Invincibility:

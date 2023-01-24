@@ -48,16 +48,23 @@ void AProjectileBase::BeginPlay()
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
-void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBase* NewCharacterRef)
+void AProjectileBase::InitProjectile(ACharacterBase* NewCharacterRef)
 {
 	if (IsValid(NewCharacterRef))
 	{
+		GamemodeRef->UpdateProjectileStatWithID(this, ProjectileID);
+
 		OwnerCharacterRef = NewCharacterRef;
 		SpawnInstigator = OwnerCharacterRef->GetController();
-		ProjectileStat = NewStat;
-		ProjectileMovement->InitialSpeed = NewStat.ProjectileSpeed;
-		ProjectileMovement->MaxSpeed = NewStat.ProjectileSpeed;
+
+		ProjectileMovement->InitialSpeed = ProjectileStat.ProjectileSpeed;
+		ProjectileMovement->MaxSpeed = ProjectileStat.ProjectileSpeed;
 	}
+}
+
+void AProjectileBase::UpdateProjectileStat(FProjectileStatStruct NewStat)
+{
+	ProjectileStat = NewStat;
 }
 
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
