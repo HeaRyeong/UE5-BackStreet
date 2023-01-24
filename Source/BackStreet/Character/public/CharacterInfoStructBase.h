@@ -13,15 +13,15 @@ enum class ECharacterDebuffType : uint8
 	E_Stun			    UMETA(DisplayName = "Stun"),
 	E_AttackDown		UMETA(DisplayName = "AttackDown"),
 	E_DefenseDown		UMETA(DisplayName = "DefenseDown"),
-	E_SlowAtk			UMETA(DisplayName = "SlowAtk"),
-	E_SlowProjectile	UMETA(DisplayName = "SlowProjectile")
+	E_Slow				UMETA(DisplayName = "Slow"),
+	E_Stun				UMETA(DisplayName = "Stun"),
 };
 
 UENUM(BlueprintType)
 enum class ECharacterBuffType : uint8
 {
 	E_None				UMETA(DisplayName = "None"),
-	E_Healing			UMETA(DisplayName = "Healing"),
+	E_Healing			UMETA(DisplayName = "Healing"),	
 	E_AttackUp			UMETA(DisplayName = "AttackUp"),
 	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
 	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
@@ -40,7 +40,7 @@ enum class EAIBehaviorType : uint8
 	E_Chase			UMETA(DisplayName = "Chase"),
 	E_Attack		UMETA(DisplayName = "Attack"),
 	E_Return		UMETA(DisplayName = "Return"),
-	E_Sleep			UMETA(DisplayName = "Sleep")
+	E_Stun			UMETA(DisplayName = "Stun")
 };
 
 UENUM(BlueprintType)
@@ -52,7 +52,7 @@ enum class ECharacterActionType : uint8
 	E_Roll			UMETA(DisplayName = "Roll"),
 	E_Jump			UMETA(DisplayName = "Jump"),
 	E_Reload		UMETA(DisplayName = "Reload"),
-	E_Sleep			UMETA(DisplayName = "Sleep"),
+	E_Stun			UMETA(DisplayName = "Stun"),
 	E_Die			UMETA(DisplayName = "Die")
 };
 
@@ -63,7 +63,7 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsInvincibility = false;
+		bool bIsInvincibility = false;
 
 	UPROPERTY(BlueprintReadOnly)
 		bool bInfiniteAmmo = false;
@@ -103,6 +103,10 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bCanAttack = false;
 
+	//0 : Idle,  1 : Left Turn,  2 : Right Turn
+	UPROPERTY(BlueprintReadOnly)
+		uint8 TurnDirection = 0;
+
 	//캐릭터의 행동 정보
 	UPROPERTY(BlueprintReadWrite)
 		ECharacterActionType CharacterActionState;
@@ -110,4 +114,33 @@ public:
 	//PlayerMaxHP는 1.0f
 	UPROPERTY(BlueprintReadOnly)
 		float CharacterCurrHP;
+};
+
+USTRUCT(BlueprintType)
+struct FStageEnemyRankStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+		uint8 StageLevel;
+
+	UPROPERTY(EditAnywhere)
+		FName StageType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.5f, UIMax = 10.0f))
+		float CharacterMaxHP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.1f, UIMax = 10.0f))
+		float CharacterAtkMultiplier;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0.2f, UIMax = 1.0f))
+		float CharacterAtkSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 100.0f, UIMax = 1000.0f))
+		float CharacterMoveSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = -1.0f, UIMax = 1.0f))
+		float CharacterDefense;
+
 };

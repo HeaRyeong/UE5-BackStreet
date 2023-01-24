@@ -53,7 +53,7 @@ public:
 	//----- 근접 관련 Property --------------------
 
 	//근접 공격 범위
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float WeaponMeleeAtkRange = 160.0f;
 
 	//근접 공격이 가능한 지? 

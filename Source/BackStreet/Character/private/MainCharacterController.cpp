@@ -3,6 +3,7 @@
 
 #include "../public/MainCharacterController.h"
 #include "../public/MainCharacterBase.h"
+#include "GameFramework/InputSettings.h"
 #include "Kismet/KismetMathLibrary.h"
 
 void AMainCharacterController::BeginPlay()
@@ -32,14 +33,14 @@ FRotator AMainCharacterController::GetRotationToCursor()
 
 	FRotator retRotation;
 	
-	//Trace의 시작은 플레이어의 FollowingCamera 위치
-	FVector traceStartLocation = PlayerRef->FollowingCamera->GetComponentLocation();
-	FVector traceEndLocation, mouseDirection;
+	//Trace의 시작은 마우스의 World Location
+	FVector traceStartLocation, traceEndLocation, mouseDirection;
 	FHitResult hitResult;
 
-	//마우스 커서 위치에서 바닥으로의 5000만큼의 위치가 Trace의 마지막 지점
-	DeprojectMousePositionToWorld(traceEndLocation, mouseDirection);
-	traceEndLocation += (mouseDirection * 5000.0f);
+	DeprojectMousePositionToWorld(traceStartLocation, mouseDirection);
+
+	//마우스 커서 위치에서 바닥으로의 INF만큼의 위치가 Trace의 마지막 지점
+	traceEndLocation = traceStartLocation + mouseDirection * 10000.0f;
 
 	//카메라에서 커서의 바닥 위치까지 LineTrace를 진행 -> 실제 커서의 월드 상호작용 위치가 hitResult.Location에 담김
 	GetWorld()->LineTraceSingleByChannel(hitResult, traceStartLocation, traceEndLocation
@@ -49,9 +50,24 @@ FRotator AMainCharacterController::GetRotationToCursor()
 	if (hitResult.bBlockingHit)
 	{
 		retRotation = UKismetMathLibrary::FindLookAtRotation(PlayerRef->GetMesh()->GetComponentLocation(), hitResult.Location);
-		retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw);
+		retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw + 270.0f);
 		return retRotation;
 	}
 
 	return FRotator();
+}
+
+bool AMainCharacterController::GetActionKeyIsDown(FName MappingName)
+{
+	TArray<FInputActionKeyMapping> actionKeyMappingList;
+	UInputSettings::GetInputSettings()->GetActionMappingByName(MappingName, actionKeyMappingList);
+
+	for (FInputActionKeyMapping& inputKey : actionKeyMappingList)
+	{
+		if (IsInputKeyDown(inputKey.Key))
+		{
+			return true;
+		}
+	}
+	return false;
 }

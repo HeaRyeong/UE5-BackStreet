@@ -1,4 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+<<<<<<<< HEAD:Source/BackStreet/StageSystem/private/GridBase.cpp
+========
+
+#include "../public/Grid.h"
+#include "../public/Tile.h"
+>>>>>>>> master:Source/BackStreet/StageSystem/private/Grid.cpp
 
 #include "../public/GridBase.h"
 #include "../public/TileBase.h"

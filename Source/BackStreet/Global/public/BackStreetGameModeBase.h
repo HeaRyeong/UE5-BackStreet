@@ -58,7 +58,11 @@ public:
 	UPROPERTY(EditAnywhere)
 		class UAssetManagerBase* AssetDataManager;
 
+	UPROPERTY(EditAnywhere)
 		FStreamableManager StreamableManager;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool bIsGamePaused = false;
 
 
 protected:
