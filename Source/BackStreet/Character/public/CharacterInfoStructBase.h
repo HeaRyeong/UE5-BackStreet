@@ -9,24 +9,20 @@ enum class ECharacterDebuffType : uint8
 	E_None				UMETA(DisplayName = "None"),
 	E_Flame				UMETA(DisplayName = "Flame"),
 	E_Poison			UMETA(DisplayName = "Poison"),
-	E_Slow				UMETA(DisplayName = "Slow"),
-	E_Sleep				UMETA(DisplayName = "Sleep"),
 	E_AttackDown		UMETA(DisplayName = "AttackDown"),
 	E_DefenseDown		UMETA(DisplayName = "DefenseDown"),
-	E_SlowAtk			UMETA(DisplayName = "SlowAtk"),
-	E_SlowProjectile	UMETA(DisplayName = "SlowProjectile")
+	E_Slow				UMETA(DisplayName = "Slow"),
+	E_Stun				UMETA(DisplayName = "Stun"),
 };
 
 UENUM(BlueprintType)
 enum class ECharacterBuffType : uint8
 {
 	E_None				UMETA(DisplayName = "None"),
-	E_Healing			UMETA(DisplayName = "Healing"),
+	E_Healing			UMETA(DisplayName = "Healing"),	
 	E_AttackUp			UMETA(DisplayName = "AttackUp"),
 	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
 	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
-	E_FastAtk			UMETA(DisplayName = "FastAtk"),
-	E_FastProjectile	UMETA(DisplayName = "FastProjectile"),
 	E_Invincibility		UMETA(DisplayName = "Invincibility"),
 	E_InfiniteAmmo		UMETA(DisplayName = "InfiniteAmmo")
 };
@@ -40,7 +36,7 @@ enum class EAIBehaviorType : uint8
 	E_Chase			UMETA(DisplayName = "Chase"),
 	E_Attack		UMETA(DisplayName = "Attack"),
 	E_Return		UMETA(DisplayName = "Return"),
-	E_Sleep			UMETA(DisplayName = "Sleep")
+	E_Stun			UMETA(DisplayName = "Stun")
 };
 
 UENUM(BlueprintType)
@@ -52,7 +48,7 @@ enum class ECharacterActionType : uint8
 	E_Roll			UMETA(DisplayName = "Roll"),
 	E_Jump			UMETA(DisplayName = "Jump"),
 	E_Reload		UMETA(DisplayName = "Reload"),
-	E_Sleep			UMETA(DisplayName = "Sleep"),
+	E_Stun			UMETA(DisplayName = "Stun"),
 	E_Die			UMETA(DisplayName = "Die")
 };
 
@@ -63,7 +59,7 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsInvincibility = false;
+		bool bIsInvincibility = false;
 
 	UPROPERTY(BlueprintReadOnly)
 		bool bInfiniteAmmo = false;
@@ -102,6 +98,10 @@ public:
 	//공격을 할 수 있는 상태인지?
 	UPROPERTY(BlueprintReadOnly)
 		bool bCanAttack = false;
+
+	//0 : Idle,  1 : Left Turn,  2 : Right Turn
+	UPROPERTY(BlueprintReadOnly)
+		uint8 TurnDirection = 0;
 
 	//캐릭터의 행동 정보
 	UPROPERTY(BlueprintReadWrite)
