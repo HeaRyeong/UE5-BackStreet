@@ -58,7 +58,7 @@ public:
 	UPROPERTY(EditAnywhere)
 		class UAssetManagerBase* AssetDataManager;
 
-	UPROPERTY(EditAnywhere)
+//	UPROPERTY(EditAnywhere)
 		FStreamableManager StreamableManager;
 
 	UPROPERTY(BlueprintReadWrite)

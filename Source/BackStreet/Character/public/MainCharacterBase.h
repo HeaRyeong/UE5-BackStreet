@@ -45,9 +45,6 @@ public:
 		void MoveRight(float Value);
 
 	UFUNCTION()
-		void Dash();
-
-	UFUNCTION(BlueprintImplementableEvent)
 		void Roll();
 
 	UFUNCTION()
