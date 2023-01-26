@@ -16,11 +16,13 @@ class BACKSTREET_API UBTStateManageServiceBase : public UBTService
 public:
 	UBTStateManageServiceBase(const FObjectInitializer& ObjectInitializer);
 
-	virtual void OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
+	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override; 
 public:
 	UFUNCTION()
 		void UpdateAIState();
+
+	UFUNCTION()
+		bool CheckPatrolState();
 
 	UFUNCTION()
 		bool CheckReturnState();

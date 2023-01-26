@@ -12,25 +12,28 @@
 UBTStateManageServiceBase::UBTStateManageServiceBase(const FObjectInitializer& ObjectInitializer)
 {
 	NodeName = TEXT("UpdateAIState");
-	RandomDeviation = 0.0f;
-	Interval = 0.1f;
+	RandomDeviation = 0.1f;
+	Interval = 0.4f;
 
-	bNotifyBecomeRelevant = true; //OnBecomeRelevant 이벤트를 OnReceieveAiTick 처럼 사용하기 위함	
+	bCreateNodeInstance = true;
+	AIBehaviorState = EAIBehaviorType::E_Patrol;
 }
 
-void UBTStateManageServiceBase::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+void UBTStateManageServiceBase::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
-	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (!IsValid(OwnerCharacterRef))
+	if (!IsValid(OwnerCharacterRef)) //최초 수행 : BB와 캐릭터 Ref를 초기화
 	{
 		OwnerCharacterRef = Cast<ACharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
 		BlackboardRef = OwnerComp.GetBlackboardComponent();
-		BlackboardRef->SetValueAsVector(FName("SpawnPoint"), OwnerCharacterRef->GetActorLocation());
+		BlackboardRef->SetValueAsVector(FName("SpawnLocation"), OwnerCharacterRef->GetActorLocation());
 	}
-	else
+	else 
 	{
 		UpdateAIState();
+
+		const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
 		BlackboardRef->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
 	}
 }
@@ -39,49 +42,59 @@ void UBTStateManageServiceBase::UpdateAIState()
 {
 	if (CheckReturnState())
 	{
-		AIBehaviorState = EAIBehaviorType::E_Return;
+		if (CheckPatrolState())
+		{
+			AIBehaviorState = EAIBehaviorType::E_Patrol;
+		}
+		else
+		{
+			AIBehaviorState = EAIBehaviorType::E_Return;
+		}
 	}
 	else if (CheckChaseState())
 	{
-		AIBehaviorState = EAIBehaviorType::E_Chase;
 		if (CheckAttackState())
 		{
 			AIBehaviorState = EAIBehaviorType::E_Attack;
+		}
+		else
+		{
+			AIBehaviorState = EAIBehaviorType::E_Chase;
 		}
 	}
 	else
 	{
 		AIBehaviorState = EAIBehaviorType::E_Patrol;
 	}
+}
 
+bool UBTStateManageServiceBase::CheckPatrolState()
+{
+	const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
+	if (GetDistanceTo(spawnLocation) <= 100.0f) return true;
+	return false;
 }
 
 bool UBTStateManageServiceBase::CheckReturnState()
 {
-	if (!IsValid(OwnerCharacterRef)) return false;
-	if (AIBehaviorState == EAIBehaviorType::E_Return) return true;
-
 	const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
-	return GetDistanceTo(spawnLocation) >= 1000.0f;
+	if (AIBehaviorState == EAIBehaviorType::E_Return || GetDistanceTo(spawnLocation) >= 1000.0f) return true;
+	return false;
 }
 
 bool UBTStateManageServiceBase::CheckChaseState()
 {
-	if (!IsValid(OwnerCharacterRef)) return false;
 	return BlackboardRef->GetValueAsBool("HasLineOfSight");
 }
 
 bool UBTStateManageServiceBase::CheckAttackState()
 {
-	if (!IsValid(OwnerCharacterRef)) return false;
-	
 	const AActor* targetCharacterRef = Cast<AActor>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
 	float distanceToTarget = GetDistanceTo(targetCharacterRef->GetActorLocation());
-	return distanceToTarget >= (OwnerCharacterRef->GetWeaponActorRef())->GetAttackRange();
+	return distanceToTarget <= (OwnerCharacterRef->GetWeaponActorRef())->GetAttackRange();
 }
 
 float UBTStateManageServiceBase::GetDistanceTo(const FVector& EndLocation)
 {
-	if (!IsValid(OwnerCharacterRef)) return INF;
 	return UKismetMathLibrary::Vector_Distance(OwnerCharacterRef->GetActorLocation(), EndLocation);
 }
