@@ -6,6 +6,7 @@
 #include "../../Character/public/CharacterBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
+#define AUTO_RELOAD_DELAY_VALUE 0.1
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -125,7 +126,11 @@ bool AWeaponBase::TryFireProjectile()
 {
 	if (CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
 	{
-		TryReload();
+		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
+		//타이머를 통해 일정 시간이 지난 후에 Reload를 시도.
+		GetWorldTimerManager().SetTimer(AutoReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			OwnerCharacterRef->TryReload();
+		}), 1.0f, false, AUTO_RELOAD_DELAY_VALUE);
 		return false;
 	}
 

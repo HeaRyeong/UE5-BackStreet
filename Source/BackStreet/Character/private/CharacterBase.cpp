@@ -152,7 +152,6 @@ void ACharacterBase::Attack()
  
 void ACharacterBase::StopAttack()
 {
-	ResetActionState();
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 	if (IsValid(weaponRef))
 	{
@@ -170,8 +169,11 @@ void ACharacterBase::TryReload()
 			return;
 		}
 
-		float reloadTime = 0.75f;
-		if (IsValid(ReloadAnimMontage)) reloadTime = PlayAnimMontage(ReloadAnimMontage) / 2.0f;
+		float reloadTime = GetWeaponActorRef()->WeaponStat.LoadingDelayTime;
+		if (IsValid(ReloadAnimMontage))
+		{
+			PlayAnimMontage(ReloadAnimMontage);
+		}
 
 		CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){

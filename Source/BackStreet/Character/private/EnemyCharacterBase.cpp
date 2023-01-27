@@ -74,17 +74,16 @@ void AEnemyCharacterBase::StopAttack()
 
 void AEnemyCharacterBase::Turn(float Angle)
 {
+	if (Angle == 0.0f) return;
+
 	FRotator newRotation =  GetActorRotation();
 	newRotation.Yaw += Angle;
 	SetActorRotation(newRotation);
 	
 	if (GetVelocity().Length() == 0.0f)
 	{
-		if (FMath::Abs(Angle) > 0.0f)
-		{
-			CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
-			return;
-		}
+		CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
+		return;
 	}
 	CharacterState.TurnDirection = 0;
 }
