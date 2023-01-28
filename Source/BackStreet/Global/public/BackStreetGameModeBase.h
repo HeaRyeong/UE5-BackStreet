@@ -5,6 +5,7 @@
 #include "../public/BackStreet.h"
 #include "../../StageSystem/public/DirectionEnumInfo.h"
 #include "GameFramework/GameModeBase.h"
+#include "AssetManagerBase.h"
 #include "BackStreetGameModeBase.generated.h"
 
 
@@ -18,7 +19,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitGame();
+		void InitializeChapter();
 
 // StageManager? ----
 public:
@@ -31,17 +32,34 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void MoveTile(uint8 NextDir);
 
+	UFUNCTION(BlueprintCallable)
+		void ClearChapter();
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class AGrid* Chapter;
+		class AGridBase* Chapter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ATile* CurrTile;
+		class ATileBase* CurrTile;
+	// 남은 챕터 수 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 RemainChapter; // 남은 챕터 수 
+		int32 RemainChapter;
+
+	// 다음 스테이지 기준으로 입구 게이트
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		uint8 PreDir = (uint8)(EDirection::E_DOWN);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 PreDir = (uint8)(EDirection::E_DOWN); // 다음 스테이지 기준으로 입구 게이트
+		float ChapterStatValue;
+
+//-- Asset관련-------------------
+public:
+	UPROPERTY(EditAnywhere)
+		class UAssetManagerBase* AssetDataManager;
+
+//	UPROPERTY(EditAnywhere)
+		FStreamableManager StreamableManager;
 
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;

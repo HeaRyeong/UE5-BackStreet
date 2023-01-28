@@ -44,10 +44,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
-	//Melee 오류 디버깅용 임시 함수
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void MeleeTest();
-
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
 		void Attack();
@@ -60,6 +56,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void UpdateWeaponStat(FWeaponStatStruct NewStat);
 
+	//공격 범위를 반환
+	UFUNCTION(BlueprintCallable)
+		float GetAttackRange();
+
 //------ Projectile 관련-------------
 public:
 	//발사체를 생성
@@ -70,7 +70,7 @@ public:
 	UFUNCTION()
 		bool TryFireProjectile();
 
-	//새 탄창으로 장전함, 탄창의 개수가 충분하지 않다면 false 반환
+	//장전을 시도. 현재 상태에 따른 성공 여부를 반환
 	UFUNCTION(BlueprintCallable)
 		bool TryReload();
 
@@ -105,10 +105,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 		int32 TotalAmmoCount = 0;
 
-	//공격 범위를 Get
-	UFUNCTION(BlueprintCallable)
-		float GetAttackRange();
-
 //-------- Melee 관련 ------------
 public:
 	//현재 Combo 수를 반환 
@@ -140,16 +136,19 @@ private:
 		class ACharacterBase* OwnerCharacterRef;
 
 	UPROPERTY()
+		class ABackStreetGameModeBase* GamemodeRef;
+
+	UPROPERTY()
 		FTimerHandle MeleeAtkTimerHandle;
+
+	UPROPERTY()
+		FTimerHandle AutoReloadTimerHandle;
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
 		
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
-
-	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
 
 	UPROPERTY()
 		TArray<FVector> MeleePrevTracePointList;

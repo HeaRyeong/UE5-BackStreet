@@ -3,12 +3,13 @@
 
 #include "../public/EnemyCharacterBase.h"
 #include "../public/CharacterInfoStruct.h"
+#include "../../StageSystem/public/StageInfoStructBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "../../StageSystem/public/Tile.h"
+#include "../../StageSystem/public/TileBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Character/EnemyCharacter/EnemyRank"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/D_StageEnemyRank"));
 	if (DataTable.Succeeded())
 	{
 		EnemyRankDataTable = DataTable.Object;
@@ -73,29 +74,32 @@ void AEnemyCharacterBase::StopAttack()
 
 void AEnemyCharacterBase::Turn(float Angle)
 {
+	if (FMath::Abs(Angle) == 0.0f)
+	{
+		CharacterState.TurnDirection = 0;
+		return;
+	}
+
 	FRotator newRotation =  GetActorRotation();
 	newRotation.Yaw += Angle;
 	SetActorRotation(newRotation);
 	
 	if (GetVelocity().Length() == 0.0f)
 	{
-		if (FMath::Abs(Angle) > 0.0f)
-		{
-			CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
-			return;
-		}
+		CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
+		return;
 	}
 	CharacterState.TurnDirection = 0;
 }
 
-bool AEnemyCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool AEnemyCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
 	return result;
 }
 
-void AEnemyCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+void AEnemyCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
-	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
 
 }

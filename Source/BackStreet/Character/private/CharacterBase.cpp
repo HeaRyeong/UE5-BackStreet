@@ -90,7 +90,7 @@ float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AAc
 	return DamageAmount;
 }
 
-void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffType)
+void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffDebuffType)
 {
 	CharacterState.CharacterCurrHP += HealAmount;
 	CharacterState.CharacterCurrHP = FMath::Min(CharacterStat.CharacterMaxHP, CharacterState.CharacterCurrHP);
@@ -101,12 +101,22 @@ void ACharacterBase::Die()
 {
 	CharacterState.CharacterActionState = ECharacterActionType::E_Die;
 	CharacterStat.bIsInvincibility = true;
-	ClearAllBuffTimer(true);
-	ClearAllBuffTimer(false);
+	ClearAllBuffDebuffTimer(true);
+	ClearAllBuffDebuffTimer(false);
 	ClearAllTimerHandle();
 	
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
+
+	if (this->ActorHasTag(FName("Enemy")))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Actor Has Tag Enemy"));
+		if (FDieDelegate.IsBound())
+		{
+			FDieDelegate.Execute(this);
+			FDieDelegate.Unbind();
+}
+	}
 }
 
 void ACharacterBase::TryAttack()
@@ -142,7 +152,6 @@ void ACharacterBase::Attack()
  
 void ACharacterBase::StopAttack()
 {
-	ResetActionState();
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 	if (IsValid(weaponRef))
 	{
@@ -160,8 +169,11 @@ void ACharacterBase::TryReload()
 			return;
 		}
 
-		float reloadTime = 0.75f;
-		if (IsValid(ReloadAnimMontage)) reloadTime = PlayAnimMontage(ReloadAnimMontage) / 2.0f;
+		float reloadTime = GetWeaponActorRef()->WeaponStat.LoadingDelayTime;
+		if (IsValid(ReloadAnimMontage))
+		{
+			PlayAnimMontage(ReloadAnimMontage);
+		}
 
 		CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
@@ -209,32 +221,33 @@ AWeaponBase* ACharacterBase::GetWeaponActorRef()
 	return nullptr;
 }
 
-bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool ACharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	FTimerDelegate TimerDelegate;
-	FTimerHandle& timerHandle = GetBuffTimerHandleRef(bIsDebuff, BuffType);
+	FTimerHandle& timerHandle = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 
-	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffType))
-		|| (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffType)))
+	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType))
+		|| (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffDebuffType)))
 	{
 		const float newTime = GetWorldTimerManager().GetTimerRemaining(timerHandle) + TotalTime;
 		GetWorldTimerManager().SetTimer(timerHandle, 1.0f, false, newTime);
 		return true;
 	}
 
+
 	/*---- 디버프 타이머 세팅 ----------------------------*/
 	if (bIsDebuff)
 	{
 		Variable = FMath::Min(1.0f, FMath::Abs(Variable)); //값 정제
-		CharacterState.CharacterDebuffState |= (1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+		CharacterState.CharacterDebuffState |= (1 << (int)BuffDebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 
-		switch ((ECharacterDebuffType)BuffType)
+		switch ((ECharacterDebuffType)BuffDebuffType)
 		{
 			//----데미지 디버프-------------------
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
 			//SpawnBuffParticle(E_Flame, TotalTime) //TimerDelegate에 걸어도 됨
-			TimerDelegate.BindUFunction(this, FName("TakeDebuffDamage"), Variable, BuffType, Causer);
+			TimerDelegate.BindUFunction(this, FName("TakeDebuffDamage"), Variable, BuffDebuffType, Causer);
 			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX], TimerDelegate, 1.0f, true);
 			break;
 			//----스탯 조정 디버프-------------------
@@ -258,7 +271,7 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			CharacterStat.CharacterDefense *= Variable;
 			break;
 		}
-		TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType, Variable);
+		TimerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
 		return true;
 	}
@@ -267,14 +280,14 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 	else
 	{
 		Variable = 1.0f + FMath::Abs(Variable); //값 정제
-		CharacterState.CharacterBuffState |= (1 << (int)BuffType);
+		CharacterState.CharacterBuffState |= (1 << (int)BuffDebuffType);
 
-		switch ((ECharacterBuffType)BuffType)
+		switch ((ECharacterBuffType)BuffDebuffType)
 		{
 			//----힐 버프-------------------
 		case ECharacterBuffType::E_Healing:
 			Variable -= 1.0f;
-			TimerDelegate.BindUFunction(this, FName("TakeHeal"), Variable, true, BuffType);
+			TimerDelegate.BindUFunction(this, FName("TakeHeal"), Variable, true, BuffDebuffType);
 			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX], TimerDelegate, 1.0f, true);
 			break;
 			//----스탯 조정 버프-------------------
@@ -308,19 +321,19 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			}
 			break;
 		}
-		TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType, Variable);
+		TimerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
 		return true;
 	}
 	return false;
 }
 
-void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+void ACharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
 	if (bIsDebuff)
 	{
 		ResetVal = FMath::Max(0.0f, ResetVal);
-		switch ((ECharacterDebuffType)BuffType)
+		switch ((ECharacterDebuffType)BuffDebuffType)
 		{
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
@@ -352,7 +365,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 	}
 	else
 	{
-		switch ((ECharacterBuffType)BuffType)
+		switch ((ECharacterBuffType)BuffDebuffType)
 		{
 		case ECharacterBuffType::E_Healing:
 			GetWorldTimerManager().ClearTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX]);
@@ -377,7 +390,7 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			break;
 		case ECharacterBuffType::E_Invincibility:
 			CharacterStat.bIsInvincibility = false;
-			ClearAllBuffTimer(true);
+			ClearAllBuffDebuffTimer(true);
 			break;
 		case ECharacterBuffType::E_InfiniteAmmo:
 			CharacterStat.bInfiniteAmmo = false;
@@ -385,31 +398,43 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			break;
 		}
 	}
-	ClearBuffTimer(bIsDebuff, BuffType);
+	ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
-void ACharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
+void ACharacterBase::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	if (bIsDebuff)
 	{
-		CharacterState.CharacterDebuffState &= ~(1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+		CharacterState.CharacterDebuffState &= ~(1 << (int)BuffDebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 	}
 	else
 	{
-		CharacterState.CharacterBuffState &= ~(1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+		CharacterState.CharacterBuffState &= ~(1 << (int)BuffDebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 	} 
-	GetWorldTimerManager().ClearTimer(GetBuffTimerHandleRef(bIsDebuff, BuffType));
+	GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType));
 }
 
-void ACharacterBase::ClearAllBuffTimer(bool bIsDebuff)
+void ACharacterBase::ClearAllBuffDebuffTimer(bool bIsDebuff)
 {
 	const uint16 startIdx = bIsDebuff ? MAX_BUFF_IDX + 2 : 0;
 	const uint16 endIdx = bIsDebuff ? startIdx + MAX_DEBUFF_IDX : MAX_BUFF_IDX + 1;
 
 	for (uint16 timerIdx = startIdx; timerIdx <= endIdx ; timerIdx++)
 	{
-		GetWorldTimerManager().ClearTimer(GetBuffTimerHandleRef(bIsDebuff, timerIdx));
+		GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, timerIdx));
 	}
+}
+
+bool ACharacterBase::SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
+	return SetBuffDebuffTimer(false, (uint8)BuffType, Causer, TotalTime, Variable);
+}
+
+bool ACharacterBase::SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
+	return SetBuffDebuffTimer(true, (uint8)DebuffType, Causer, TotalTime, Variable);
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
@@ -424,15 +449,15 @@ bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
 	return false;
 }
 
-float ACharacterBase::GetBuffRemainingTime(bool bIsDebuff, uint8 BuffType)
+float ACharacterBase::GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType)
 {
-	FTimerHandle& targetBuffTimer = GetBuffTimerHandleRef(bIsDebuff, BuffType);
+	FTimerHandle& targetBuffTimer = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 	return GetWorldTimerManager().GetTimerRemaining(targetBuffTimer);
 }
 
-FTimerHandle& ACharacterBase::GetBuffTimerHandleRef(bool bIsDebuff, uint8 BuffType)
+FTimerHandle& ACharacterBase::GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType)
 {
-	int16 targetListIdx = bIsDebuff ? BuffType + MAX_BUFF_IDX + 1 : BuffType;
+	int16 targetListIdx = bIsDebuff ? BuffDebuffType + MAX_BUFF_IDX + 1 : BuffDebuffType;
 	targetListIdx = BuffDebuffTimerHandleList.IsValidIndex(targetListIdx) ? targetListIdx : 0;
 	return BuffDebuffTimerHandleList[targetListIdx];
 }
@@ -444,8 +469,8 @@ void ACharacterBase::InitGamemodeRef()
 
 void ACharacterBase::ClearAllTimerHandle()
 {
-	ClearAllBuffTimer(false);
-	ClearAllBuffTimer(true);
+	ClearAllBuffDebuffTimer(false);
+	ClearAllBuffDebuffTimer(true);
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandle);
 }

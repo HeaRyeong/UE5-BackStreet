@@ -49,6 +49,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		ECharacterDebuffType DebuffType;
 
+	// 내구도 PROPERTY 추가
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool bInfiniteDurability = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 Durability = 10;
 
 	//----- 발사체 관련 Property ------------------
 	//무한 탄약인지?
@@ -57,7 +63,7 @@ public:
 
 	//공격 시, 발사체가 있는지?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bHasProjectile;
+		bool bHasProjectile = false;
 
 	// 무한 탄창인지?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -72,52 +78,3 @@ public:
 		float LoadingDelayTime;
 };
 
-USTRUCT(BlueprintType)
-struct FWeaponItemInfoStruct : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY()
-
-public:
-	UPROPERTY(EditAnywhere)
-		FName Name;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bCanMeleeAtk = true;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float WeaponAtkSpeedRate = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float WeaponDamage = 0.2f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		ECharacterDebuffType DebuffType;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bHasProjectile;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bInfiniteMagazine;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 MaxAmmoPerMagazine;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float LoadingDelayTime;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float ProjectileSpeed = 2000.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float ProjectileDamage = 0.2f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float GravityScale = 1.0f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bIsHoming = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		ECharacterDebuffType ProjectDebuffType;
-
-};

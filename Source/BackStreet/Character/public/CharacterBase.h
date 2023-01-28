@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
+DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
+
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -60,7 +62,7 @@ public:
 
 	//플레이어가 체력을 회복함 (일회성)
 	UFUNCTION()
-		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
+		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
 
 	UFUNCTION()
 		void Die();
@@ -98,17 +100,22 @@ public:
 // ------ 캐릭터 버프 / 디버프 ---------------
 public:
 	//버프와 디버프를 건다
-	virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+	virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 	
 	//버프 or 디버프 상태를 초기화한다
-	virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
+	virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal);
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
-	//bForceClear : 강제로 타이머를 해제한다. 그렇지 않으면 RemainingTime만 0.0f로 만든다.
-	virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
+	virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
 	
 	//모든 Buff/Debuff의 타이머를 해제
-	virtual void ClearAllBuffTimer(bool bIsDebuff);
+	virtual void ClearAllBuffDebuffTimer(bool bIsDebuff);
+
+	UFUNCTION()
+		bool SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+
+	UFUNCTION()
+		bool SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -120,11 +127,11 @@ public:
 
 	//버프/디버프 남은 시간을 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffType);
+		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType);
 
 	//버프 / 디버프 타이머 핸들의 참조자를 반환
 	UFUNCTION()
-		FTimerHandle& GetBuffTimerHandleRef(bool bIsDebuff, uint8 BuffType);
+		FTimerHandle& GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType);
 
 // ----- 캐릭터 애니메이션 -------------------
 protected:
@@ -163,10 +170,17 @@ private:
 	UPROPERTY()
 		TArray<FTimerHandle> BuffDebuffTimerHandleList;
 
+private:
 	//공격 간 딜레이 핸들
 	UPROPERTY()
 		FTimerHandle AtkIntervalHandle;
 
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
+
+	// -------- 적 로봇 죽음 처리 관련 델리게이트 --------
+
+public:
+	FEnemyDieDelegate FDieDelegate;
+
 };
