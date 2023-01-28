@@ -16,7 +16,7 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 
 }
 
-void ABackStreetGameModeBase::InitGame()
+void ABackStreetGameModeBase::InitializeChapter()
 {
 	AssetDataManager->GameModeRef = this;
 	RemainChapter = 2;

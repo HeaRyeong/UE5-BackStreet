@@ -19,7 +19,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitGame();
+		void InitializeChapter();
 
 // StageManager? ----
 public:
