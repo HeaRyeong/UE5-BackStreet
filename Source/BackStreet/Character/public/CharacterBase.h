@@ -3,10 +3,9 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
+#include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
-
-#define InventoryMaxSize 6
 
 DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
 
@@ -32,7 +31,7 @@ protected:
 
 // ------- 캐릭터 컴포넌트 -------------
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly,Category = "WeaponInventory")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UChildActorComponent* WeaponActor;
 
 // ------- Character Action 기본 ------- 
@@ -64,7 +63,7 @@ public:
 
 	//플레이어가 체력을 회복함 (일회성)
 	UFUNCTION()
-		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
+		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
 
 	UFUNCTION()
 		void Die();
@@ -84,8 +83,8 @@ public:
 
 // ------ 무기 관련 ----------------
 public:
-	UFUNCTION(BlueprintCallable)
-		void ChangeWeapon(AWeaponBase* newWeaponClass);
+	//UFUNCTION()
+		//void ChangeWeapon();
 
 	//무기 관련 설정을 초기화
 	UFUNCTION()
@@ -102,22 +101,16 @@ public:
 // ------ 캐릭터 버프 / 디버프 ---------------
 public:
 	//버프와 디버프를 건다
-	virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+	virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 	
 	//버프 or 디버프 상태를 초기화한다
-	virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal);
+	virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
-	virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
+	virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
 	
 	//모든 Buff/Debuff의 타이머를 해제
-	virtual void ClearAllBuffDebuffTimer(bool bIsDebuff);
-
-	UFUNCTION()
-		bool SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
-
-	UFUNCTION()
-		bool SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+	virtual void ClearAllBuffTimer(bool bIsDebuff);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -129,11 +122,11 @@ public:
 
 	//버프/디버프 남은 시간을 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType);
+		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffType);
 
 	//버프 / 디버프 타이머 핸들의 참조자를 반환
 	UFUNCTION()
-		FTimerHandle& GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType);
+		FTimerHandle& GetBuffTimerHandleRef(bool bIsDebuff, uint8 BuffType);
 
 // ----- 캐릭터 애니메이션 -------------------
 protected:
@@ -184,25 +177,5 @@ private:
 
 public:
 	FEnemyDieDelegate FDieDelegate;
-
-	// 무기 인벤토리 관련
-
-public:
-	UFUNCTION(BlueprintCallable)
-	void InitWeaponInventory();
-	UFUNCTION(BlueprintCallable)
-	void AddWeaponInventory(AWeaponBase* Weapon);
-	UFUNCTION(BlueprintCallable)
-	void SwitchWeapon();
-
-public:
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		TArray<AWeaponBase*> WeaponInventory;
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		TArray<int32> WeaponIDInventory;
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		int8 InventorySize;
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		int8 InventoryIdx;
 
 };

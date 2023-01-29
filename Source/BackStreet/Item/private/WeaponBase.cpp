@@ -52,7 +52,7 @@ void AWeaponBase::StopAttack()
 	MeleeLineTraceQueryParams.ClearIgnoredActors();
 }
 
-void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
+void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
 {
 	WeaponStat = NewStat;
 }
@@ -77,9 +77,7 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 
 	if (IsValid(newProjectile))
 	{
-		newProjectile->InitProjectile(OwnerCharacterRef);
-		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //버프/디버프로 인해 강화/너프된 값을 반영
-		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
+		newProjectile->InitProjectile(WeaponStat.ProjectileStat, OwnerCharacterRef);
 		return newProjectile;
 	}
 
@@ -148,8 +146,7 @@ float AWeaponBase::GetAttackRange()
 {
 	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo || (CurrentAmmoCount == 0.0f && TotalAmmoCount == 0.0f))
 	{
-		FVector distVector = WeaponMesh->GetSocketLocation("GrabPoint") - WeaponMesh->GetSocketLocation("End");
-		return distVector.Length() * 1.5f;
+		return WeaponStat.WeaponMeleeAtkRange;
 	}
 	return 700.0f;
 }
@@ -190,9 +187,9 @@ void AWeaponBase::MeleeAttack()
 	if (bIsMeleeTraceSucceed)
 	{
 		//데미지를 주고
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
+		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))
@@ -231,32 +228,10 @@ void AWeaponBase::Tick(float DeltaTime)
 
 }
 
-void AWeaponBase::InitWeapon(ACharacterBase* NewOwnerCharacterRef)
+void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
 {
-	if (!IsValid(NewOwnerCharacterRef)) return;
-	GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
-	OwnerCharacterRef = NewOwnerCharacterRef;
+	if (!IsValid(NewCharacterRef)) return;
+	OwnerCharacterRef = NewCharacterRef;
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
 
-void AWeaponBase::SetWeaponAmmo(int32 Ammo, int32 TotalAmmo)
-{
-	CurrentAmmoCount = Ammo;
-	TotalAmmoCount = TotalAmmo;
-}
-
-
-int32 AWeaponBase::GetCurrentAmmoCount()
-{
-	return CurrentAmmoCount;
-}
-
-int32 AWeaponBase::GetTotalAmmoCount()
-{
-	return TotalAmmoCount;
-}
-
-void AWeaponBase::PrintWeaponInfo()
-{
-	UE_LOG(LogTemp, Log, TEXT("CurrentAmmoCount %d , TotalAmmoCount %d"), CurrentAmmoCount, TotalAmmoCount);
-}

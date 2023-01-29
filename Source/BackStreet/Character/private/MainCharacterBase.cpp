@@ -70,7 +70,8 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	//Set up "movement" bindings.
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacterBase::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacterBase::MoveRight);
-	
+
+	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &AMainCharacterBase::Dash);
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
@@ -183,43 +184,43 @@ void AMainCharacterBase::ResetRotationToMovement()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
-bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
+bool AMainCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
+	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
 
 	if(result)
 	{
 		TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
 		
-		if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
+		if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
 		{
 			BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
 			BuffNiagaraEmitter->Deactivate();
-			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
+			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffType], false);
 			BuffNiagaraEmitter->Activate();
 		}
 	}
 	return result;
 }	
 
-void AMainCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
+void AMainCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
 {
-	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
+	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
 }
 
-void AMainCharacterBase::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
+void AMainCharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
 {
-	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType)
-		: GetBuffIsActive((ECharacterBuffType)BuffDebuffType))
+	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffType)
+		: GetBuffIsActive((ECharacterBuffType)BuffType))
 	{
 		DeactivateBuffNiagara();
 	}
-	Super::ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
+	Super::ClearBuffTimer(bIsDebuff, BuffType);
 }
 
-void AMainCharacterBase::ClearAllBuffDebuffTimer(bool bIsDebuff)
+void AMainCharacterBase::ClearAllBuffTimer(bool bIsDebuff)
 {
-	Super::ClearAllBuffDebuffTimer(bIsDebuff);
+	Super::ClearAllBuffTimer(bIsDebuff);
 	DeactivateBuffNiagara();
 }
 

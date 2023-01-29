@@ -45,6 +45,9 @@ public:
 		void MoveRight(float Value);
 
 	UFUNCTION()
+		void Dash();
+
+	UFUNCTION(BlueprintImplementableEvent)
 		void Roll();
 
 	UFUNCTION()
@@ -75,19 +78,19 @@ public:
 public: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
+		virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
 
 	//버프 or 디버프 상태를 초기화한다
 	UFUNCTION(BlueprintCallable)
-		virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal) override;
+		virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal) override;
 
 	//특정 Debuff의 타이머를 해제한다.
 	UFUNCTION(BlueprintCallable)
-		virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType) override;
+		virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType) override;
 
 	//모든 Buff/Debuff의 타이머를 해제
 	UFUNCTION(BlueprintCallable)
-		virtual void ClearAllBuffDebuffTimer(bool bIsDebuff) override;
+		virtual void ClearAllBuffTimer(bool bIsDebuff) override;
 
 // -------- VFX -----------
 public:
