@@ -1,9 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "../public/ItemBase.h"
-#include "../public/ItemInfoStruct.h"
-#include "../public/ItemDataAssetInfo.h"
 #include "../public/WeaponBase.h"
-#include "../public/WeaponInfoStruct.h"
 #include "../../StageSystem/public/MissionBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -51,7 +48,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		case EItemCategoryInfo::E_Buff:
 			Stat = DA->BuffStat;
 			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d"), Stat.Type);
-			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
+			MyCharacter->SetBuffTimer(false, (uint8)Stat.Type, this, Stat.Time, Stat.Time);
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_DeBuff:

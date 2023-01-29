@@ -11,26 +11,26 @@ UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-		uint8 WeaponID;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
+		void InitOwnerCharacterRef(class ACharacterBase* NewCharacterRef);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-//------ Global -------------------
+	//------ Global -------------------
 public:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 WeaponID;
+
 	UPROPERTY(VisibleDefaultsOnly)
 		USceneComponent* DefaultSceneRoot;
 
@@ -58,9 +58,9 @@ public:
 
 	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
-		void UpdateWeaponStat(FWeaponStatStruct NewStat);
+		void InitWeaponStat(FWeaponStatStruct NewStat);
 
-//------ Projectile 관련-------------
+	//------ Projectile 관련-------------
 public:
 	//발사체를 생성
 	UFUNCTION()
@@ -97,20 +97,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
 
-
 	//현재 탄창에 있는 발사체 수
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|Weapon")
+	UPROPERTY(BlueprintReadOnly)
 		int32 CurrentAmmoCount = 1;
 
 	//가지고 있는 최대 발사체 수
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|Weapon")
+	UPROPERTY(BlueprintReadOnly)
 		int32 TotalAmmoCount = 0;
 
 	//공격 범위를 Get
 	UFUNCTION(BlueprintCallable)
 		float GetAttackRange();
 
-//-------- Melee 관련 ------------
+	//-------- Melee 관련 ------------
 public:
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -145,7 +144,7 @@ private:
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
-		
+
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
 
@@ -156,27 +155,5 @@ private:
 		TArray<FVector> MeleePrevTracePointList;
 
 	//UPROPERTY()
-		FCollisionQueryParams MeleeLineTraceQueryParams;
-
-	// WeaponInventory 관련
-
-public:
-	UFUNCTION(BlueprintCallable)
-		void SetWeaponAmmo(int32 Ammo ,int32 TotalAmmo);
-	
-	UFUNCTION(BlueprintCallable)
-		int32 GetCurrentAmmoCount();
-
-	UFUNCTION(BlueprintCallable)
-		int32 GetTotalAmmoCount();
-
-public:
-		UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
-			FSoftObjectPath ProjectilePath;
-
-	// 디버그용
-public:
-	UFUNCTION(BlueprintCallable)
-		void PrintWeaponInfo();
-	
+	FCollisionQueryParams MeleeLineTraceQueryParams;
 };

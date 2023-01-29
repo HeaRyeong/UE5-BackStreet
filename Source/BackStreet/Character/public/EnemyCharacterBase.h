@@ -6,15 +6,12 @@
 #include "CharacterBase.h"
 #include "EnemyCharacterBase.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 {
 	GENERATED_BODY()
 
-	
 public:
 	AEnemyCharacterBase();
 
@@ -29,7 +26,10 @@ public:
 		class ATileBase* TileRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UDataTable* EnemyRankDataTable;
+		class UDataTable* EnemyStatDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 EnemyID;
 
 public:
 	UFUNCTION(BlueprintCallable)

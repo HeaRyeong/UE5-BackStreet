@@ -1,11 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
+
+#define InventoryMaxSize 6
 
 DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
 
@@ -14,7 +13,7 @@ class BACKSTREET_API ACharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
-//----- 기본 함수 ----------
+		//----- 기본 함수 ----------
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
@@ -29,12 +28,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-// ------- 캐릭터 컴포넌트 -------------
+	// ------- 캐릭터 컴포넌트 -------------
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UChildActorComponent* WeaponActor;
 
-// ------- Character Action 기본 ------- 
+	// ------- Character Action 기본 ------- 
 public:
 	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
 	virtual void TryAttack();
@@ -44,19 +43,19 @@ public:
 
 	virtual void StopAttack();
 
-	virtual void TryReload(); 
-	
+	virtual void TryReload();
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		, AController* EventInstigator, AActor* DamageCauser) override;
 
 	//플레이어가 현재 해당 Action을 수행하고 있는지 반환
 	UFUNCTION(BlueprintCallable)
 		bool GetIsActionActive(ECharacterActionType Type) { return CharacterState.CharacterActionState == Type; }
-	
+
 	//플레이어의 ActionState를 Idle로 전환한다.
 	UFUNCTION(BlueprintCallable)
 		void ResetActionState();
-		
+
 	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION()
 		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
@@ -68,7 +67,7 @@ public:
 	UFUNCTION()
 		void Die();
 
-// ------- Character Stat/State ------- 
+	// ------- Character Stat/State ------- 
 public:
 	//캐릭터의 상태 정보를 초기화
 	UFUNCTION()
@@ -81,7 +80,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStatStruct GetCharacterStat() { return CharacterStat; }
 
-// ------ 무기 관련 ----------------
+	// ------ 무기 관련 ----------------
 public:
 	//UFUNCTION()
 		//void ChangeWeapon();
@@ -98,17 +97,17 @@ public:
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
-// ------ 캐릭터 버프 / 디버프 ---------------
+	// ------ 캐릭터 버프 / 디버프 ---------------
 public:
 	//버프와 디버프를 건다
 	virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
-	
+
 	//버프 or 디버프 상태를 초기화한다
 	virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
 	virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
-	
+
 	//모든 Buff/Debuff의 타이머를 해제
 	virtual void ClearAllBuffTimer(bool bIsDebuff);
 
@@ -128,7 +127,7 @@ public:
 	UFUNCTION()
 		FTimerHandle& GetBuffTimerHandleRef(bool bIsDebuff, uint8 BuffType);
 
-// ----- 캐릭터 애니메이션 -------------------
+	// ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		TArray<UAnimMontage*> AttackAnimMontageArray;
@@ -142,13 +141,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* ReloadAnimMontage;
 
-// ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
+	// ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
 protected:
 	UFUNCTION()
 		void InitGamemodeRef();
 
 	//UFUNCTION()
-		virtual void ClearAllTimerHandle();
+	virtual void ClearAllTimerHandle();
 
 	//캐릭터의 스탯
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
@@ -177,5 +176,29 @@ private:
 
 public:
 	FEnemyDieDelegate FDieDelegate;
+
+	// ---------무기 인벤토리 관련 (임시, 크래시 발생) ----------------
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+		void InitWeaponInventory();
+	UFUNCTION(BlueprintCallable)
+		void AddWeaponInventory(AWeaponBase* Weapon);
+	UFUNCTION(BlueprintCallable)
+		void SwitchWeapon();
+	UFUNCTION(BlueprintCallable)
+		void ChangeWeapon(AWeaponBase* newWeaponClass);
+
+public:
+	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
+		TArray<AWeaponBase*> WeaponInventory;
+	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
+		TArray<int32> WeaponIDInventory;
+	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
+		int8 InventorySize;
+	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
+		int8 InventoryIdx;
+
 
 };

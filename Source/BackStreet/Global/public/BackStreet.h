@@ -8,7 +8,10 @@
 #include "Perception/AIPerceptionTypes.h"
 
 /* ----- ±¸Á¶Ã¼/Enum ------------ */
-#include "../../Item/public/ProjectileInfoStruct.h"
-#include "../../Item/public/WeaponInfoStruct.h"
-#include "../../Character/public/CharacterInfoStruct.h"
-#include "../../Character/public/CharacteInfoEnum.h"
+#include "../../Item/public/WeaponStatStructBase.h"
+#include "../../Character/public/CharacterInfoStructBase.h"
+#include "../../StageSystem/public/DirectionEnumInfo.h"
+#include "../../StageSystem/public/StageInfoStructBase.h"
+#include "../../Item/public/ItemInfoStruct.h"
+#include "../../Item/public/ItemDataAssetInfo.h"
+#include "../../Character/public/EnemyStatInfoStruct.h"

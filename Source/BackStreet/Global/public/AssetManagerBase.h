@@ -1,8 +1,6 @@
 #pragma once
 #include "BackStreet.h"
 #include "Engine/StreamableManager.h"
-#include "../../Item/public/ItemInfoStruct.h"
-#include "Engine/StreamableManager.h"
 #include "AssetManagerBase.generated.h"
 
 #define NormalStageTypeNum 5
@@ -49,7 +47,9 @@ public:
 	UFUNCTION()
 		void SpawnMissionMonster(TArray<AActor*> SpawnPoints, class ATileBase* TileRef, class UMissionBase* MissionRef);
 
-	
+	UFUNCTION()
+		FStageEnemyTypeStruct ReturnStageEnemyTypeStruct(int32 StageType);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FSoftObjectPath> EnemyAssets;
@@ -71,5 +71,9 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
 		class ABackStreetGameModeBase* GameModeRef;
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
+		UDataTable* StageTypeTable;
 
 };

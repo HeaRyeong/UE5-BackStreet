@@ -2,18 +2,16 @@
 
 
 #include "../public/EnemyCharacterBase.h"
-#include "../public/CharacterInfoStructBase.h"
-#include "../../StageSystem/public/StageInfoStructBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/D_StageEnemyRank"));
+	/*static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/D_StageEnemyRank"));
 	if (DataTable.Succeeded())
 	{
-		EnemyRankDataTable = DataTable.Object;
-	}
+		EnemyStatDataTable = DataTable.Object;
+	}*/
 	bUseControllerRotationYaw = false;
 	this->Tags.Add("Enemy");
 }
@@ -21,28 +19,30 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	TileRef = GamemodeRef->CurrTile;
+	TileRef = GamemodeRef->CurrentTile;
 	InitEnemyStat();
 	
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-	if (!IsValid(TileRef)) return;
-	FStageEnemyRankStruct* StageTableRow = EnemyRankDataTable->FindRow<FStageEnemyRankStruct>(FName(*(FString::FormatAsNumber(TileRef->StageLevel))), FString(""));
+	TArray< FEnemyStatStruct*> DataTable;
+	FString ContextString;
+	EnemyStatDataTable->GetAllRows(ContextString, DataTable);
 
-	if (!TileRef->bIsClear)
+	for (FEnemyStatStruct* Row : DataTable)
 	{
-		// 스탯 설정
-		FCharacterStatStruct NewStat;
-		NewStat.CharacterMaxHP = StageTableRow->CharacterMaxHP;
-		NewStat.CharacterAtkMultiplier = StageTableRow->CharacterAtkMultiplier;
-		NewStat.CharacterAtkSpeed = StageTableRow->CharacterAtkSpeed;
-		NewStat.CharacterMoveSpeed = StageTableRow->CharacterMoveSpeed;
-		NewStat.CharacterDefense = StageTableRow->CharacterDefense;
-		this->UpdateCharacterStat(NewStat);
-		// 몬스터 리스트에 추가
-		TileRef -> MonsterList.Add(this);
+		if (Row->EnemyID == EnemyID)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Init Enemy %d"), EnemyID);
+			FCharacterStatStruct NewStat;
+			NewStat.CharacterMaxHP = Row->CharacterMaxHP;
+			NewStat.CharacterAtkMultiplier = Row->CharacterAtkMultiplier;
+			NewStat.CharacterAtkSpeed = Row->CharacterAtkSpeed;
+			NewStat.CharacterMoveSpeed = Row->CharacterMoveSpeed;
+			NewStat.CharacterDefense = Row->CharacterDefense;
+			this->UpdateCharacterStat(NewStat);
+		}
 	}
 }
 

@@ -2,12 +2,9 @@
 #include "../public/AssetManagerBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Item/public/ItemBase.h"
-#include "Engine/AssetManager.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../public/BackStreetGameModeBase.h"
-#include "../../Item/public/ItemInfoStruct.h"
-#include "../../Item/public/ItemDataAssetInfo.h"
 #include "../../StageSystem/public/MissionBase.h"
 #include "../../Character/public/EnemyCharacterBase.h"
 
@@ -124,7 +121,7 @@ void AAssetManagerBase::LoadMonsterAsset(TArray<AActor*> SpawnPoints, class ATil
 {
 	TArray<int32> EnemyIDList;
 	int32 StageType = FMath::RandRange(0, NormalStageTypeNum - 1);
-	FStageEnemyTypeStruct StageTypeRow = GameModeRef->ReturnStageEnemyTypeStruct(StageType);
+	FStageEnemyTypeStruct StageTypeRow = ReturnStageEnemyTypeStruct(StageType);
 	int8 SpawnNum = FMath::RandRange(StageTypeRow.MinSpawn, StageTypeRow.MaxSpawn);
 
 	UE_LOG(LogTemp, Log, TEXT("StageType : %d MaxSpawn : %d"), StageType,SpawnNum);
@@ -264,13 +261,13 @@ AWeaponBase* AAssetManagerBase::SpawnWeaponwithID(int32 ID)
 	{
 		Gen = Cast<UBlueprint>(WeaponAssets[0].ResolveObject());
 		Target = GetWorld()->SpawnActor<AWeaponBase>(Gen->GeneratedClass, this->GetActorLocation(), FRotator::ZeroRotator);
-		Target->ProjectilePath = WeaponAssets[8];
+		//Target->ProjectilePath = WeaponAssets[8];
 	}
 	else if (ID == 204) // ∫Æµπ
 	{
 		Gen = Cast<UBlueprint>(WeaponAssets[0].ResolveObject());
 		Target = GetWorld()->SpawnActor<AWeaponBase>(Gen->GeneratedClass, this->GetActorLocation(), FRotator::ZeroRotator);
-		Target->ProjectilePath = WeaponAssets[7];
+		//Target->ProjectilePath = WeaponAssets[7];
 	}
 	else if (ID == 100) // ¿Ø∏Æ∫¥
 	{
@@ -296,17 +293,43 @@ AWeaponBase* AAssetManagerBase::SpawnWeaponwithID(int32 ID)
 	{
 		Gen = Cast<UBlueprint>(WeaponAssets[4].ResolveObject());
 		Target = GetWorld()->SpawnActor<AWeaponBase>(Gen->GeneratedClass, this->GetActorLocation(), FRotator::ZeroRotator);
-		Target->ProjectilePath = WeaponAssets[3];
+		//Target->ProjectilePath = WeaponAssets[3];
 	}
 	else // ∫Ò∫Ò≈∫ √—
 	{
 		Gen = Cast<UBlueprint>(WeaponAssets[2].ResolveObject());
 		Target = GetWorld()->SpawnActor<AWeaponBase>(Gen->GeneratedClass, this->GetActorLocation(), FRotator::ZeroRotator);
-		Target->ProjectilePath = WeaponAssets[1];
+		//Target->ProjectilePath = WeaponAssets[1];
 	}
 
 	return Target;
 }
+
+FStageEnemyTypeStruct AAssetManagerBase::ReturnStageEnemyTypeStruct(int32 StageType)
+{
+	FString rowName = FString::FromInt(StageType);
+	FStageEnemyTypeStruct* TypeInfo = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName), rowName);
+
+
+	FStageEnemyTypeStruct Data;
+
+	Data.ID_1001 = TypeInfo->ID_1001;
+	Data.ID_1002 = TypeInfo->ID_1002;
+	Data.ID_1003 = TypeInfo->ID_1003;
+	Data.ID_1100 = TypeInfo->ID_1100;
+	Data.ID_1101 = TypeInfo->ID_1101;
+	Data.ID_1102 = TypeInfo->ID_1102;
+	Data.ID_1200 = TypeInfo->ID_1200;
+	Data.MaxSpawn = TypeInfo->MaxSpawn;
+	Data.MinSpawn = TypeInfo->MinSpawn;
+
+	return Data;
+
+
+}
+
+
+
 //
 //AProjectileBase* AAssetManagerBase::SpawnProjectilewithPath(FSoftObjectPath path, FTransform SpawnTransform, FActorSpawnParameters SpawnParams)
 //{

@@ -4,7 +4,6 @@
 
 #include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
-#include "ItemInfoStruct.h"
 #include "ItemBase.generated.h"
 
 #define MaxWeaponType 6

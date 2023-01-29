@@ -8,7 +8,7 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemInfoStruct.h"
-#include "../../Character/public/CharacterInfoStruct.h"
+//#include "../../Character/public/CharacterInfoStruct.h"
 #include "TimerManager.h"
 #include "../public/GridBase.h"
 #include "UObject/SoftObjectPath.h"
