@@ -7,6 +7,8 @@
 #include "CollisionQueryParams.h"
 #include "Perception/AIPerceptionTypes.h"
 
-/* ----- 구조체 ------------ */
-#include "../../Item/public/WeaponStatStructBase.h"
-#include "../../Character/public/CharacterInfoStructBase.h"
+/* ----- 구조체/Enum ------------ */
+#include "../../Item/public/ProjectileInfoStruct.h"
+#include "../../Item/public/WeaponInfoStruct.h"
+#include "../../Character/public/CharacterInfoStruct.h"
+#include "../../Character/public/CharacteInfoEnum.h"

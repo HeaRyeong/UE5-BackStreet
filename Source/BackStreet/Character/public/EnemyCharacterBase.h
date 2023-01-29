@@ -22,13 +22,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+// ----- 기본 함수들 ------
 public:
 	// 소속 타일
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATileBase* TileRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UDataTable* EnemyRankDataTable;
+		class UDataTable* EnemyStatDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 EnemyID;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -47,4 +51,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+// ---- 적 캐릭터 Ation ----
+	UFUNCTION(BlueprintCallable)
+		void Turn(float Angle);
+
+// ---- 디버프 / 버프 -----
+	//버프 or 디버프 상태를 지정
+	UFUNCTION(BlueprintCallable)
+		virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
+
+	//버프 or 디버프 상태를 초기화한다
+	UFUNCTION(BlueprintCallable)
+		virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal) override;
 };

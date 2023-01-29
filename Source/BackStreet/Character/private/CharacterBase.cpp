@@ -6,12 +6,10 @@
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Animation/AnimMontage.h"
 
-
-/*----  UPROPERTY 내에서는 다차원 배열을 지원하지 않음 ----*/
-FTimerHandle BuffTimerHandle[2][10];
-float BuffRemainingTime[2][10];
-/*----------------------------------------------------*/
-
+#define MAX_BUFF_IDX 6
+#define MAX_DEBUFF_IDX 7
+#define HEAL_BUFF_TIMER_IDX 6
+#define DEBUFF_DAMAGE_TIMER_IDX 15
 
 // Sets default values
 ACharacterBase::ACharacterBase()
@@ -22,7 +20,10 @@ ACharacterBase::ACharacterBase()
 	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
 	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
 
-	
+	for (int newTimerIdx = 0; newTimerIdx < 18; newTimerIdx += 1)
+	{
+		BuffDebuffTimerHandleList.Add(FTimerHandle());
+	}
 	this->Tags.Add("Character");
 }
 
@@ -33,6 +34,7 @@ void ACharacterBase::BeginPlay()
 	
 	InitGamemodeRef();
 	InitWeapon();
+	InitWeaponInventory();
 	InitCharacterState();
 }
 
@@ -84,45 +86,26 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer)
 {
 	//추후 디버프 당 파티클 시스템 추가 예정
-	if (!IsValid(Causer) || BuffRemainingTime[1][(int)DebuffType] <= 0.0f) return 0.0f;
-
-	BuffRemainingTime[1][(int)DebuffType] -= 1.0f;
+	if (!IsValid(Causer)) return 0.0f;
 	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
-
-	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
-	{
-		ClearBuffTimer(1, DebuffType);
-	}
 	return DamageAmount;
 }
 
-void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffType)
+void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffDebuffType)
 {
 	CharacterState.CharacterCurrHP += HealAmount;
-	CharacterState.CharacterCurrHP = FMath::Min(CharacterStat.CharacterMaxHP
-												, CharacterState.CharacterCurrHP);
-	if (bIsTimerEvent)
-	{
-		BuffRemainingTime[0][(int)BuffType] -= 1.0f;
-		if (BuffRemainingTime[0][(int)BuffType] <= 0.0f)
-		{
-			ClearBuffTimer(false, BuffType);
-		}
-		return;
-	}
+	CharacterState.CharacterCurrHP = FMath::Min(CharacterStat.CharacterMaxHP, CharacterState.CharacterCurrHP);
+	return;
 }
 
 void ACharacterBase::Die()
 {
-	if (!IsValid(DieAnimMontage)) return;
-
 	CharacterState.CharacterActionState = ECharacterActionType::E_Die;
 	CharacterStat.bIsInvincibility = true;
-	ClearAllBuffTimer(true);
-	ClearAllBuffTimer(false);
+	ClearAllBuffDebuffTimer(true);
+	ClearAllBuffDebuffTimer(false);
 	ClearAllTimerHandle();
 	
-	PlayAnimMontage(DieAnimMontage);
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
 
@@ -133,20 +116,15 @@ void ACharacterBase::Die()
 		{
 			FDieDelegate.Execute(this);
 			FDieDelegate.Unbind();
-		}
+}
 	}
-
-
-	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
-		//GameModeRef->SpawnItemOnLocation(GetActorLocation(), ItemID);
-		Destroy();
-	}), 1.0f, false, DieAnimMontage->GetPlayLength());
 }
 
 void ACharacterBase::TryAttack()
 {
 	if (AttackAnimMontageArray.Num() <= 0) return;
 	if (!IsValid(WeaponActor->GetChildActor())) return;
+	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
 
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
@@ -164,7 +142,7 @@ void ACharacterBase::Attack()
 {
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, 1.0f - CharacterStat.CharacterAtkSpeed);
+										, 1.0f, false, FMath::Max(0.0f, 1.0f - CharacterStat.CharacterAtkSpeed));
 
 	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
 	if (IsValid(weaponRef))
@@ -215,11 +193,25 @@ void ACharacterBase::ResetAtkIntervalTimer()
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 }
 
+void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+{
+	// Weapon Ammo 정보 저장/적용 추가해야함
+	AWeaponBase* Target = GamemodeRef->GetAssetManager()->SpawnWeaponwithID(WeaponIDInventory[InventoryIdx]);
+
+	if (!IsValid(Target)) return;
+	WeaponActor->DestroyChildActor();
+	WeaponActor->SetChildActorClass(Target->GetClass());
+	Target->Destroy();
+
+}
+
 void ACharacterBase::InitWeapon()
 {
 	if (IsValid(GetWeaponActorRef()))
 	{
-		GetWeaponActorRef()->InitOwnerCharacterRef(this);
+		GetWeaponActorRef()->InitWeapon(this);
+		WeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
+		WeaponActor->SetRelativeLocation(FVector(0.0f), false);
 	}
 }
 
@@ -232,188 +224,176 @@ AWeaponBase* ACharacterBase::GetWeaponActorRef()
 	return nullptr;
 }
 
-void ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool ACharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	FTimerDelegate TimerDelegate;
-	FTimerHandle& timerHandle = BuffTimerHandle[bIsDebuff][(int)BuffType];
-	float ResetVal = 0.0f;
+	FTimerHandle& timerHandle = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 
-	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffType))
-		&& (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffType)))
+	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType))
+		|| (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffDebuffType)))
 	{
-		BuffRemainingTime[bIsDebuff][(int)BuffType] += TotalTime;
-		return;
+		const float newTime = GetWorldTimerManager().GetTimerRemaining(timerHandle) + TotalTime;
+		GetWorldTimerManager().SetTimer(timerHandle, 1.0f, false, newTime);
+		return true;
 	}
-	if (GetWorldTimerManager().IsTimerActive(timerHandle)) return;
 
-	BuffRemainingTime[bIsDebuff][(int)BuffType] = TotalTime;
 
 	/*---- 디버프 타이머 세팅 ----------------------------*/
-	if(bIsDebuff)
+	if (bIsDebuff)
 	{
-		CharacterState.CharacterDebuffState |= (1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
-		switch ((ECharacterDebuffType)BuffType)
+		Variable = FMath::Min(1.0f, FMath::Abs(Variable)); //값 정제
+		CharacterState.CharacterDebuffState |= (1 << (int)BuffDebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+
+		switch ((ECharacterDebuffType)BuffDebuffType)
 		{
-		//----데미지 디버프-------------------
+			//----데미지 디버프-------------------
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
 			//SpawnBuffParticle(E_Flame, TotalTime) //TimerDelegate에 걸어도 됨
-			TimerDelegate.BindUFunction(this, FName("TakeDebuffDamage"), Variable, BuffType, Causer);
-			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 1.0f, true);
-			return;
-
-		//----스탯 조정 디버프-------------------
+			TimerDelegate.BindUFunction(this, FName("TakeDebuffDamage"), Variable, BuffDebuffType, Causer);
+			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX], TimerDelegate, 1.0f, true);
+			break;
+			//----스탯 조정 디버프-------------------
 		case ECharacterDebuffType::E_Stun:
-			CharacterState.CharacterActionState = ECharacterActionType::E_Sleep;
+			StopAttack();
+			CharacterState.CharacterActionState = ECharacterActionType::E_Stun;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 			break;
 		case ECharacterDebuffType::E_Slow:
-			GetCharacterMovement()->MaxWalkSpeed *= FMath::Abs(Variable);
-			break;
-		case ECharacterDebuffType::E_AttackDown:
-			ResetVal = CharacterStat.CharacterAtkMultiplier;
-			CharacterStat.CharacterAtkMultiplier *= FMath::Abs(Variable);
-			break;
-		case ECharacterDebuffType::E_DefenseDown:
-			ResetVal = CharacterStat.CharacterDefense;
-			CharacterStat.CharacterDefense *= FMath::Abs(Variable);
-			break;
-		case ECharacterDebuffType::E_SlowAtk:
-			ResetVal = CharacterStat.CharacterAtkSpeed;
-			CharacterStat.CharacterAtkSpeed *= FMath::Abs(Variable);
-			break;
-		case ECharacterDebuffType::E_SlowProjectile:
+			GetCharacterMovement()->MaxWalkSpeed *= Variable;
+			CharacterStat.CharacterAtkSpeed *= Variable;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				ResetVal = GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed;
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed *= Variable;
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate *= Variable;
 			}
 			break;
+		case ECharacterDebuffType::E_AttackDown:
+			CharacterStat.CharacterAtkMultiplier *= Variable;
+			break;
+		case ECharacterDebuffType::E_DefenseDown:
+			CharacterStat.CharacterDefense *= Variable;
+			break;
 		}
-		Variable = ResetVal;
-		TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType, Variable);
+		TimerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
-		return;
+		return true;
 	}
 
 	/*---- 버프 타이머 세팅 ----------------------------*/
 	else
 	{
-		CharacterState.CharacterBuffState |= (1 << (int)BuffType);
-		switch ((ECharacterBuffType)BuffType)
-		{
-		//----힐 버프-------------------
-		case ECharacterBuffType::E_Healing:
-			TimerDelegate.BindUFunction(this, FName("TakeHeal"), Variable, true, BuffType);
-			GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 1.0f, true);
-			return;
+		Variable = 1.0f + FMath::Abs(Variable); //값 정제
+		CharacterState.CharacterBuffState |= (1 << (int)BuffDebuffType);
 
-		//----스탯 조정 버프-------------------
+		switch ((ECharacterBuffType)BuffDebuffType)
+		{
+			//----힐 버프-------------------
+		case ECharacterBuffType::E_Healing:
+			Variable -= 1.0f;
+			TimerDelegate.BindUFunction(this, FName("TakeHeal"), Variable, true, BuffDebuffType);
+			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX], TimerDelegate, 1.0f, true);
+			break;
+			//----스탯 조정 버프-------------------
 		case ECharacterBuffType::E_AttackUp:
-			ResetVal = Variable;
 			CharacterStat.CharacterAtkMultiplier *= Variable;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.WeaponDamage *= Variable;
+				GetWeaponActorRef()->WeaponStat.WeaponDamageRate *= Variable;
 			}
 			break;
 		case ECharacterBuffType::E_DefenseUp:
-			ResetVal = CharacterStat.CharacterDefense;
-			CharacterStat.CharacterDefense *= FMath::Abs(1.0f + Variable);
+			CharacterStat.CharacterDefense *= Variable;
 			break;
-		case ECharacterBuffType::E_FastAtk:
-			ResetVal = CharacterStat.CharacterAtkMultiplier;
-			CharacterStat.CharacterAtkMultiplier *= FMath::Abs(1.0f + Variable);
-			break;
-		case ECharacterBuffType::E_FastProjectile:
+		case ECharacterBuffType::E_SpeedUp:
+			GetCharacterMovement()->MaxWalkSpeed *= Variable;
+			CharacterStat.CharacterAtkSpeed *= Variable;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				ResetVal = GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed;
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed *= (1.0f + Variable);
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate *= Variable;
 			}
 			break;
 		case ECharacterBuffType::E_Invincibility:
-			ResetVal = 0.0f;
 			CharacterStat.bIsInvincibility = true;
 			break;
 		case ECharacterBuffType::E_InfiniteAmmo:
+			if (CharacterStat.bInfiniteAmmo) return false; //스탯으로써 무한 탄약 능력을 갖고 있다면?
 			if (IsValid(GetWeaponActorRef()))
 			{
 				CharacterStat.bInfiniteAmmo = true;
 				GetWeaponActorRef()->SetInfiniteAmmoMode(true);
 			}
 			break;
-		case ECharacterBuffType::E_SpeedUp:
-			ResetVal = GetCharacterMovement()->MaxWalkSpeed;
-			GetCharacterMovement()->MaxWalkSpeed *= Variable;
-			break;
 		}
-		Variable = ResetVal;
-		TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType, Variable);
+		TimerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
+		return true;
 	}
+	return false;
 }
 
-void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+void ACharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
 	if (bIsDebuff)
 	{
-		switch ((ECharacterDebuffType)BuffType)
+		ResetVal = FMath::Max(0.0f, ResetVal);
+		switch ((ECharacterDebuffType)BuffDebuffType)
 		{
+		case ECharacterDebuffType::E_Flame:
+		case ECharacterDebuffType::E_Poison:
+			GetWorldTimerManager().ClearTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX]);
+			break;
 		case ECharacterDebuffType::E_Slow:
 			GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
+			CharacterStat.CharacterAtkSpeed /= ResetVal;
+			if (IsValid(GetWeaponActorRef()))
+			{
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate /= ResetVal;
+			}
 			break;
 		case ECharacterDebuffType::E_Stun:
-			//WakeUp Animation
-			CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+			ResetActionState();
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 			break;
 		case ECharacterDebuffType::E_AttackDown:
-			CharacterStat.CharacterAtkMultiplier = ResetVal;
-			break;
-		case ECharacterDebuffType::E_DefenseDown:
-			CharacterStat.CharacterDefense = ResetVal;
-			break;
-		case ECharacterDebuffType::E_SlowAtk:
-			CharacterStat.CharacterAtkSpeed = ResetVal;
-			break;
-		case ECharacterDebuffType::E_SlowProjectile:
+			CharacterStat.CharacterAtkMultiplier /= ResetVal;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed = ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponDamageRate /= ResetVal;
 			}
+			break;
+		case ECharacterDebuffType::E_DefenseDown:
+			CharacterStat.CharacterDefense /= ResetVal;
 			break;
 		}
 	}
 	else
 	{
-		switch ((ECharacterBuffType)BuffType)
+		switch ((ECharacterBuffType)BuffDebuffType)
 		{
+		case ECharacterBuffType::E_Healing:
+			GetWorldTimerManager().ClearTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX]);
+			break;
 		case ECharacterBuffType::E_DefenseUp:
-			CharacterStat.CharacterDefense = ResetVal;
+			CharacterStat.CharacterDefense /= ResetVal;
 			break;
 		case ECharacterBuffType::E_AttackUp:
-			CharacterStat.CharacterAtkMultiplier = ResetVal;
-			if (IsValid(GetWeaponActorRef()) && ResetVal != 0.0f)
+			CharacterStat.CharacterAtkMultiplier /= ResetVal;
+			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.WeaponDamage /= ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponDamageRate /= ResetVal;
 			}
 			break;
 		case ECharacterBuffType::E_SpeedUp:
-			GetCharacterMovement()->MaxWalkSpeed = ResetVal;
-			break;
-		case ECharacterBuffType::E_FastAtk:
-			CharacterStat.CharacterAtkSpeed = ResetVal;
-			break;
-		case ECharacterBuffType::E_FastProjectile:
+			GetCharacterMovement()->MaxWalkSpeed /= ResetVal;
+			CharacterStat.CharacterAtkSpeed /= ResetVal;
 			if (IsValid(GetWeaponActorRef()))
 			{
-				GetWeaponActorRef()->WeaponStat.ProjectileStat.ProjectileSpeed = ResetVal;
+				GetWeaponActorRef()->WeaponStat.WeaponAtkSpeedRate /= ResetVal;
 			}
 			break;
 		case ECharacterBuffType::E_Invincibility:
 			CharacterStat.bIsInvincibility = false;
-			ClearAllBuffTimer(true);
+			ClearAllBuffDebuffTimer(true);
 			break;
 		case ECharacterBuffType::E_InfiniteAmmo:
 			CharacterStat.bInfiniteAmmo = false;
@@ -421,29 +401,43 @@ void ACharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float Re
 			break;
 		}
 	}
-	ClearBuffTimer(bIsDebuff, BuffType);
+	ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
-void ACharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
+void ACharacterBase::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	if (bIsDebuff)
 	{
-		CharacterState.CharacterDebuffState &= ~(1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+		CharacterState.CharacterDebuffState &= ~(1 << (int)BuffDebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
 	}
 	else
 	{
-		CharacterState.CharacterBuffState &= ~(1 << (int)BuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
-	}
-	BuffRemainingTime[bIsDebuff][(int)BuffType] = 0.0f;
-	GetWorldTimerManager().ClearTimer(BuffTimerHandle[bIsDebuff][(int)BuffType]);
+		CharacterState.CharacterBuffState &= ~(1 << (int)BuffDebuffType); //비트마스크 연산 (현재 해당 디버프에 걸렸음을 체크)
+	} 
+	GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType));
 }
 
-void ACharacterBase::ClearAllBuffTimer(bool bIsDebuff)
+void ACharacterBase::ClearAllBuffDebuffTimer(bool bIsDebuff)
 {
-	for (int timerIdx = 0; timerIdx < 10; timerIdx++)
+	const uint16 startIdx = bIsDebuff ? MAX_BUFF_IDX + 2 : 0;
+	const uint16 endIdx = bIsDebuff ? startIdx + MAX_DEBUFF_IDX : MAX_BUFF_IDX + 1;
+
+	for (uint16 timerIdx = startIdx; timerIdx <= endIdx ; timerIdx++)
 	{
-		GetWorldTimerManager().ClearTimer(BuffTimerHandle[bIsDebuff][timerIdx]);
+		GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, timerIdx));
 	}
+}
+
+bool ACharacterBase::SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
+	return SetBuffDebuffTimer(false, (uint8)BuffType, Causer, TotalTime, Variable);
+}
+
+bool ACharacterBase::SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
+	return SetBuffDebuffTimer(true, (uint8)DebuffType, Causer, TotalTime, Variable);
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
@@ -458,6 +452,19 @@ bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
 	return false;
 }
 
+float ACharacterBase::GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType)
+{
+	FTimerHandle& targetBuffTimer = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
+	return GetWorldTimerManager().GetTimerRemaining(targetBuffTimer);
+}
+
+FTimerHandle& ACharacterBase::GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType)
+{
+	int16 targetListIdx = bIsDebuff ? BuffDebuffType + MAX_BUFF_IDX + 1 : BuffDebuffType;
+	targetListIdx = BuffDebuffTimerHandleList.IsValidIndex(targetListIdx) ? targetListIdx : 0;
+	return BuffDebuffTimerHandleList[targetListIdx];
+}
+
 void ACharacterBase::InitGamemodeRef()
 {
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -465,8 +472,8 @@ void ACharacterBase::InitGamemodeRef()
 
 void ACharacterBase::ClearAllTimerHandle()
 {
-	ClearAllBuffTimer(false);
-	ClearAllBuffTimer(true);
+	ClearAllBuffDebuffTimer(false);
+	ClearAllBuffDebuffTimer(true);
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandle);
 }
@@ -485,4 +492,28 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 }
 
+void ACharacterBase::InitWeaponInventory()
+{
+	InventorySize = 0;
+	InventoryIdx = 0;
 
+	AddWeaponInventory(GetWeaponActorRef());
+}
+
+
+void ACharacterBase::AddWeaponInventory(AWeaponBase* Weapon)
+{
+	WeaponInventory.Add(Weapon);
+	WeaponIDInventory.Add(Weapon->WeaponID);
+}
+
+
+void ACharacterBase::SwitchWeapon()
+{
+	if (InventoryIdx < WeaponInventory.Num() - 1)
+		InventoryIdx++;
+	else
+		InventoryIdx = 0;
+
+	ChangeWeapon(WeaponInventory[InventoryIdx]);
+}

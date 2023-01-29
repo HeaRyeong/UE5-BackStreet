@@ -3,6 +3,15 @@
 #include "Engine/DataTable.h"
 #include "StageInfoStructBase.generated.h"
 
+UENUM(BlueprintType)
+enum class EStageCategoryInfo : uint8
+{
+	E_None				  	UMETA(DisplayName = "None"),
+	E_Normal				UMETA(DisplayName = "Normal"),
+	E_Mission			  	UMETA(DisplayName = "Mission"),
+	E_Boss				    UMETA(DisplayName = "Boss"),
+};
+
 USTRUCT(BlueprintType)
 struct FStageEnemyRankStruct : public FTableRowBase
 {
@@ -29,3 +38,44 @@ public:
 		float CharacterDefense;
 
 };
+
+USTRUCT(BlueprintType)
+struct FStageEnemyTypeStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere)
+		FName StageType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1001;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1002;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1003;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1100;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1101;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1102;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool ID_1200;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 MaxSpawn;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 MinSpawn;
+
+
+};
+

@@ -30,6 +30,10 @@ public:
 	UFUNCTION()
 		FRotator GetRotationToCursor();
 
+	//특정 Action 키가 아직 눌려있는지 확인
+	UFUNCTION()
+		bool GetActionKeyIsDown(FName MappingName);
+
 protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		bool bJoyStickMode = false;

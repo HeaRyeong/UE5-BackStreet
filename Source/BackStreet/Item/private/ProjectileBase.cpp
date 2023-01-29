@@ -48,17 +48,23 @@ void AProjectileBase::BeginPlay()
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
-void AProjectileBase::InitProjectile(FProjectileStatStruct NewStat, ACharacterBase* NewCharacterRef)
+void AProjectileBase::InitProjectile(ACharacterBase* NewCharacterRef)
 {
 	if (IsValid(NewCharacterRef))
 	{
+		GamemodeRef->UpdateProjectileStatWithID(this, ProjectileID);
+
 		OwnerCharacterRef = NewCharacterRef;
 		SpawnInstigator = OwnerCharacterRef->GetController();
-		ProjectileStat = NewStat;
-		ProjectileMovement->InitialSpeed = NewStat.ProjectileSpeed;
-		ProjectileMovement->MaxSpeed = NewStat.ProjectileSpeed;
-		UE_LOG(LogTemp, Warning, TEXT("INIT PROJECTILE"));
+
+		ProjectileMovement->InitialSpeed = ProjectileStat.ProjectileSpeed;
+		ProjectileMovement->MaxSpeed = ProjectileStat.ProjectileSpeed;
 	}
+}
+
+void AProjectileBase::UpdateProjectileStat(FProjectileStatStruct NewStat)
+{
+	ProjectileStat = NewStat;
 }
 
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
@@ -77,10 +83,10 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		else
 		{
 			UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-				SpawnInstigator, this, nullptr);
+				SpawnInstigator, OwnerCharacterRef, nullptr);
 		}
 		
-		Cast<ACharacterBase>(OtherActor)->SetBuffTimer(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+		Cast<ACharacterBase>(OtherActor)->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);

@@ -34,16 +34,14 @@ public:
 
 public:
 	UPROPERTY(EditAnywhere)
-		class UStaticMeshComponent* DynamicMaterialMesh;
+		class UStaticMeshComponent* SeeingTroughMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UBoxComponent* OverlapVolume;
 	UPROPERTY(EditAnywhere)
-		float ChaningTime;
+		float SeeingThroughTime;
 	UPROPERTY(EditAnywhere)
-		float TimeTotal;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIsVisible;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bSetVisible;
+		bool bSeeingThrough;
+	UPROPERTY(EditAnywhere)
+		float RunningTimer;
 
 };

@@ -1,18 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "../public/ItemBase.h"
 #include "../public/ItemInfoStruct.h"
-#include "../public/WeaponStatStructBase.h"
+#include "../public/ItemDataAssetInfo.h"
 #include "../public/WeaponBase.h"
+#include "../public/WeaponInfoStruct.h"
 #include "../../StageSystem/public/MissionBase.h"
-#include "../public/ItemInfoStruct.h"
-#include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "Components/BoxComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "../public/ItemDataAssetInfo.h"
-#include "../../Character/public/CharacterBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -36,20 +33,25 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 	if (OtherActor->ActorHasTag(FName(TEXT("Player"))))
 	{
 		FBuffItemInfoStruct Stat;
-
 		UE_LOG(LogTemp, Log, TEXT("Get Item %d"), Type);
 		switch (Type)
 		{
 		case EItemCategoryInfo::E_None:
 			break;
 		case EItemCategoryInfo::E_Weapon:
+			UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
+			SelectWeapon();
+			Destroy();
 			break;
 		case EItemCategoryInfo::E_Bullet:
+			UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
+			SelectProjectile();
+			Destroy();
 			break;
 		case EItemCategoryInfo::E_Buff:
-			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d" ), Stat.Type);
 			Stat = DA->BuffStat;
-			MyCharacter->SetBuffTimer(false, uint8(Stat.Type), this, Stat.Time, Stat.Time);
+			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d"), Stat.Type);
+			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_DeBuff:
@@ -81,14 +83,13 @@ void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
 	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	
+	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
 
 void AItemBase::InitItem(EItemCategoryInfo SetType)
 {
-	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	TileRef = GameModeRef->CurrTile;
+	TileRef = GameModeRef->CurrentTile;
 	AssetManagerRef = GameModeRef->AssetDataManager;
 
 	Type = SetType;
@@ -97,5 +98,56 @@ void AItemBase::InitItem(EItemCategoryInfo SetType)
 	{
 		TileRef->MissionInfo->ItemList.AddUnique(this);
 	}
+
+}
+
+void AItemBase::SelectWeapon()
+{
+	int8 WeaponType = FMath::RandRange(0, MaxWeaponType - 1);
+	int32 WeaponID;
+	switch (WeaponType)
+	{
+	case 0:
+		WeaponID = 100;
+		break;
+	case 1:
+		WeaponID = 101;
+		break;
+	case 2:
+		WeaponID = 102;
+		break;
+	case 3:
+		WeaponID = 103;
+		break;
+	case 4:
+		WeaponID = 151;
+		break;
+	case 5:
+		WeaponID = 152;
+		break;
+	default:
+		break;
+	}
+	MyCharacter->AddWeaponInventory(GameModeRef->GetAssetManager()->SpawnWeaponwithID(WeaponID));
+
+}
+
+void AItemBase::SelectProjectile()
+{
+	int8 ProjectileType = FMath::RandRange(0, MaxProjectileType - 1);
+
+	int32 ProjectileID;
+	switch (ProjectileType)
+	{
+	case 0:
+		ProjectileID = 200;
+		break;
+	case 1:
+		ProjectileID = 204;
+		break;
+	default:
+		break;
+	}
+	MyCharacter->AddWeaponInventory(GameModeRef->GetAssetManager()->SpawnWeaponwithID(ProjectileID));
 
 }

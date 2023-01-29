@@ -2,9 +2,10 @@
 
 
 #include "../public/EnemyCharacterBase.h"
-#include "../public/CharacterInfoStructBase.h"
+#include "../public/CharacterInfoStruct.h"
 #include "../../StageSystem/public/StageInfoStructBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../public/EnemyStatInfoStruct.h"
 #include "../../StageSystem/public/TileBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
@@ -12,40 +13,49 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/D_StageEnemyRank"));
 	if (DataTable.Succeeded())
 	{
-		EnemyRankDataTable = DataTable.Object;
+		EnemyStatDataTable = DataTable.Object;
 	}
+	bUseControllerRotationYaw = false;
 	this->Tags.Add("Enemy");
 }
 
 void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+	TileRef = GamemodeRef->CurrentTile;
 	
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-	if (!IsValid(TileRef)) return;
-	FStageEnemyRankStruct* StageTableRow = EnemyRankDataTable->FindRow<FStageEnemyRankStruct>(FName(*(FString::FormatAsNumber(TileRef->StageLevel))), FString(""));
-
-	if (!TileRef->bIsClear)
+	TArray< FEnemyStatStruct*> DataTable;
+	FString ContextString;
+	EnemyStatDataTable->GetAllRows(ContextString,DataTable);
+	
+	for (FEnemyStatStruct* Row : DataTable)
 	{
-		// 스탯 설정
-		FCharacterStatStruct NewStat;
-		NewStat.CharacterMaxHP = StageTableRow->CharacterMaxHP;
-		NewStat.CharacterAtkMultiplier = StageTableRow->CharacterAtkMultiplier;
-		NewStat.CharacterAtkSpeed = StageTableRow->CharacterAtkSpeed;
-		NewStat.CharacterMoveSpeed = StageTableRow->CharacterMoveSpeed;
-		NewStat.CharacterDefense = StageTableRow->CharacterDefense;
-		this->UpdateCharacterStat(NewStat);
-		// 몬스터 리스트에 추가
-		TileRef -> MonsterList.Add(this);
+		if (Row->EnemyID == EnemyID)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Init Enemy %d"), EnemyID);
+			FCharacterStatStruct NewStat;
+			NewStat.CharacterMaxHP = Row->CharacterMaxHP;
+			NewStat.CharacterAtkMultiplier = Row->CharacterAtkMultiplier;
+			NewStat.CharacterAtkSpeed = Row->CharacterAtkSpeed;
+			NewStat.CharacterMoveSpeed = Row->CharacterMoveSpeed;
+			NewStat.CharacterDefense = Row->CharacterDefense;
+			this->UpdateCharacterStat(NewStat);
+		}
 	}
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (IsValid(DamageCauser) && DamageCauser->ActorHasTag("Player"))
+	{
+		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation());
+	}
 	return damageAmount;
 }
 
@@ -62,4 +72,33 @@ void AEnemyCharacterBase::Attack()
 void AEnemyCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+}
+
+void AEnemyCharacterBase::Turn(float Angle)
+{
+	FRotator newRotation =  GetActorRotation();
+	newRotation.Yaw += Angle;
+	SetActorRotation(newRotation);
+	
+	if (GetVelocity().Length() == 0.0f)
+	{
+		if (FMath::Abs(Angle) > 0.0f)
+		{
+			CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
+			return;
+		}
+	}
+	CharacterState.TurnDirection = 0;
+}
+
+bool AEnemyCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
+{
+	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
+	return result;
+}
+
+void AEnemyCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
+{
+	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
+
 }

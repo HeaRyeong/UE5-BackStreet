@@ -7,6 +7,9 @@
 #include "ItemInfoStruct.h"
 #include "ItemBase.generated.h"
 
+#define MaxWeaponType 6
+#define MaxProjectileType 2
+
 UCLASS()
 class BACKSTREET_API AItemBase : public AActor
 {
@@ -30,6 +33,12 @@ public:
 	UFUNCTION()
 		void InitItem(EItemCategoryInfo SetType);
 
+	UFUNCTION()
+		void SelectWeapon();
+
+	UFUNCTION()
+		void SelectProjectile();
+
 public:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
 		class UBoxComponent* OverlapVolume;
@@ -51,7 +60,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ABackStreetGameModeBase* GameModeRef;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UAssetManagerBase* AssetManagerRef;
+		class AAssetManagerBase* AssetManagerRef;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ACharacterBase* MyCharacter;
 };

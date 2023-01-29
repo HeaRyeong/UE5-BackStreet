@@ -5,6 +5,7 @@
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#define MAX_LINETRACE_POS_COUNT 6
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -39,19 +40,19 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.0f, false, 1.0f);
-		ComboCnt = (ComboCnt + 1);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
+	ComboCnt = (ComboCnt + 1);
 }
 
 void AWeaponBase::StopAttack()
 {
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
+	MeleePrevTracePointList.Empty();
 	MeleeLineTraceQueryParams.ClearIgnoredActors();
-	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
 
-void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
+void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 {
 	WeaponStat = NewStat;
 }
@@ -63,18 +64,22 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FRotator SpawnRotation = OwnerCharacterRef->GetActorRotation(); 
+	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
-	SpawnRotation.Pitch = 0.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorForwardVector() * 100.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetActorRightVector() * 25.0f;
-	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 
+	SpawnRotation.Pitch = 0.0f;
+	SpawnRotation.Yaw += 90.0f;
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+
+	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
 
 	if (IsValid(newProjectile))
 	{
-		newProjectile->InitProjectile(WeaponStat.ProjectileStat, OwnerCharacterRef);
+		newProjectile->InitProjectile(OwnerCharacterRef);
+		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //버프/디버프로 인해 강화/너프된 값을 반영
+		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
 		return newProjectile;
 	}
 
@@ -143,7 +148,8 @@ float AWeaponBase::GetAttackRange()
 {
 	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo || (CurrentAmmoCount == 0.0f && TotalAmmoCount == 0.0f))
 	{
-		return WeaponStat.WeaponMeleeAtkRange;
+		FVector distVector = WeaponMesh->GetSocketLocation("GrabPoint") - WeaponMesh->GetSocketLocation("End");
+		return distVector.Length() * 1.5f;
 	}
 	return 700.0f;
 }
@@ -151,32 +157,47 @@ float AWeaponBase::GetAttackRange()
 void AWeaponBase::MeleeAttack()
 {	
 	FHitResult hitResult;
+	bool bIsMeleeTraceSucceed = false;
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
-	//LineTrace를 통해 hit 된 물체들을 추적
-	GetWorld()->LineTraceSingleByChannel(hitResult, StartLocation, EndLocation, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
-	
-	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+	//검로 Trace
+	//근접 무기의 각 지점에서 이전 월드 좌표 -> 현재 월드 좌표로 LineTrace를 진행 
+	TArray<FVector> currTracePositionList = GetCurrentMeleePointList();
+	if (MeleePrevTracePointList.Num() == MAX_LINETRACE_POS_COUNT)
+	{
+		for (uint8 tracePointIdx = 0; tracePointIdx < MAX_LINETRACE_POS_COUNT; tracePointIdx++)
+		{
+			const FVector& beginPoint = MeleePrevTracePointList[tracePointIdx];
+			const FVector& endPoint = currTracePositionList[tracePointIdx];
+			GetWorld()->LineTraceSingleByChannel(hitResult, beginPoint, endPoint, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
+			
 
-	//hit 되었다면?
-	if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
-		&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1]))
+			if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
+				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1]))
+			{
+				bIsMeleeTraceSucceed = true;
+				DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor::Yellow, false, 1.0f, 0, 1.5f);
+				break;
+			}
+			else
+				DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+		}
+	}
+	MeleePrevTracePointList = currTracePositionList;
+
+	//hitResult가 Valid하다면 아래 조건문에서 데미지를 가함
+	if (bIsMeleeTraceSucceed)
 	{
 		//데미지를 주고
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.02f);
-
-		if (hitResult.GetActor()->ActorHasTag("Enemy"))
-		{
-			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, OwnerCharacterRef->GetActorLocation());
-		}
+		Cast<ACharacterBase>(hitResult.GetActor())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))
 		{
-			FTransform emitterSpawnTransform(FQuat(0.0f), hitResult.Location, FVector(1.0f));
+			FTransform emitterSpawnTransform(FQuat(0.0f), hitResult.Location, FVector(1.5f));
 			MeleeLineTraceQueryParams.AddIgnoredActor(hitResult.GetActor());
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
 		}
@@ -188,6 +209,21 @@ void AWeaponBase::ResetCombo()
 	ComboCnt = 0;
 }
 
+TArray<FVector> AWeaponBase::GetCurrentMeleePointList()
+{
+	TArray<FVector> resultPosList;
+
+	resultPosList.Add(WeaponMesh->GetSocketLocation("GrabPoint"));
+	resultPosList.Add(WeaponMesh->GetSocketLocation("End"));
+	for (uint8 positionIdx = 1; positionIdx < MAX_LINETRACE_POS_COUNT - 1; positionIdx++)
+	{
+		FVector direction = resultPosList[1] - resultPosList[0];
+
+		resultPosList.Add(resultPosList[0] + direction / MAX_LINETRACE_POS_COUNT * positionIdx);
+	}
+	return resultPosList;
+}
+
 // Called every frame
 void AWeaponBase::Tick(float DeltaTime)
 {
@@ -195,10 +231,32 @@ void AWeaponBase::Tick(float DeltaTime)
 
 }
 
-void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
+void AWeaponBase::InitWeapon(ACharacterBase* NewOwnerCharacterRef)
 {
-	if (!IsValid(NewCharacterRef)) return;
-	OwnerCharacterRef = NewCharacterRef;
-	MeleeLineTraceQueryParams.AddIgnoredActor(NewCharacterRef);
+	if (!IsValid(NewOwnerCharacterRef)) return;
+	GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
+	OwnerCharacterRef = NewOwnerCharacterRef;
+	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
 
+void AWeaponBase::SetWeaponAmmo(int32 Ammo, int32 TotalAmmo)
+{
+	CurrentAmmoCount = Ammo;
+	TotalAmmoCount = TotalAmmo;
+}
+
+
+int32 AWeaponBase::GetCurrentAmmoCount()
+{
+	return CurrentAmmoCount;
+}
+
+int32 AWeaponBase::GetTotalAmmoCount()
+{
+	return TotalAmmoCount;
+}
+
+void AWeaponBase::PrintWeaponInfo()
+{
+	UE_LOG(LogTemp, Log, TEXT("CurrentAmmoCount %d , TotalAmmoCount %d"), CurrentAmmoCount, TotalAmmoCount);
+}

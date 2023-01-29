@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000
@@ -17,11 +16,14 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 WeaponID;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-		void InitOwnerCharacterRef(class ACharacterBase* NewCharacterRef);
+		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
 
 protected:
 	// Called when the game starts or when spawned
@@ -42,17 +44,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
+	//Melee 오류 디버깅용 임시 함수
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void MeleeTest();
+
 	//공격 처리
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void Attack();
 
 	//공격 마무리 처리
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void StopAttack();
 
 	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
-		void InitWeaponStat(FWeaponStatStruct NewStat);
+		void UpdateWeaponStat(FWeaponStatStruct NewStat);
 
 //------ Projectile 관련-------------
 public:
@@ -91,12 +97,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
 
+
 	//현재 탄창에 있는 발사체 수
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|Weapon")
 		int32 CurrentAmmoCount = 1;
 
 	//가지고 있는 최대 발사체 수
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay|Weapon")
 		int32 TotalAmmoCount = 0;
 
 	//공격 범위를 Get
@@ -105,17 +112,23 @@ protected:
 
 //-------- Melee 관련 ------------
 public:
-	//Linetrace를 통한 근접 공격
-	UFUNCTION()
-		void MeleeAttack();
-
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		int32 GetCurrentComboCnt() { return ComboCnt; }
 
+	//근접 공격을 수행
+	UFUNCTION()
+		void MeleeAttack();
+
 	//Melee Combo 초기화
 	UFUNCTION()
 		void ResetCombo();
+
+	UFUNCTION()
+		TArray<FVector> GetCurrentMeleePointList();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Debug")
+		float SphereTraceRadius = 5.0f;
 
 protected:
 	//현재 MeleeCombo 수
@@ -139,6 +152,31 @@ private:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
-	//UPROPERTY
+	UPROPERTY()
+		TArray<FVector> MeleePrevTracePointList;
+
+	//UPROPERTY()
 		FCollisionQueryParams MeleeLineTraceQueryParams;
+
+	// WeaponInventory 관련
+
+public:
+	UFUNCTION(BlueprintCallable)
+		void SetWeaponAmmo(int32 Ammo ,int32 TotalAmmo);
+	
+	UFUNCTION(BlueprintCallable)
+		int32 GetCurrentAmmoCount();
+
+	UFUNCTION(BlueprintCallable)
+		int32 GetTotalAmmoCount();
+
+public:
+		UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
+			FSoftObjectPath ProjectilePath;
+
+	// 디버그용
+public:
+	UFUNCTION(BlueprintCallable)
+		void PrintWeaponInfo();
+	
 };
