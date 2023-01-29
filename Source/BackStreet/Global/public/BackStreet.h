@@ -7,6 +7,11 @@
 #include "CollisionQueryParams.h"
 #include "Perception/AIPerceptionTypes.h"
 
-/* ----- 구조체 ------------ */
+/* ----- 구조체/Enum ------------ */
 #include "../../Item/public/WeaponStatStructBase.h"
 #include "../../Character/public/CharacterInfoStructBase.h"
+#include "../../StageSystem/public/DirectionEnumInfo.h"
+#include "../../StageSystem/public/StageInfoStructBase.h"
+#include "../../Item/public/ItemInfoStruct.h"
+#include "../../Item/public/ItemDataAssetInfo.h"
+#include "../../Character/public/EnemyStatInfoStruct.h"

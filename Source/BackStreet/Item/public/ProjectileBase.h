@@ -12,6 +12,8 @@ UCLASS()
 class BACKSTREET_API AProjectileBase : public AActor
 {
 	GENERATED_BODY()
+
+	friend class AWeaponBase;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -19,6 +21,9 @@ public:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 ProjectileID;
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,7 +35,7 @@ public:
 
 	UFUNCTION()
 		void OnProjectileBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
-								, bool bFromSweep, const FHitResult& SweepResult);
+			, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
 		void OnTargetBeginOverlap(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex

@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
@@ -10,7 +9,7 @@
 // Sets default values
 AWeaponBase::AWeaponBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENE_ROOT"));
@@ -32,7 +31,7 @@ void AWeaponBase::BeginPlay()
 void AWeaponBase::Attack()
 {
 	//발사체가 있는 무기라면 발사
-	if (WeaponStat.bHasProjectile) 
+	if (WeaponStat.bHasProjectile)
 	{
 		TryFireProjectile();
 	}
@@ -94,7 +93,7 @@ bool AWeaponBase::TryReload()
 		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - CurrentAmmoCount);
 	}
 
-	CurrentAmmoCount += addAmmoCnt; 
+	CurrentAmmoCount += addAmmoCnt;
 	TotalAmmoCount -= addAmmoCnt;
 
 	return true;
@@ -152,7 +151,7 @@ float AWeaponBase::GetAttackRange()
 }
 
 void AWeaponBase::MeleeAttack()
-{	
+{
 	FHitResult hitResult;
 	bool bIsMeleeTraceSucceed = false;
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
@@ -168,7 +167,7 @@ void AWeaponBase::MeleeAttack()
 			const FVector& beginPoint = MeleePrevTracePointList[tracePointIdx];
 			const FVector& endPoint = currTracePositionList[tracePointIdx];
 			GetWorld()->LineTraceSingleByChannel(hitResult, beginPoint, endPoint, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
-			
+
 
 			if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
 				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1]))
@@ -188,7 +187,7 @@ void AWeaponBase::MeleeAttack()
 	{
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
-										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
+			, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
 		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
@@ -234,4 +233,3 @@ void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
 	OwnerCharacterRef = NewCharacterRef;
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
-

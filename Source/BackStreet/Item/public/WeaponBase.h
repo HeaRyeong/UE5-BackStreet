@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000
@@ -12,8 +11,8 @@ UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
@@ -27,8 +26,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-//------ Global -------------------
+	//------ Global -------------------
 public:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 WeaponID;
+
 	UPROPERTY(VisibleDefaultsOnly)
 		USceneComponent* DefaultSceneRoot;
 
@@ -58,7 +60,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void InitWeaponStat(FWeaponStatStruct NewStat);
 
-//------ Projectile 관련-------------
+	//------ Projectile 관련-------------
 public:
 	//발사체를 생성
 	UFUNCTION()
@@ -107,7 +109,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 		float GetAttackRange();
 
-//-------- Melee 관련 ------------
+	//-------- Melee 관련 ------------
 public:
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -142,7 +144,7 @@ private:
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
-		
+
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
 
@@ -153,5 +155,5 @@ private:
 		TArray<FVector> MeleePrevTracePointList;
 
 	//UPROPERTY()
-		FCollisionQueryParams MeleeLineTraceQueryParams;
+	FCollisionQueryParams MeleeLineTraceQueryParams;
 };

@@ -1,9 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "../public/CharacterBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../Global/public/AssetManagerBase.h"
 #include "Animation/AnimMontage.h"
 
 #define MAX_BUFF_IDX 6
@@ -87,11 +85,6 @@ float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AAc
 	//추후 디버프 당 파티클 시스템 추가 예정
 	if (!IsValid(Causer)) return 0.0f;
 	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
-
-	if (BuffRemainingTime[1][(int)DebuffType] <= 0.0f)
-	{
-		ClearBuffTimer(1, DebuffType);
-	}
 	return DamageAmount;
 }
 
@@ -101,19 +94,15 @@ void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffTy
 	CharacterState.CharacterCurrHP = FMath::Min(CharacterStat.CharacterMaxHP, CharacterState.CharacterCurrHP);
 	return;
 }
-}
 
 void ACharacterBase::Die()
 {
-	if (!IsValid(DieAnimMontage)) return;
-
 	CharacterState.CharacterActionState = ECharacterActionType::E_Die;
 	CharacterStat.bIsInvincibility = true;
 	ClearAllBuffTimer(true);
 	ClearAllBuffTimer(false);
 	ClearAllTimerHandle();
 	
-	PlayAnimMontage(DieAnimMontage);
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
 
@@ -126,12 +115,6 @@ void ACharacterBase::Die()
 			FDieDelegate.Unbind();
 }
 	}
-
-
-	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
-		//GameModeRef->SpawnItemOnLocation(GetActorLocation(), ItemID);
-		Destroy();
-	}), 1.0f, false, DieAnimMontage->GetPlayLength());
 }
 
 void ACharacterBase::TryAttack()
@@ -238,9 +221,7 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 		GetWorldTimerManager().SetTimer(timerHandle, 1.0f, false, newTime);
 		return true;
 	}
-	if (GetWorldTimerManager().IsTimerActive(timerHandle)) return;
 
-	BuffRemainingTime[bIsDebuff][(int)BuffType] = TotalTime;
 
 	/*---- 디버프 타이머 세팅 ----------------------------*/
 	if (bIsDebuff)
@@ -279,7 +260,6 @@ bool ACharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer
 			CharacterStat.CharacterDefense *= Variable;
 			break;
 		}
-		Variable = ResetVal;
 		TimerDelegate.BindUFunction(this, FName("ResetStatBuffState"), bIsDebuff, BuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, TimerDelegate, 0.1f, false, TotalTime);
 		return true;
@@ -490,3 +470,40 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 }
 
 
+void ACharacterBase::InitWeaponInventory()
+{
+	InventorySize = 0;
+	InventoryIdx = 0;
+
+	AddWeaponInventory(GetWeaponActorRef());
+}
+
+
+void ACharacterBase::AddWeaponInventory(AWeaponBase* Weapon)
+{
+	WeaponInventory.Add(Weapon);
+	WeaponIDInventory.Add(Weapon->WeaponID);
+}
+
+
+void ACharacterBase::SwitchWeapon()
+{
+	if (InventoryIdx < WeaponInventory.Num() - 1)
+		InventoryIdx++;
+	else
+		InventoryIdx = 0;
+
+	ChangeWeapon(WeaponInventory[InventoryIdx]);
+}
+
+void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+{
+	// Weapon Ammo 정보 저장/적용 추가해야함
+	AWeaponBase* Target = GamemodeRef->GetAssetManager()->SpawnWeaponwithID(WeaponIDInventory[InventoryIdx]);
+
+	if (!IsValid(Target)) return;
+	WeaponActor->DestroyChildActor();
+	WeaponActor->SetChildActorClass(Target->GetClass());
+	Target->Destroy();
+
+}

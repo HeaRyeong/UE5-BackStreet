@@ -31,10 +31,10 @@ void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 	if (OtherActor->ActorHasTag("Player"))
 	{
 		ABackStreetGameModeBase* gamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-		ATileBase* UnLoadTile = gamemodeRef->CurrTile; // 이동하기전 스테이지 ( 이제 언로드 시킬 타일 )
+		ATileBase* UnLoadTile = gamemodeRef->CurrentTile; // 이동하기전 스테이지 ( 이제 언로드 시킬 타일 )
 
 		UpdateGateInfo();
-		ATileBase* LoadTile = gamemodeRef->CurrTile;
+		ATileBase* LoadTile = gamemodeRef->CurrentTile;
 		LoadTile->LoadLevel();
 		UnLoadTile->UnLoadLevel();
 		Destroy();
@@ -53,7 +53,7 @@ ULevelStreaming* AGateBase::UpdateGateInfo()
 {
 	// game mode 받아오기
 	ABackStreetGameModeBase* mode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	ULevelStreaming* ToUnLoadLevel = mode->CurrTile->LevelRef;
+	ULevelStreaming* ToUnLoadLevel = mode->CurrentTile->LevelRef;
 
 	if (!(this->Tags[1].Compare(FName(TEXT("UP")))))
 	{
@@ -83,7 +83,7 @@ ULevelStreaming* AGateBase::UpdateGateInfo()
 void AGateBase::CheckHaveToActive()
 {
 	ABackStreetGameModeBase* gamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	ATileBase* tile = gamemodeRef->CurrTile;
+	ATileBase* tile = gamemodeRef->CurrentTile;
 
 	if (IsValid(tile))
 	{
