@@ -6,19 +6,20 @@
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "../public/AssetManagerBase.h"
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
-	AssetDataManager = CreateDefaultSubobject<UAssetManagerBase>(TEXT("AssetManager"));
+	
 
 }
 
 void ABackStreetGameModeBase::InitializeChapter()
 {
-	AssetDataManager->GameModeRef = this;
+	AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
 	RemainChapter = 2;
 	ChapterStatValue = 0;
 	InitChapter();
@@ -33,7 +34,7 @@ void ABackStreetGameModeBase::InitChapter()
 	Chapter = GetWorld()->SpawnActor<AGridBase>(AGridBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	Chapter->CreateMaze(3, 3);
 
-	CurrTile = Chapter->GetCurrentTile();
+	CurrentTile = Chapter->GetCurrentTile();
 	RemainChapter--;
 }
 
@@ -66,7 +67,7 @@ void ABackStreetGameModeBase::NextStage(uint8 Dir)
 void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
 {
 	Chapter->MoveCurrentTile(NextDir);
-	CurrTile = Chapter->GetCurrentTile();
+	CurrentTile = Chapter->GetCurrentTile();
 }
 
 void ABackStreetGameModeBase::ClearChapter()
@@ -83,8 +84,22 @@ void ABackStreetGameModeBase::ClearChapter()
 	{
 		InitChapter();
 		ChapterStatValue += 0.1f;
-		CurrTile->LoadLevel();
+		CurrentTile->LoadLevel();
 	}
+}
+
+void ABackStreetGameModeBase::CreateAssetManager()
+{
+	if (AssetManagerBPPath.IsValid())
+	{
+		UBlueprint* Gen = Cast<UBlueprint>(AssetManagerBPPath.ResolveObject());
+		AssetDataManager = GetWorld()->SpawnActor<AAssetManagerBase>(Gen->GeneratedClass, FVector::ZeroVector, FRotator::ZeroRotator);
+	}
+}
+
+AAssetManagerBase* ABackStreetGameModeBase::GetAssetManager()
+{
+	return AssetDataManager;
 }
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)

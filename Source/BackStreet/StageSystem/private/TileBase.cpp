@@ -8,7 +8,7 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemInfoStruct.h"
-#include "../../Character/public/CharacterInfoStruct.h"
+//#include "../../Character/public/CharacterInfoStruct.h"
 #include "TimerManager.h"
 #include "../public/GridBase.h"
 #include "UObject/SoftObjectPath.h"
@@ -32,7 +32,6 @@ void ATileBase::BeginPlay()
 	Super::BeginPlay();
 	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	GameMode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	AssetDataManagerRef = GameMode->AssetDataManager;
 	Chapter = GameMode->Chapter;
 
 	SelectMap();
@@ -49,8 +48,7 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 	Gate.Add(false); // LEFT
 	Gate.Add(false); // RIGHT
 
-
-	StageLevel = FMath::RandRange(1, 5);
+	StageType = EStageCategoryInfo::E_Normal;
 	ClearTime = 0;
 }
 
@@ -88,6 +86,14 @@ void ATileBase::SelectMap()
 
 void ATileBase::InitMission(bool IsBoss)
 {
+	if (IsBoss)
+	{
+		StageType = EStageCategoryInfo::E_Boss;
+	}
+	else
+	{
+		StageType = EStageCategoryInfo::E_Normal;
+	}
 	bIsMainMission = true;
 	bIsBossStage = IsBoss;
 	MissionInfo = NewObject<UMissionBase>(this);
@@ -98,7 +104,7 @@ void ATileBase::InitMission(bool IsBoss)
 
 void ATileBase::LoadLevel()
 {
-	
+	AssetDataManagerRef = GameMode->AssetDataManager;
 	if (LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
@@ -221,8 +227,13 @@ void ATileBase::LoadItem()
 			ItemSpawnPoints[SelectidxB] = Temp;
 
 		}
-
-		AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Buff, ItemSpawnPoints);
+		int8 SpawnMax = FMath::RandRange(1, MaxItemSpawn);
+		for (int8 i = 0; i < SpawnMax; i++)
+		{
+			int8 ItemType = FMath::RandRange(1, 3);
+			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo(ItemType), ItemSpawnPoints[i]);
+		}
+		
 	}
 }
 
@@ -247,7 +258,7 @@ void ATileBase::LoadMissionAsset()
 
 		if(MissionInfo->Type == 1) // 아이템 습득
 		{
-			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Mission, MissionSpawnPoints);
+			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Mission, MissionSpawnPoints[0]);
 		}
 		else if(MissionInfo->Type == 2)// 몬스터 잡기
 		{

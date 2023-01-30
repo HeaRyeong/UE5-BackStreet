@@ -11,26 +11,24 @@ UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-		uint8 WeaponID;
-
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-//------ Global -------------------
+	//------ Global -------------------
 public:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 WeaponID;
+
 	UPROPERTY(VisibleDefaultsOnly)
 		USceneComponent* DefaultSceneRoot;
 
@@ -43,6 +41,9 @@ public:
 	//Weapon의 종합 Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
+
+	UFUNCTION()
+		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
 
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
@@ -60,7 +61,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		float GetAttackRange();
 
-//------ Projectile 관련-------------
+	//------ Projectile 관련-------------
 public:
 	//발사체를 생성
 	UFUNCTION()
@@ -146,7 +147,7 @@ private:
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
-		
+
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
 
@@ -154,5 +155,5 @@ private:
 		TArray<FVector> MeleePrevTracePointList;
 
 	//UPROPERTY()
-		FCollisionQueryParams MeleeLineTraceQueryParams;
+	FCollisionQueryParams MeleeLineTraceQueryParams;
 };

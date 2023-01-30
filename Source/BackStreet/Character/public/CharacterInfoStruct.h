@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "../../Global/public/BackStreet.h"
+#include "CharacteInfoEnum.h"
 #include "CharacterInfoStruct.generated.h"
 
 USTRUCT(BlueprintType)

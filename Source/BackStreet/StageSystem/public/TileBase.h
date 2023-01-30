@@ -3,8 +3,10 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
+#include "../public/StageInfoStruct.h"
+#include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
-
+#define MaxItemSpawn 3
 
 UCLASS()
 class BACKSTREET_API ATileBase :public AActor
@@ -41,7 +43,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<bool> Gate; 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 StageLevel;
+		EStageCategoryInfo StageType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName LevelToLoad;
 
@@ -119,11 +121,14 @@ public:
 
 	// ---- ÂüÁ¶ -----
 public:
+	UPROPERTY()
 	class AGridBase* Chapter;
+	UPROPERTY()
 	class ACharacterBase* MyCharacter;
+	UPROPERTY()
 	class ABackStreetGameModeBase* GameMode;
 
-	UPROPERTY()
-		class UAssetManagerBase* AssetDataManagerRef;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		 AAssetManagerBase* AssetDataManagerRef;
 
 };

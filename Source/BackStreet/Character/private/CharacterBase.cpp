@@ -1,9 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "../public/CharacterBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../Global/public/AssetManagerBase.h"
 #include "Animation/AnimMontage.h"
 
 #define MAX_BUFF_IDX 6
@@ -466,3 +464,34 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 }
 
 
+void ACharacterBase::InitWeaponInventory()
+{
+	InventorySize = 0;
+	InventoryIdx = 0;
+
+	AddWeaponInventory(GetWeaponActorRef());
+}
+
+
+void ACharacterBase::AddWeaponInventory(AWeaponBase* Weapon)
+{
+	WeaponInventory.Add(Weapon);
+	WeaponIDInventory.Add(Weapon->WeaponID);
+}
+
+
+void ACharacterBase::SwitchWeapon()
+{
+	if (InventoryIdx < WeaponInventory.Num() - 1)
+		InventoryIdx++;
+	else
+		InventoryIdx = 0;
+
+	ChangeWeapon(WeaponInventory[InventoryIdx]);
+}
+
+void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+{
+	DropWeapon();
+
+}

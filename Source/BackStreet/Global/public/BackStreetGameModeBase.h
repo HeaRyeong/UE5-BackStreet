@@ -3,9 +3,8 @@
 #pragma once
 
 #include "../public/BackStreet.h"
-#include "../../StageSystem/public/DirectionEnumInfo.h"
 #include "GameFramework/GameModeBase.h"
-#include "AssetManagerBase.h"
+#include "Engine/StreamableManager.h"
 #include "BackStreetGameModeBase.generated.h"
 
 
@@ -40,7 +39,7 @@ public:
 		class AGridBase* Chapter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ATileBase* CurrTile;
+		class ATileBase* CurrentTile;
 	// 남은 챕터 수 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -55,11 +54,22 @@ public:
 
 //-- Asset관련-------------------
 public:
-	UPROPERTY(EditAnywhere)
-		class UAssetManagerBase* AssetDataManager;
+	UFUNCTION()
+		void CreateAssetManager();
 
-//	UPROPERTY(EditAnywhere)
-		FStreamableManager StreamableManager;
+	UFUNCTION(BlueprintCallable)
+		AAssetManagerBase* GetAssetManager();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		AAssetManagerBase* AssetDataManager;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		FSoftObjectPath AssetManagerBPPath;
+
+	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
+
+	FStreamableManager StreamableManager = FStreamableManager();
 
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;
