@@ -6,6 +6,7 @@
 #include "../../Character/public/CharacterBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
+#define AUTO_RELOAD_DELAY_VALUE 0.1
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -52,7 +53,7 @@ void AWeaponBase::StopAttack()
 	MeleeLineTraceQueryParams.ClearIgnoredActors();
 }
 
-void AWeaponBase::InitWeaponStat(FWeaponStatStruct NewStat)
+void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 {
 	WeaponStat = NewStat;
 }
@@ -77,7 +78,9 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 
 	if (IsValid(newProjectile))
 	{
-		newProjectile->InitProjectile(WeaponStat.ProjectileStat, OwnerCharacterRef);
+		newProjectile->InitProjectile(OwnerCharacterRef);
+		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //버프/디버프로 인해 강화/너프된 값을 반영
+		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
 		return newProjectile;
 	}
 
@@ -123,7 +126,11 @@ bool AWeaponBase::TryFireProjectile()
 {
 	if (CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
 	{
-		TryReload();
+		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
+		//타이머를 통해 일정 시간이 지난 후에 Reload를 시도.
+		GetWorldTimerManager().SetTimer(AutoReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			OwnerCharacterRef->TryReload();
+		}), 1.0f, false, AUTO_RELOAD_DELAY_VALUE);
 		return false;
 	}
 
@@ -146,7 +153,8 @@ float AWeaponBase::GetAttackRange()
 {
 	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo || (CurrentAmmoCount == 0.0f && TotalAmmoCount == 0.0f))
 	{
-		return WeaponStat.WeaponMeleeAtkRange;
+		FVector distVector = WeaponMesh->GetSocketLocation("GrabPoint") - WeaponMesh->GetSocketLocation("End");
+		return distVector.Length() * 1.5f;
 	}
 	return 700.0f;
 }
@@ -187,9 +195,9 @@ void AWeaponBase::MeleeAttack()
 	if (bIsMeleeTraceSucceed)
 	{
 		//데미지를 주고
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponDamage
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetBuffTimer(true, (uint8)WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
+		Cast<ACharacterBase>(hitResult.GetActor())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))
@@ -228,10 +236,11 @@ void AWeaponBase::Tick(float DeltaTime)
 
 }
 
-void AWeaponBase::InitOwnerCharacterRef(ACharacterBase* NewCharacterRef)
+void AWeaponBase::InitWeapon(ACharacterBase* NewOwnerCharacterRef)
 {
-	if (!IsValid(NewCharacterRef)) return;
-	OwnerCharacterRef = NewCharacterRef;
+	if (!IsValid(NewOwnerCharacterRef)) return;
+	GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
+	OwnerCharacterRef = NewOwnerCharacterRef;
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
 

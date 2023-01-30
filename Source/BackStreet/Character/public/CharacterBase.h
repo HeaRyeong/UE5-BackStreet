@@ -3,11 +3,8 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "CharacterInfoStructBase.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
-
-DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
 
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
@@ -29,11 +26,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-// ------- 캐릭터 컴포넌트 -------------
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		UChildActorComponent* WeaponActor;
-
 // ------- Character Action 기본 ------- 
 public:
 	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
@@ -49,6 +41,8 @@ public:
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		, AController* EventInstigator, AActor* DamageCauser) override;
 
+	virtual void Die();
+
 	//플레이어가 현재 해당 Action을 수행하고 있는지 반환
 	UFUNCTION(BlueprintCallable)
 		bool GetIsActionActive(ECharacterActionType Type) { return CharacterState.CharacterActionState == Type; }
@@ -63,10 +57,7 @@ public:
 
 	//플레이어가 체력을 회복함 (일회성)
 	UFUNCTION()
-		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffType = 0);
-
-	UFUNCTION()
-		void Die();
+		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
 
 // ------- Character Stat/State ------- 
 public:
@@ -83,12 +74,13 @@ public:
 
 // ------ 무기 관련 ----------------
 public:
-	//UFUNCTION()
-		//void ChangeWeapon();
+	//새로운 무기를 초기화
+	UFUNCTION(BlueprintCallable)
+		void InitWeapon(class AWeaponBase* NewWeapon);
 
-	//무기 관련 설정을 초기화
+	//무기를 Drop한다. (월드에서 아예 사라진다.)
 	UFUNCTION()
-		void InitWeapon();
+		void DropWeapon();
 
 	//무기 Ref를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -101,16 +93,22 @@ public:
 // ------ 캐릭터 버프 / 디버프 ---------------
 public:
 	//버프와 디버프를 건다
-	virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+	virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 	
 	//버프 or 디버프 상태를 초기화한다
-	virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal);
+	virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal);
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
-	virtual void ClearBuffTimer(bool bIsDebuff, uint8 BuffType);
+	virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
 	
 	//모든 Buff/Debuff의 타이머를 해제
-	virtual void ClearAllBuffTimer(bool bIsDebuff);
+	virtual void ClearAllBuffDebuffTimer(bool bIsDebuff);
+
+	UFUNCTION()
+		bool SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+
+	UFUNCTION()
+		bool SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -122,11 +120,11 @@ public:
 
 	//버프/디버프 남은 시간을 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffType);
+		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType);
 
 	//버프 / 디버프 타이머 핸들의 참조자를 반환
 	UFUNCTION()
-		FTimerHandle& GetBuffTimerHandleRef(bool bIsDebuff, uint8 BuffType);
+		FTimerHandle& GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType);
 
 // ----- 캐릭터 애니메이션 -------------------
 protected:
@@ -161,6 +159,9 @@ protected:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
+	UPROPERTY()
+		class AWeaponBase* WeaponRef;
+
 private:
 	UPROPERTY()
 		TArray<FTimerHandle> BuffDebuffTimerHandleList;
@@ -172,10 +173,4 @@ private:
 
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
-
-	// -------- 적 로봇 죽음 처리 관련 델리게이트 --------
-
-public:
-	FEnemyDieDelegate FDieDelegate;
-
 };

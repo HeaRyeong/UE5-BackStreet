@@ -3,7 +3,6 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "WeaponStatStructBase.h"
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000
@@ -17,11 +16,14 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 WeaponID;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-		void InitOwnerCharacterRef(class ACharacterBase* NewCharacterRef);
+		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
 
 protected:
 	// Called when the game starts or when spawned
@@ -42,10 +44,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
 
-	//Melee 오류 디버깅용 임시 함수
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void MeleeTest();
-
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
 		void Attack();
@@ -56,7 +54,11 @@ public:
 
 	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
-		void InitWeaponStat(FWeaponStatStruct NewStat);
+		void UpdateWeaponStat(FWeaponStatStruct NewStat);
+
+	//공격 범위를 반환
+	UFUNCTION(BlueprintCallable)
+		float GetAttackRange();
 
 //------ Projectile 관련-------------
 public:
@@ -68,7 +70,7 @@ public:
 	UFUNCTION()
 		bool TryFireProjectile();
 
-	//새 탄창으로 장전함, 탄창의 개수가 충분하지 않다면 false 반환
+	//장전을 시도. 현재 상태에 따른 성공 여부를 반환
 	UFUNCTION(BlueprintCallable)
 		bool TryReload();
 
@@ -103,10 +105,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 		int32 TotalAmmoCount = 0;
 
-	//공격 범위를 Get
-	UFUNCTION(BlueprintCallable)
-		float GetAttackRange();
-
 //-------- Melee 관련 ------------
 public:
 	//현재 Combo 수를 반환 
@@ -138,16 +136,19 @@ private:
 		class ACharacterBase* OwnerCharacterRef;
 
 	UPROPERTY()
+		class ABackStreetGameModeBase* GamemodeRef;
+
+	UPROPERTY()
 		FTimerHandle MeleeAtkTimerHandle;
+
+	UPROPERTY()
+		FTimerHandle AutoReloadTimerHandle;
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
 		
 	UPROPERTY()
 		float MeleeAtkComboRemainTime = 1.0f;
-
-	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
 
 	UPROPERTY()
 		TArray<FVector> MeleePrevTracePointList;

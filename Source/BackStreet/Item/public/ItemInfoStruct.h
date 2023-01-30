@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "../../Character/public/CharacterInfoStructBase.h"
+#include "../../Character/public/CharacterInfoStruct.h"
 #include "ItemInfoStruct.generated.h"
 
 

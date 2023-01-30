@@ -8,7 +8,7 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemInfoStruct.h"
-#include "../../Character/public/CharacterInfoStructBase.h"
+#include "../../Character/public/CharacterInfoStruct.h"
 #include "TimerManager.h"
 #include "../public/GridBase.h"
 #include "UObject/SoftObjectPath.h"
@@ -172,7 +172,6 @@ void ATileBase::LoadMonster()
 
 }
 
-
 void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 {
 	UE_LOG(LogTemp, Log, TEXT("Call MonsterDie()"));
@@ -198,10 +197,10 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 
 void ATileBase::BindDelegate()
 {
-	for (ACharacterBase* enemy : MonsterList)
+	for (AEnemyCharacterBase* enemy : MonsterList)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Binding Func"));
-		enemy->FDieDelegate.BindUFunction(this, FName("MonsterDie"));
+		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));
 	}
 }
 

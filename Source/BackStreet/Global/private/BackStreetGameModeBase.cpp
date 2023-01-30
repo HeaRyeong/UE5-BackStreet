@@ -3,6 +3,9 @@
 #include "../public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/GridBase.h"
 #include "../../StageSystem/public/TileBase.h"
+#include "../../Item/public/ProjectileBase.h"
+#include "../../Item/public/WeaponBase.h"
+#include "../../Character/public/CharacterBase.h"
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,7 +16,7 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 
 }
 
-void ABackStreetGameModeBase::InitGame()
+void ABackStreetGameModeBase::InitializeChapter()
 {
 	AssetDataManager->GameModeRef = this;
 	RemainChapter = 2;
@@ -92,3 +95,52 @@ void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType,
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius);
 }
 
+void ABackStreetGameModeBase::UpdateCharacterStat(ACharacterBase* TargetCharacter, FCharacterStatStruct NewStat)
+{
+	if (IsValid(TargetCharacter))
+	{
+		TargetCharacter->UpdateCharacterStat(NewStat);
+	}
+}
+
+void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCharacter, const uint8 CharacterID)
+{
+	if (IsValid(TargetCharacter) && TargetCharacter->ActorHasTag("Enemy"))
+	{
+		//DataTable·Î ºÎÅÍ Read
+	}
+}
+
+void ABackStreetGameModeBase::UpdateWeaponStat(AWeaponBase* TargetWeapon, FWeaponStatStruct NewStat)
+{
+	if (IsValid(TargetWeapon))
+	{
+		TargetWeapon->UpdateWeaponStat(NewStat);
+	}
+}
+
+void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, const uint8 WeaponID)
+{
+	if (IsValid(TargetWeapon) && IsValid(WeaponStatTable))
+	{
+		FString rowName = FString::FromInt(WeaponID);
+		FWeaponStatStruct* newStat = WeaponStatTable->FindRow<FWeaponStatStruct>(FName(rowName), rowName);
+		if (newStat != nullptr)
+		{
+			TargetWeapon->UpdateWeaponStat(*newStat);
+		}
+	}
+}
+
+void ABackStreetGameModeBase::UpdateProjectileStatWithID(AProjectileBase* TargetProjectile, const uint8 ProjectileID)
+{
+	if (IsValid(TargetProjectile) && IsValid(ProjectileStatTable))
+	{
+		FString rowName = FString::FromInt(ProjectileID);
+		FProjectileStatStruct* newStat = ProjectileStatTable->FindRow<FProjectileStatStruct>(FName(rowName), rowName);
+		if (newStat != nullptr)
+		{
+			TargetProjectile->UpdateProjectileStat(*newStat);
+		}
+	}
+}

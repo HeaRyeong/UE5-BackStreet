@@ -1,18 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "../public/ItemBase.h"
 #include "../public/ItemInfoStruct.h"
-#include "../public/WeaponStatStructBase.h"
+#include "../public/ItemDataAssetInfo.h"
 #include "../public/WeaponBase.h"
+#include "../public/WeaponInfoStruct.h"
 #include "../../StageSystem/public/MissionBase.h"
-#include "../public/ItemInfoStruct.h"
-#include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "Components/BoxComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "../public/ItemDataAssetInfo.h"
-#include "../../Character/public/CharacterBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -49,7 +46,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		case EItemCategoryInfo::E_Buff:
 			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d" ), Stat.Type);
 			Stat = DA->BuffStat;
-			MyCharacter->SetBuffTimer(false, uint8(Stat.Type), this, Stat.Time, Stat.Time);
+			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_DeBuff:
