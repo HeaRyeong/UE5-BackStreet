@@ -6,8 +6,6 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
-DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
-
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -28,11 +26,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-// ------- 캐릭터 컴포넌트 -------------
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		UChildActorComponent* WeaponActor;
-
 // ------- Character Action 기본 ------- 
 public:
 	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
@@ -47,6 +40,8 @@ public:
 	
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		, AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual void Die();
 
 	//플레이어가 현재 해당 Action을 수행하고 있는지 반환
 	UFUNCTION(BlueprintCallable)
@@ -64,9 +59,6 @@ public:
 	UFUNCTION()
 		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
 
-	UFUNCTION()
-		void Die();
-
 // ------- Character Stat/State ------- 
 public:
 	//캐릭터의 상태 정보를 초기화
@@ -82,12 +74,13 @@ public:
 
 // ------ 무기 관련 ----------------
 public:
+	//새로운 무기를 초기화
 	UFUNCTION(BlueprintCallable)
-		void ChangeWeapon(AWeaponBase* newWeaponClass);
+		void InitWeapon(class AWeaponBase* NewWeapon);
 
-	//무기 관련 설정을 초기화
+	//무기를 Drop한다. (월드에서 아예 사라진다.)
 	UFUNCTION()
-		void InitWeapon();
+		void DropWeapon();
 
 	//무기 Ref를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -166,6 +159,9 @@ protected:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
+	UPROPERTY()
+		class AWeaponBase* WeaponRef;
+
 private:
 	UPROPERTY()
 		TArray<FTimerHandle> BuffDebuffTimerHandleList;
@@ -177,10 +173,4 @@ private:
 
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
-
-	// -------- 적 로봇 죽음 처리 관련 델리게이트 --------
-
-public:
-	FEnemyDieDelegate FDieDelegate;
-
 };

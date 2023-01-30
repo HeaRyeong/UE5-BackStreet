@@ -148,11 +148,14 @@ void AMainCharacterBase::Attack()
 void AMainCharacterBase::StopAttack()
 {
 	Super::StopAttack();
-	if (IsValid(WeaponActor->GetChildActor()))
+	if (IsValid(GetWeaponActorRef()))
 	{
-		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-		weaponRef->StopAttack();
+		GetWeaponActorRef()->StopAttack();
 	}
+}
+
+void AMainCharacterBase::Die()
+{
 }
 
 void AMainCharacterBase::RotateToCursor()

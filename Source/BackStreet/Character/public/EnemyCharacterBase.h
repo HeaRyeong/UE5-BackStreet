@@ -6,9 +6,8 @@
 #include "CharacterBase.h"
 #include "EnemyCharacterBase.generated.h"
 
-/**
- * 
- */
+DECLARE_DELEGATE_OneParam(FDelegateEnemyDeath, class AEnemyCharacterBase*);
+
 UCLASS()
 class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 {
@@ -17,6 +16,9 @@ class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 	
 public:
 	AEnemyCharacterBase();
+	
+	//적 Death 이벤트
+	FDelegateEnemyDeath EnemyDeathDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -47,6 +49,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
+
+	UFUNCTION()
+		virtual void Die() override;
 
 // ---- 적 캐릭터 Ation ----
 	UFUNCTION(BlueprintCallable)

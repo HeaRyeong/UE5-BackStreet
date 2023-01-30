@@ -17,9 +17,6 @@ ACharacterBase::ACharacterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
-	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
-
 	for (int newTimerIdx = 0; newTimerIdx < 18; newTimerIdx += 1)
 	{
 		BuffDebuffTimerHandleList.Add(FTimerHandle());
@@ -33,7 +30,6 @@ void ACharacterBase::BeginPlay()
 	Super::BeginPlay();
 	
 	InitGamemodeRef();
-	InitWeapon();
 	InitCharacterState();
 }
 
@@ -107,56 +103,36 @@ void ACharacterBase::Die()
 	
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
-
-	if (this->ActorHasTag(FName("Enemy")))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Actor Has Tag Enemy"));
-		if (FDieDelegate.IsBound())
-		{
-			FDieDelegate.Execute(this);
-			FDieDelegate.Unbind();
-}
-	}
 }
 
 void ACharacterBase::TryAttack()
 {
 	if (AttackAnimMontageArray.Num() <= 0) return;
-	if (!IsValid(WeaponActor->GetChildActor())) return;
+	if (!IsValid(GetWeaponActorRef())) return;
 	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
 
-	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	if (IsValid(weaponRef))
-	{
-		CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
-		CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
+	
+	CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
+	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
-		const int32 nextAnimIdx = weaponRef->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
-	}
+	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
+	PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
 }
 
 void ACharacterBase::Attack()
 {
+	if (!IsValid(GetWeaponActorRef())) return;
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
 										, 1.0f, false, FMath::Max(0.0f, 1.0f - CharacterStat.CharacterAtkSpeed));
-
-	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	if (IsValid(weaponRef))
-	{
-		weaponRef->Attack();
-	}
+	GetWeaponActorRef()->Attack();
 }
  
 void ACharacterBase::StopAttack()
 {
-	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	if (IsValid(weaponRef))
-	{
-		weaponRef->StopAttack();
-	}
+	if (!IsValid(GetWeaponActorRef())) return;
+	GetWeaponActorRef()->StopAttack();
 }
 
 void ACharacterBase::TryReload()
@@ -194,31 +170,31 @@ void ACharacterBase::ResetAtkIntervalTimer()
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 }
 
-void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+void ACharacterBase::InitWeapon(AWeaponBase* NewWeapon)
 {
-	if (!IsValid(newWeaponClass)) return;
-	WeaponActor->DestroyChildActor();
-	WeaponActor->SetChildActorClass(newWeaponClass->GetClass());
-	newWeaponClass->Destroy();
-}
-
-void ACharacterBase::InitWeapon()
-{
+	if (!IsValid(NewWeapon)) return;
 	if (IsValid(GetWeaponActorRef()))
 	{
-		GetWeaponActorRef()->InitWeapon(this);
-		WeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
-		WeaponActor->SetRelativeLocation(FVector(0.0f), false);
+		DropWeapon();
 	}
+	NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
+	NewWeapon->SetActorRelativeLocation(FVector(0.0f), false);
+	NewWeapon->InitWeapon(this);
+	GamemodeRef->UpdateWeaponStatWithID(NewWeapon, NewWeapon->WeaponID);
+	WeaponRef = NewWeapon;
+}
+
+void ACharacterBase::DropWeapon()
+{
+	if (!IsValid(GetWeaponActorRef())) return;
+	AWeaponBase* weaponRef = GetWeaponActorRef();
+	weaponRef->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	weaponRef->Destroy();
 }
 
 AWeaponBase* ACharacterBase::GetWeaponActorRef()
 {
-	if (IsValid(WeaponActor->GetChildActor()))
-	{
-		return Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	}
-	return nullptr;
+	return IsValid(WeaponRef) ? WeaponRef : nullptr;
 }
 
 bool ACharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
