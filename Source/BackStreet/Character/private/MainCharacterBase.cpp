@@ -148,11 +148,14 @@ void AMainCharacterBase::Attack()
 void AMainCharacterBase::StopAttack()
 {
 	Super::StopAttack();
-	if (IsValid(WeaponActor->GetChildActor()))
+	if (IsValid(GetWeaponActorRef()))
 	{
-		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-		weaponRef->StopAttack();
+		GetWeaponActorRef()->StopAttack();
 	}
+}
+
+void AMainCharacterBase::Die()
+{
 }
 
 void AMainCharacterBase::RotateToCursor()
@@ -183,43 +186,43 @@ void AMainCharacterBase::ResetRotationToMovement()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
-bool AMainCharacterBase::SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime, float Variable)
+bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
-	bool result = Super::SetBuffTimer(bIsDebuff, BuffType, Causer, TotalTime, Variable);
+	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
 
 	if(result)
 	{
 		TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
 		
-		if (targetEmitterList->IsValidIndex(BuffType) && (*targetEmitterList)[BuffType] != nullptr)
+		if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
 		{
 			BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
 			BuffNiagaraEmitter->Deactivate();
-			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffType], false);
+			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
 			BuffNiagaraEmitter->Activate();
 		}
 	}
 	return result;
 }	
 
-void AMainCharacterBase::ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal)
+void AMainCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
-	Super::ResetStatBuffState(bIsDebuff, BuffType, ResetVal);
+	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
 }
 
-void AMainCharacterBase::ClearBuffTimer(bool bIsDebuff, uint8 BuffType)
+void AMainCharacterBase::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
 {
-	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffType)
-		: GetBuffIsActive((ECharacterBuffType)BuffType))
+	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType)
+		: GetBuffIsActive((ECharacterBuffType)BuffDebuffType))
 	{
 		DeactivateBuffNiagara();
 	}
-	Super::ClearBuffTimer(bIsDebuff, BuffType);
+	Super::ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
-void AMainCharacterBase::ClearAllBuffTimer(bool bIsDebuff)
+void AMainCharacterBase::ClearAllBuffDebuffTimer(bool bIsDebuff)
 {
-	Super::ClearAllBuffTimer(bIsDebuff);
+	Super::ClearAllBuffDebuffTimer(bIsDebuff);
 	DeactivateBuffNiagara();
 }
 

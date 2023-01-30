@@ -6,6 +6,7 @@
 #include "CharacterBase.h"
 #include "EnemyCharacterBase.generated.h"
 
+DECLARE_DELEGATE_OneParam(FDelegateEnemyDeath, class AEnemyCharacterBase*);
 
 UCLASS()
 class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
@@ -14,6 +15,9 @@ class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 
 public:
 	AEnemyCharacterBase();
+	
+	//적 Death 이벤트
+	FDelegateEnemyDeath EnemyDeathDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,6 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	UFUNCTION()
+		virtual void Die() override;
+
 // ---- 적 캐릭터 Ation ----
 	UFUNCTION(BlueprintCallable)
 		void Turn(float Angle);
@@ -55,9 +62,9 @@ public:
 // ---- 디버프 / 버프 -----
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	bool SetBuffTimer(bool bIsDebuff, uint8 BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
+		virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
 
 	//버프 or 디버프 상태를 초기화한다
 	UFUNCTION(BlueprintCallable)
-		virtual void ResetStatBuffState(bool bIsDebuff, uint8 BuffType, float ResetVal) override;
+		virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal) override;
 };
