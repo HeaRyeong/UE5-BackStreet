@@ -3,7 +3,7 @@
 
 #include "../public/EnemyCharacterBase.h"
 #include "../public/CharacterInfoStruct.h"
-#include "../../StageSystem/public/StageInfoStructBase.h"
+#include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
 
@@ -17,28 +17,14 @@ void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	TileRef = GamemodeRef->CurrentTile;
-	InitEnemyStat();
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-	TArray< FEnemyStatStruct*> DataTable;
+	TArray< FEnemyStatStruct> DataTable;
 	FString ContextString;
-	EnemyStatDataTable->GetAllRows(ContextString, DataTable);
 
-	if (!TileRef->bIsClear)  //--- gamemode의 스탯 업데이트 함수로 수정부탁드립니당.
-	{
-		// 스탯 설정
-		FCharacterStatStruct NewStat;
-		NewStat.CharacterMaxHP = StageTableRow->CharacterMaxHP;
-		NewStat.CharacterAtkMultiplier = StageTableRow->CharacterAtkMultiplier;
-		NewStat.CharacterAtkSpeed = StageTableRow->CharacterAtkSpeed;
-		NewStat.CharacterMoveSpeed = StageTableRow->CharacterMoveSpeed;
-		NewStat.CharacterDefense = StageTableRow->CharacterDefense;
-		this->UpdateCharacterStat(NewStat);
-		// 몬스터 리스트에 추가
-		TileRef -> MonsterList.Add(this);
-	}
+	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)

@@ -492,12 +492,6 @@ void ACharacterBase::SwitchWeapon()
 
 void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
 {
-	// Weapon Ammo 정보 저장/적용 추가해야함
-	AWeaponBase* Target = GamemodeRef->GetAssetManager()->SpawnWeaponwithID(WeaponIDInventory[InventoryIdx]);
-
-	if (!IsValid(Target)) return;
-	WeaponActor->DestroyChildActor();
-	WeaponActor->SetChildActorClass(Target->GetClass());
-	Target->Destroy();
+	DropWeapon();
 
 }

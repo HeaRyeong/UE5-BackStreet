@@ -16,14 +16,8 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-		uint8 WeaponID;
-
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
 
 protected:
 	// Called when the game starts or when spawned
@@ -31,6 +25,7 @@ protected:
 
 	//------ Global -------------------
 public:
+
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 		uint8 WeaponID;
 
@@ -46,6 +41,9 @@ public:
 	//Weapon의 종합 Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStatStruct WeaponStat;
+
+	UFUNCTION()
+		void InitWeapon(class ACharacterBase* NewOwnerCharacterRef);
 
 	//공격 처리
 	UFUNCTION(BlueprintCallable)

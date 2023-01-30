@@ -30,9 +30,6 @@ public:
 		class ATileBase* TileRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UDataTable* EnemyStatDataTable;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 EnemyID;
 
 public:

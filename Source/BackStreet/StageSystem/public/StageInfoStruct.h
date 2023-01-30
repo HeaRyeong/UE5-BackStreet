@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "StageInfoStructBase.generated.h"
+#include "StageInfoStruct.generated.h"
 
 UENUM(BlueprintType)
 enum class EStageCategoryInfo : uint8
