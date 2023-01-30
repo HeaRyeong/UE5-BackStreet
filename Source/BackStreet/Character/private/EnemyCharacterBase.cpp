@@ -23,7 +23,6 @@ void AEnemyCharacterBase::BeginPlay()
 	Super::BeginPlay();
 	TileRef = GamemodeRef->CurrTile;
 	InitEnemyStat();
-	
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
@@ -70,6 +69,12 @@ void AEnemyCharacterBase::Attack()
 void AEnemyCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+}
+
+void AEnemyCharacterBase::Die()
+{
+	EnemyDeathDelegate.ExecuteIfBound(this);
+	Super::Die();
 }
 
 void AEnemyCharacterBase::Turn(float Angle)

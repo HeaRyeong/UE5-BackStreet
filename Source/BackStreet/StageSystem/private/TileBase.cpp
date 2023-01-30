@@ -172,7 +172,6 @@ void ATileBase::LoadMonster()
 
 }
 
-
 void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 {
 	UE_LOG(LogTemp, Log, TEXT("Call MonsterDie()"));
@@ -198,10 +197,10 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 
 void ATileBase::BindDelegate()
 {
-	for (ACharacterBase* enemy : MonsterList)
+	for (AEnemyCharacterBase* enemy : MonsterList)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Binding Func"));
-		enemy->FDieDelegate.BindUFunction(this, FName("MonsterDie"));
+		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));
 	}
 }
 

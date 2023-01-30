@@ -63,6 +63,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	UFUNCTION()
+		virtual void Die() override;
+
 	//Rotation 조절 방식을 커서 위치로 한다
 	UFUNCTION()
 		void RotateToCursor();
