@@ -74,6 +74,8 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
+
+	PlayerInputComponent->BindAction("WeaponSwitch", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -184,6 +186,11 @@ void AMainCharacterBase::ResetRotationToMovement()
 	newRotation.Yaw += 270.0f;
 	GetMesh()->SetWorldRotation(newRotation);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void AMainCharacterBase::SwitchToNextWeapon()
+{
+	Super::SwitchToNextWeapon();
 }
 
 bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)

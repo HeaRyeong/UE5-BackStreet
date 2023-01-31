@@ -25,8 +25,25 @@ AWeaponBase::AWeaponBase()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
+	InitWeapon();
+}
 
+void AWeaponBase::InitWeapon()
+{
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	//무기 스탯이 초기화가 되지 않았다면
+	if (WeaponStat.WeaponName == FName(""))
+	{
+		GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
+	}
+}
+
+void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState)
+{
+	if (OldWeaponStat.WeaponName == FName("")) return;
+	WeaponStat = OldWeaponStat;
+	WeaponState = OldWeaponState;
 }
 
 void AWeaponBase::Attack()
@@ -42,7 +59,7 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
-	ComboCnt = (ComboCnt + 1);
+	WeaponState.ComboCount = (WeaponState.ComboCount + 1);
 }
 
 void AWeaponBase::StopAttack()
@@ -55,6 +72,13 @@ void AWeaponBase::StopAttack()
 void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 {
 	WeaponStat = NewStat;
+}
+
+void AWeaponBase::SetOwnerCharacter(ACharacterBase* NewOwnerCharacterRef)
+{
+	if (!IsValid(NewOwnerCharacterRef)) return;
+	OwnerCharacterRef = NewOwnerCharacterRef;
+	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
 
 AProjectileBase* AWeaponBase::CreateProjectile()
@@ -90,14 +114,14 @@ bool AWeaponBase::TryReload()
 {
 	if (!GetCanReload()) return false;
 
-	int32 addAmmoCnt = FMath::Min(TotalAmmoCount, WeaponStat.MaxAmmoPerMagazine);
-	if (addAmmoCnt + CurrentAmmoCount > WeaponStat.MaxAmmoPerMagazine)
+	int32 addAmmoCnt = FMath::Min(WeaponState.TotalAmmoCount, WeaponStat.MaxAmmoPerMagazine);
+	if (addAmmoCnt + WeaponState.CurrentAmmoCount > WeaponStat.MaxAmmoPerMagazine)
 	{
-		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - CurrentAmmoCount);
+		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - WeaponState.CurrentAmmoCount);
 	}
 
-	CurrentAmmoCount += addAmmoCnt;
-	TotalAmmoCount -= addAmmoCnt;
+	WeaponState.CurrentAmmoCount += addAmmoCnt;
+	WeaponState.TotalAmmoCount -= addAmmoCnt;
 
 	return true;
 }
@@ -105,25 +129,25 @@ bool AWeaponBase::TryReload()
 bool AWeaponBase::GetCanReload()
 {
 	if (WeaponStat.bIsInfiniteAmmo || !WeaponStat.bHasProjectile) return false;
-	if (TotalAmmoCount == 0 || CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
+	if (WeaponState.TotalAmmoCount == 0 || WeaponState.CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
 	return true;
 }
 
 void AWeaponBase::AddAmmo(int32 Count)
 {
-	if (WeaponStat.bIsInfiniteAmmo || TotalAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
-	TotalAmmoCount = (TotalAmmoCount + Count) % MAX_AMMO_LIMIT_CNT;
+	if (WeaponStat.bIsInfiniteAmmo || WeaponState.TotalAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	WeaponState.TotalAmmoCount = (WeaponState.TotalAmmoCount + Count) % MAX_AMMO_LIMIT_CNT;
 }
 
 void AWeaponBase::AddMagazine(int32 Count)
 {
-	if (WeaponStat.bIsInfiniteAmmo || TotalAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
-	TotalAmmoCount = (TotalAmmoCount + WeaponStat.MaxAmmoPerMagazine * Count) % MAX_AMMO_LIMIT_CNT;
+	if (WeaponStat.bIsInfiniteAmmo || WeaponState.TotalAmmoCount >= MAX_AMMO_LIMIT_CNT) return;
+	WeaponState.TotalAmmoCount = (WeaponState.TotalAmmoCount + WeaponStat.MaxAmmoPerMagazine * Count) % MAX_AMMO_LIMIT_CNT;
 }
 
 bool AWeaponBase::TryFireProjectile()
 {
-	if (CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
+	if (WeaponState.CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
 	{
 		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
 		//타이머를 통해 일정 시간이 지난 후에 Reload를 시도.
@@ -140,7 +164,7 @@ bool AWeaponBase::TryFireProjectile()
 	{
 		if (!WeaponStat.bIsInfiniteAmmo)
 		{
-			CurrentAmmoCount -= 1;
+			WeaponState.CurrentAmmoCount -= 1;
 		}
 		newProjectile->ActivateProjectileMovement();
 		return true;
@@ -150,10 +174,11 @@ bool AWeaponBase::TryFireProjectile()
 
 float AWeaponBase::GetAttackRange()
 {
-	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo || (CurrentAmmoCount == 0.0f && TotalAmmoCount == 0.0f))
+	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo
+		|| (WeaponState.CurrentAmmoCount == 0.0f && WeaponState.TotalAmmoCount == 0.0f))
 	{
 		FVector distVector = WeaponMesh->GetSocketLocation("GrabPoint") - WeaponMesh->GetSocketLocation("End");
-		return distVector.Length() * 1.5f;
+		return distVector.Length() * 0.5f;
 	}
 	return 700.0f;
 }
@@ -175,7 +200,6 @@ void AWeaponBase::MeleeAttack()
 			const FVector& beginPoint = MeleePrevTracePointList[tracePointIdx];
 			const FVector& endPoint = currTracePositionList[tracePointIdx];
 			GetWorld()->LineTraceSingleByChannel(hitResult, beginPoint, endPoint, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
-
 
 			if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
 				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1]))
@@ -210,7 +234,7 @@ void AWeaponBase::MeleeAttack()
 
 void AWeaponBase::ResetCombo()
 {
-	ComboCnt = 0;
+	WeaponState.ComboCount = 0;
 }
 
 TArray<FVector> AWeaponBase::GetCurrentMeleePointList()
@@ -235,10 +259,3 @@ void AWeaponBase::Tick(float DeltaTime)
 
 }
 
-void AWeaponBase::InitWeapon(ACharacterBase* NewOwnerCharacterRef)
-{
-	if (!IsValid(NewOwnerCharacterRef)) return;
-	GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
-	OwnerCharacterRef = NewOwnerCharacterRef;
-	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
-}

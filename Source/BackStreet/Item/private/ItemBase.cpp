@@ -18,52 +18,58 @@ AItemBase::AItemBase()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
 	NiagaraCompo = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+
 	OverlapVolume->SetupAttachment(RootComponent);
 	NiagaraCompo->SetupAttachment(RootComponent);
-	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OverlapBegins);
 
+	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OverlapBegins);
 }
 
 
 void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag(FName(TEXT("Player"))))
+	if (!OtherActor->ActorHasTag(FName(TEXT("Player")))) return;
+	
+	FBuffItemInfoStruct Stat;
+	UE_LOG(LogTemp, Log, TEXT("Get Item %d"), Type);
+	switch (Type)
 	{
-		FBuffItemInfoStruct Stat;
-		UE_LOG(LogTemp, Log, TEXT("Get Item %d"), Type);
-		switch (Type)
-		{
-		case EItemCategoryInfo::E_None:
-			break;
-		case EItemCategoryInfo::E_Weapon:
-			UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
-			SelectWeapon();
-			Destroy();
-			break;
-		case EItemCategoryInfo::E_Bullet:
-			UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
-			SelectProjectile();
-			Destroy();
-			break;
-		case EItemCategoryInfo::E_Buff:
-			Stat = DA->BuffStat;
-			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
-			Destroy();
-			break;
-		case EItemCategoryInfo::E_DeBuff:
-			break;
-		case EItemCategoryInfo::E_StatUp:
-			break;
-		case EItemCategoryInfo::E_Mission:
-			TileRef->MissionInfo->ItemList.Remove(this);
-			TileRef->MissionInfo->ClearCheck();
-			Destroy();
-			break;
-		default:
-			break;
-		}
-	}
+	case EItemCategoryInfo::E_None:
+		break;
 
+	case EItemCategoryInfo::E_Weapon:
+		UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
+		SelectWeapon();
+		Destroy();
+		break;
+
+	case EItemCategoryInfo::E_Bullet:
+		UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
+		SelectProjectile();
+		Destroy();
+		break;
+
+	case EItemCategoryInfo::E_Buff:
+		Stat = DA->BuffStat;
+		MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
+		Destroy();
+		break;
+
+	case EItemCategoryInfo::E_DeBuff:
+		break;
+
+	case EItemCategoryInfo::E_StatUp:
+		break;
+
+	case EItemCategoryInfo::E_Mission:
+		TileRef->MissionInfo->ItemList.Remove(this);
+		TileRef->MissionInfo->ClearCheck();
+		Destroy();
+		break;
+
+	default:
+		break;
+	}
 }
 
 // Called every frame
@@ -94,13 +100,12 @@ void AItemBase::InitItem(EItemCategoryInfo SetType)
 	{
 		TileRef->MissionInfo->ItemList.AddUnique(this);
 	}
-
 }
 
 void AItemBase::SelectWeapon()
 {
 	int8 WeaponType = FMath::RandRange(0, MaxWeaponType - 1);
-	int32 WeaponID;
+	int32 WeaponID = 0;
 	switch (WeaponType)
 	{
 	case 0:
@@ -124,7 +129,7 @@ void AItemBase::SelectWeapon()
 	default:
 		break;
 	}
-	MyCharacter->AddWeaponInventory(GameModeRef->GetAssetManager()->SpawnWeaponwithID(WeaponID));
+		
 
 }
 
@@ -132,7 +137,7 @@ void AItemBase::SelectProjectile()
 {
 	int8 ProjectileType = FMath::RandRange(0, MaxProjectileType - 1);
 
-	int32 ProjectileID;
+	int32 ProjectileID = 0;
 	switch (ProjectileType)
 	{
 	case 0:
@@ -144,6 +149,6 @@ void AItemBase::SelectProjectile()
 	default:
 		break;
 	}
-	MyCharacter->AddWeaponInventory(GameModeRef->GetAssetManager()->SpawnWeaponwithID(ProjectileID));
+	//MyCharacter->AddWeaponInventory(GameModeRef->GetAssetManager()->SpawnWeaponwithID(ProjectileID));
 
 }
