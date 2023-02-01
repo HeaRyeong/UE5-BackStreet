@@ -1,19 +1,17 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
-DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
+#define InventoryMaxSize 6
 
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
-//----- 기본 함수 ----------
+//----- Global / Component ----------
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
@@ -28,10 +26,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-// ------- 캐릭터 컴포넌트 -------------
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		UChildActorComponent* WeaponActor;
+		UChildActorComponent* InventoryComponent; 
 
 // ------- Character Action 기본 ------- 
 public:
@@ -43,19 +40,21 @@ public:
 
 	virtual void StopAttack();
 
-	virtual void TryReload(); 
-	
+	virtual void TryReload();
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		, AController* EventInstigator, AActor* DamageCauser) override;
+
+	virtual void Die();
 
 	//플레이어가 현재 해당 Action을 수행하고 있는지 반환
 	UFUNCTION(BlueprintCallable)
 		bool GetIsActionActive(ECharacterActionType Type) { return CharacterState.CharacterActionState == Type; }
-	
+
 	//플레이어의 ActionState를 Idle로 전환한다.
 	UFUNCTION(BlueprintCallable)
 		void ResetActionState();
-		
+
 	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION()
 		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
@@ -64,10 +63,7 @@ public:
 	UFUNCTION()
 		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
 
-	UFUNCTION()
-		void Die();
-
-// ------- Character Stat/State ------- 
+// ------- Character Stat/State ------------------------------
 public:
 	//캐릭터의 상태 정보를 초기화
 	UFUNCTION()
@@ -80,14 +76,23 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStatStruct GetCharacterStat() { return CharacterStat; }
 
-// ------ 무기 관련 ----------------
+// ------ 무기 관련 -------------------------------------------
 public:
-	UFUNCTION(BlueprintCallable)
-		void ChangeWeapon(AWeaponBase* newWeaponClass);
-
-	//무기 관련 설정을 초기화
 	UFUNCTION()
-		void InitWeapon();
+		bool EquipWeapon(class AWeaponBase* TargetWeapon);
+
+	//무기를 집는다. 인벤토리가 꽉 찼다면 false를 반환
+	UFUNCTION(BlueprintCallable)
+		bool PickWeapon(int32 NewWeaponID);
+
+	//다음 무기로 전환한다. 전환에 실패하면 false를 반환
+	virtual void SwitchToNextWeapon();
+
+	//무기를 Drop한다. (월드에서 아예 사라진다.)
+	virtual void DropWeapon();
+
+	UFUNCTION(BlueprintCallable)
+		class AWeaponInventoryBase* GetInventoryRef();
 
 	//무기 Ref를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -97,7 +102,7 @@ public:
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
-// ------ 캐릭터 버프 / 디버프 ---------------
+// ------ 캐릭터 버프 / 디버프 ------------------------------------
 public:
 	//버프와 디버프를 건다
 	virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
@@ -107,7 +112,7 @@ public:
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
 	virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
-	
+		
 	//모든 Buff/Debuff의 타이머를 해제
 	virtual void ClearAllBuffDebuffTimer(bool bIsDebuff);
 
@@ -147,14 +152,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* ReloadAnimMontage;
 
-// ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
+// ------ 그 외 캐릭터 프로퍼티  ---------------
 protected:
-	UFUNCTION()
-		void InitGamemodeRef();
-
-	//UFUNCTION()
-		virtual void ClearAllTimerHandle();
-
 	//캐릭터의 스탯
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStatStruct CharacterStat;
@@ -166,9 +165,12 @@ protected:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
-private:
 	UPROPERTY()
-		TArray<FTimerHandle> BuffDebuffTimerHandleList;
+		class AWeaponInventoryBase* InventoryRef;
+
+// ----- 타이머 관련 ---------------------------------
+protected:
+	virtual void ClearAllTimerHandle();
 
 private:
 	//공격 간 딜레이 핸들
@@ -178,9 +180,7 @@ private:
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
 
-	// -------- 적 로봇 죽음 처리 관련 델리게이트 --------
-
-public:
-	FEnemyDieDelegate FDieDelegate;
+	UPROPERTY()
+		TArray<FTimerHandle> BuffDebuffTimerHandleList;
 
 };

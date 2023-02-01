@@ -3,17 +3,13 @@
 
 #include "../public/EnemyCharacterBase.h"
 #include "../public/CharacterInfoStruct.h"
-#include "../../StageSystem/public/StageInfoStructBase.h"
+#include "../../Item/public/WeaponInventoryBase.h"
+#include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/D_StageEnemyRank"));
-	if (DataTable.Succeeded())
-	{
-		EnemyRankDataTable = DataTable.Object;
-	}
 	bUseControllerRotationYaw = false;
 	this->Tags.Add("Enemy");
 }
@@ -21,29 +17,22 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	TileRef = GamemodeRef->CurrTile;
-	InitEnemyStat();
+	TileRef = GamemodeRef->CurrentTile;
 	
+	if (IsValid(GetInventoryRef()))
+	{
+		GetInventoryRef()->AddWeapon(DefaultWeaponID);
+	}
+	CharacterStat.bInfiniteAmmo = true;
+	CharacterStat.bInfiniteDurability = true;
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-	if (!IsValid(TileRef)) return;
-	FStageEnemyRankStruct* StageTableRow = EnemyRankDataTable->FindRow<FStageEnemyRankStruct>(FName(*(FString::FormatAsNumber(TileRef->StageLevel))), FString(""));
+	TArray< FEnemyStatStruct> DataTable;
+	FString ContextString;
 
-	if (!TileRef->bIsClear && StageTableRow != nullptr)
-	{
-		// 스탯 설정
-		FCharacterStatStruct NewStat;
-		NewStat.CharacterMaxHP = StageTableRow->CharacterMaxHP;
-		NewStat.CharacterAtkMultiplier = StageTableRow->CharacterAtkMultiplier;
-		NewStat.CharacterAtkSpeed = StageTableRow->CharacterAtkSpeed;
-		NewStat.CharacterMoveSpeed = StageTableRow->CharacterMoveSpeed;
-		NewStat.CharacterDefense = StageTableRow->CharacterDefense;
-		this->UpdateCharacterStat(NewStat);
-		// 몬스터 리스트에 추가
-		TileRef -> MonsterList.Add(this);
-	}
+	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -70,6 +59,12 @@ void AEnemyCharacterBase::Attack()
 void AEnemyCharacterBase::StopAttack()
 {
 	Super::StopAttack();
+}
+
+void AEnemyCharacterBase::Die()
+{
+	EnemyDeathDelegate.ExecuteIfBound(this);
+	Super::Die();
 }
 
 void AEnemyCharacterBase::Turn(float Angle)

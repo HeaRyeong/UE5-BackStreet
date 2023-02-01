@@ -63,6 +63,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	UFUNCTION()
+		virtual void Die() override;
+
 	//Rotation 조절 방식을 커서 위치로 한다
 	UFUNCTION()
 		void RotateToCursor();
@@ -71,7 +74,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ResetRotationToMovement();
 
-// -------
+	UFUNCTION()
+		virtual void SwitchToNextWeapon() override;
+
+	UFUNCTION()
+		virtual void DropWeapon() override;
+
+// ------- 버프 / 디버프 ---------------
 public: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)

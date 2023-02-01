@@ -74,6 +74,9 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
+
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -148,11 +151,15 @@ void AMainCharacterBase::Attack()
 void AMainCharacterBase::StopAttack()
 {
 	Super::StopAttack();
-	if (IsValid(WeaponActor->GetChildActor()))
+	if (IsValid(GetWeaponActorRef()))
 	{
-		AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-		weaponRef->StopAttack();
+		GetWeaponActorRef()->StopAttack();
 	}
+}
+
+void AMainCharacterBase::Die()
+{
+	Super::Die();
 }
 
 void AMainCharacterBase::RotateToCursor()
@@ -181,6 +188,16 @@ void AMainCharacterBase::ResetRotationToMovement()
 	newRotation.Yaw += 270.0f;
 	GetMesh()->SetWorldRotation(newRotation);
 	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void AMainCharacterBase::SwitchToNextWeapon()
+{
+	Super::SwitchToNextWeapon();
+}
+
+void AMainCharacterBase::DropWeapon()
+{
+	Super::DropWeapon();
 }
 
 bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)

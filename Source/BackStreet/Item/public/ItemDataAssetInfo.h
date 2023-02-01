@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "ItemInfoStruct.h"
+#include "WeaponInfoStruct.h"
+#include "ProjectileInfoStruct.h"
 #include "ItemDataAssetInfo.generated.h"
 
 /**
@@ -49,7 +50,5 @@ public:
 	// DeBuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DeBuff")
 		FDeBuffItemInfoStruct DeBuffStat;
-
-	// StatUp
-
 };
+

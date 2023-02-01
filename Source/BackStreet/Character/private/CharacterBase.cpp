@@ -1,9 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "../public/CharacterBase.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../Global/public/AssetManagerBase.h"
 #include "Animation/AnimMontage.h"
 
 #define MAX_BUFF_IDX 6
@@ -16,15 +15,15 @@ ACharacterBase::ACharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	this->Tags.Add("Character");
 
-	WeaponActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("WEAPON"));
-	WeaponActor->SetupAttachment(GetMesh(), FName("Weapon_R"));
+	InventoryComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("INVENTORY"));
+	InventoryComponent->SetupAttachment(GetCapsuleComponent());
 
 	for (int newTimerIdx = 0; newTimerIdx < 18; newTimerIdx += 1)
 	{
 		BuffDebuffTimerHandleList.Add(FTimerHandle());
 	}
-	this->Tags.Add("Character");
 }
 
 // Called when the game starts or when spawned
@@ -32,9 +31,28 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	InitGamemodeRef();
-	InitWeapon();
 	InitCharacterState();
+
+	InventoryRef = Cast<AWeaponInventoryBase>(InventoryComponent->GetChildActor());
+	if (IsValid(GetInventoryRef()))
+	{
+		GetInventoryRef()->SetOwner(this);
+		GetInventoryRef()->InitInventory();
+	}
+	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+}
+
+// Called every frame
+void ACharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+// Called to bind functionality to input
+void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void ACharacterBase::InitCharacterState()
@@ -107,85 +125,56 @@ void ACharacterBase::Die()
 	
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
-
-	if (this->ActorHasTag(FName("Enemy")))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Actor Has Tag Enemy"));
-		if (FDieDelegate.IsBound())
-		{
-			FDieDelegate.Execute(this);
-			FDieDelegate.Unbind();
-}
-	}
 }
 
 void ACharacterBase::TryAttack()
 {
 	if (AttackAnimMontageArray.Num() <= 0) return;
-	if (!IsValid(WeaponActor->GetChildActor())) return;
+	if (!IsValid(GetWeaponActorRef())) return;
 	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
+	
+	CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
+	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
-	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	if (IsValid(weaponRef))
-	{
-		CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
-		CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
-
-		const int32 nextAnimIdx = weaponRef->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
-	}
+	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
+	PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
 }
 
 void ACharacterBase::Attack()
 {
-	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+	if (!IsValid(GetWeaponActorRef())) return;
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, FMath::Max(0.0f, 1.0f - CharacterStat.CharacterAtkSpeed));
-
-	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	if (IsValid(weaponRef))
-	{
-		weaponRef->Attack();
-	}
+										, 1.0f, false, FMath::Max(0.0f, 1.25f - CharacterStat.CharacterAtkSpeed));
+	GetWeaponActorRef()->Attack();
 }
  
 void ACharacterBase::StopAttack()
 {
-	AWeaponBase* weaponRef = Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	if (IsValid(weaponRef))
-	{
-		weaponRef->StopAttack();
-	}
+	if (!IsValid(GetWeaponActorRef())) return;
+	GetWeaponActorRef()->StopAttack();
 }
 
 void ACharacterBase::TryReload()
 {
-	if (IsValid(GetWeaponActorRef()))
+	if (!IsValid(GetWeaponActorRef())) return;
+	if (!GetWeaponActorRef()->GetCanReload())
 	{
-		if (!GetWeaponActorRef()->GetCanReload())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
-			return;
-		}
-
-		float reloadTime = GetWeaponActorRef()->WeaponStat.LoadingDelayTime;
-		if (IsValid(ReloadAnimMontage))
-		{
-			PlayAnimMontage(ReloadAnimMontage);
-		}
-
-		CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
-		GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
-			GetWeaponActorRef()->TryReload();
-			ResetActionState();
-		}), 1.0f, false, reloadTime);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("MELEE_WEAPON CAN'T RELOAD"));
+		UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
 		return;
 	}
+
+	float reloadTime = GetWeaponActorRef()->WeaponStat.LoadingDelayTime;
+	if (IsValid(ReloadAnimMontage))
+	{
+		PlayAnimMontage(ReloadAnimMontage);
+	}
+
+	CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
+	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
+		GetWeaponActorRef()->TryReload();
+		ResetActionState();
+	}), 1.0f, false, reloadTime);
 }
 
 void ACharacterBase::ResetAtkIntervalTimer()
@@ -194,31 +183,48 @@ void ACharacterBase::ResetAtkIntervalTimer()
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 }
 
-void ACharacterBase::ChangeWeapon(AWeaponBase* newWeaponClass)
+bool ACharacterBase::EquipWeapon(AWeaponBase* TargetWeapon)
 {
-	if (!IsValid(newWeaponClass)) return;
-	WeaponActor->DestroyChildActor();
-	WeaponActor->SetChildActorClass(newWeaponClass->GetClass());
-	newWeaponClass->Destroy();
+	TargetWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
+	TargetWeapon->SetActorRelativeLocation(FVector(0.0f), false);
+	TargetWeapon->SetOwnerCharacter(this);
+	return true;
 }
 
-void ACharacterBase::InitWeapon()
+bool ACharacterBase::PickWeapon(int32 NewWeaponID)
 {
-	if (IsValid(GetWeaponActorRef()))
-	{
-		GetWeaponActorRef()->InitWeapon(this);
-		WeaponActor->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
-		WeaponActor->SetRelativeLocation(FVector(0.0f), false);
-	}
+	if (!IsValid(GetInventoryRef())) return false;
+	bool result = InventoryRef->AddWeapon(NewWeaponID);
+	return result;
+}
+
+void ACharacterBase::SwitchToNextWeapon()
+{
+	if (!IsValid(GetInventoryRef())) return;
+	if (!IsValid(GetWeaponActorRef())) return;
+	InventoryRef->SwitchToNextWeapon();
+}
+
+void ACharacterBase::DropWeapon()
+{
+	if (!IsValid(GetWeaponActorRef())) return;
+	AWeaponBase* weaponRef = GetWeaponActorRef();
+	weaponRef->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	/*---- 현재 무기를 월드에 버리는 기능은 미구현 -----*/
+	weaponRef->Destroy();
+}
+
+AWeaponInventoryBase* ACharacterBase::GetInventoryRef()
+{
+	if (!IsValid(InventoryRef)) return nullptr;
+	return InventoryRef;
 }
 
 AWeaponBase* ACharacterBase::GetWeaponActorRef()
 {
-	if (IsValid(WeaponActor->GetChildActor()))
-	{
-		return Cast<AWeaponBase>(WeaponActor->GetChildActor());
-	}
-	return nullptr;
+	if (!IsValid(GetInventoryRef())) return nullptr;
+
+	return GetInventoryRef()->GetCurrentWeaponRef();
 }
 
 bool ACharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
@@ -233,7 +239,6 @@ bool ACharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AA
 		GetWorldTimerManager().SetTimer(timerHandle, 1.0f, false, newTime);
 		return true;
 	}
-
 
 	/*---- 디버프 타이머 세팅 ----------------------------*/
 	if (bIsDebuff)
@@ -462,11 +467,6 @@ FTimerHandle& ACharacterBase::GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 
 	return BuffDebuffTimerHandleList[targetListIdx];
 }
 
-void ACharacterBase::InitGamemodeRef()
-{
-	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-}
-
 void ACharacterBase::ClearAllTimerHandle()
 {
 	ClearAllBuffDebuffTimer(false);
@@ -474,19 +474,3 @@ void ACharacterBase::ClearAllTimerHandle()
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandle);
 }
-
-// Called every frame
-void ACharacterBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
-void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
-
