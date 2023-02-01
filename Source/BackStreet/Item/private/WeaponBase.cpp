@@ -37,6 +37,7 @@ void AWeaponBase::InitWeapon()
 	{
 		GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
 	}
+	WeaponState.CurrentDurability = WeaponStat.MaxDurability;
 }
 
 void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState)
@@ -59,6 +60,7 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
+	UpdateDurabilityState();
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1);
 }
 
@@ -79,6 +81,13 @@ void AWeaponBase::SetOwnerCharacter(ACharacterBase* NewOwnerCharacterRef)
 	if (!IsValid(NewOwnerCharacterRef)) return;
 	OwnerCharacterRef = NewOwnerCharacterRef;
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
+}
+
+void AWeaponBase::ClearAllTimerHandle()
+{
+	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
+	GetWorldTimerManager().ClearTimer(AutoReloadTimerHandle);
+	GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
 }
 
 AProjectileBase* AWeaponBase::CreateProjectile()
@@ -177,10 +186,24 @@ float AWeaponBase::GetAttackRange()
 	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo
 		|| (WeaponState.CurrentAmmoCount == 0.0f && WeaponState.TotalAmmoCount == 0.0f))
 	{
-		FVector distVector = WeaponMesh->GetSocketLocation("GrabPoint") - WeaponMesh->GetSocketLocation("End");
-		return distVector.Length() * 0.5f;
+		return 200.0f;
 	}
 	return 700.0f;
+}
+
+void AWeaponBase::UpdateDurabilityState()
+{
+	if (OwnerCharacterRef->GetCharacterStat().bInfiniteDurability) return;
+	if (--WeaponState.CurrentDurability == 0)
+	{
+		if (IsValid(DestroyEffectParticle))
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DestroyEffectParticle, GetActorLocation(), FRotator()); //ÆÄ±« È¿°ú
+		}
+		ClearAllTimerHandle();
+		OwnerCharacterRef->StopAttack();
+		WeaponDestroyDelegate.ExecuteIfBound();
+	}
 }
 
 void AWeaponBase::MeleeAttack()

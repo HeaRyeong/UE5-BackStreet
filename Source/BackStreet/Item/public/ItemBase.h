@@ -57,12 +57,6 @@ public:
 
 // ------ 참조 프로퍼티 ---------------------------------------------
 private:
-	UPROPERTY(EditAnywhere, Category = "Gameplay")
-		TArray<TSubclassOf<class AWeaponBase> > WeaponClassList;
-
-	UPROPERTY(EditAnywhere, Category = "Gameplay")
-		TArray<int32> WeaponIDList;
-
 	UPROPERTY(VisibleDefaultsOnly)
 		class ATileBase* TileRef;
 

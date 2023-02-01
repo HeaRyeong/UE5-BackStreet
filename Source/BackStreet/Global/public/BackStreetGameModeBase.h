@@ -74,7 +74,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;
 
-//Gameplay Manager
+// ----- Gameplay Manager -------------------
 public:
 	UFUNCTION()
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
@@ -94,6 +94,9 @@ public:
 
 	UFUNCTION()
 		void UpdateProjectileStatWithID(class AProjectileBase* TargetProjectile, const uint8 ProjectileID);
+
+	UFUNCTION()
+		FWeaponStatStruct GetWeaponStatInfoWithID(const uint8 WeaponID);
 
 protected:
 	//적의 스탯 테이블

@@ -77,6 +77,9 @@ public:
 	UFUNCTION()
 		virtual void SwitchToNextWeapon() override;
 
+	UFUNCTION()
+		virtual void DropWeapon() override;
+
 // ------- 버프 / 디버프 ---------------
 public: 
 	//버프 or 디버프 상태를 지정

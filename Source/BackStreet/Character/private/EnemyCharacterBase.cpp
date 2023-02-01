@@ -3,6 +3,7 @@
 
 #include "../public/EnemyCharacterBase.h"
 #include "../public/CharacterInfoStruct.h"
+#include "../../Item/public/WeaponInventoryBase.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/TileBase.h"
@@ -17,6 +18,13 @@ void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	TileRef = GamemodeRef->CurrentTile;
+	
+	if (IsValid(GetInventoryRef()))
+	{
+		GetInventoryRef()->AddWeapon(DefaultWeaponID);
+	}
+	CharacterStat.bInfiniteAmmo = true;
+	CharacterStat.bInfiniteDurability = true;
 }
 
 void AEnemyCharacterBase::InitEnemyStat()

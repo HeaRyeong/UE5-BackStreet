@@ -98,7 +98,7 @@ float UBTTaskTurnToTargetLocation::CalculateTurnAngle(const FVector& OwnerLocati
         rotateAngle = rotateAngle / (UKML::VSize2D(pawnForwardVector2D) * UKML::VSize2D(directionToTarget2D));
         rotateAngle = UKML::DegAsin(rotateAngle);
         rotateAngle = FMath::Sign(rotateAngle) * FMath::Min(FMath::Abs(rotateAngle)
-                                                            , UKML::RandomFloatInRange(5.0f, 10.0f));
+                                                            , UKML::RandomFloatInRange(10.0f, 30.0f));
         rotateAngle *= -1;
     }  
     return rotateAngle; //방향이 일치하면 Turn을 수행할 필요가 없음

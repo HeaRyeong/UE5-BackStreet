@@ -7,14 +7,21 @@
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000
 
+DECLARE_DELEGATE(FDelegateWeaponDestroy);
+
+
 UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
 
+//------ Global, Component -------------------
 public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
+
+	//Weapon이 파괴되었을때 호출할 이벤트
+	FDelegateWeaponDestroy WeaponDestroyDelegate;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -23,20 +30,23 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//------ Global -------------------
 public:
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-		uint8 WeaponID;
-
 	UPROPERTY(VisibleDefaultsOnly)
 		USceneComponent* DefaultSceneRoot;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UStaticMeshComponent* WeaponMesh;
 
+//------- 기본 프로퍼티, Action -------------------
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 WeaponID;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* HitEffectParticle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		UParticleSystem* DestroyEffectParticle;
 
 	//Weapon의 종합 Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
@@ -46,12 +56,7 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
 		FWeaponStateStruct WeaponState; 
 
-	UFUNCTION()
-		void InitWeapon();
-
-	UFUNCTION()
-		void RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState);
-
+public:
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
 		void Attack();
@@ -60,18 +65,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void StopAttack();
 
+//------ 스탯/상태 관련 ---------------------------------
+public:
+	UFUNCTION()
+		void InitWeapon();
+
+	UFUNCTION()
+		void RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState);
+
 	//Weapon Stat 초기화
 	UFUNCTION(BlueprintCallable)
 		void UpdateWeaponStat(FWeaponStatStruct NewStat);
-
-	UFUNCTION(BlueprintCallable)
-		void SetOwnerCharacter(class ACharacterBase* NewOwnerCharacterRef);
 
 	//공격 범위를 반환
 	UFUNCTION(BlueprintCallable)
 		float GetAttackRange();
 
-	//------ Projectile 관련-------------
+	UFUNCTION()
+		void UpdateDurabilityState();
+
+//------ Projectile 관련----------------------------
 public:
 	//발사체를 생성
 	UFUNCTION()
@@ -108,7 +121,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Weapon")
 		TSubclassOf<class AProjectileBase> ProjectileClass;
 
-//-------- Melee 관련 ------------
+//-------- Melee 관련 ---------------------------
 public:
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -126,12 +139,31 @@ public:
 		TArray<FVector> GetCurrentMeleePointList();
 
 private:
+	UPROPERTY()
+		float MeleeAtkComboRemainTime = 1.0f;
+
+	UPROPERTY()
+		TArray<FVector> MeleePrevTracePointList;
+
+	//UPROPERTY()
+	FCollisionQueryParams MeleeLineTraceQueryParams;
+
+//-------- 그 외 -------------------------------
+public:
+	UFUNCTION(BlueprintCallable)
+		void SetOwnerCharacter(class ACharacterBase* NewOwnerCharacterRef);
+
+private:
 	//캐릭터 Ref
 	UPROPERTY()
 		class ACharacterBase* OwnerCharacterRef;
 
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
+
+//------- Timer 관련 -----------------------------
+	UFUNCTION()
+		void ClearAllTimerHandle();
 
 	UPROPERTY()
 		FTimerHandle MeleeAtkTimerHandle;
@@ -141,13 +173,4 @@ private:
 
 	UPROPERTY()
 		FTimerHandle MeleeComboTimerHandle;
-
-	UPROPERTY()
-		float MeleeAtkComboRemainTime = 1.0f;
-
-	UPROPERTY()
-		TArray<FVector> MeleePrevTracePointList;
-
-	//UPROPERTY()
-		FCollisionQueryParams MeleeLineTraceQueryParams;
 };

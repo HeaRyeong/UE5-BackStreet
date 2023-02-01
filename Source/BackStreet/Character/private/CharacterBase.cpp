@@ -144,9 +144,8 @@ void ACharacterBase::TryAttack()
 void ACharacterBase::Attack()
 {
 	if (!IsValid(GetWeaponActorRef())) return;
-	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, FMath::Max(0.0f, 1.0f - CharacterStat.CharacterAtkSpeed));
+										, 1.0f, false, FMath::Max(0.0f, 1.25f - CharacterStat.CharacterAtkSpeed));
 	GetWeaponActorRef()->Attack();
 }
  
@@ -189,14 +188,13 @@ bool ACharacterBase::EquipWeapon(AWeaponBase* TargetWeapon)
 	TargetWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "Weapon_R");
 	TargetWeapon->SetActorRelativeLocation(FVector(0.0f), false);
 	TargetWeapon->SetOwnerCharacter(this);
-	return false;
+	return true;
 }
 
-bool ACharacterBase::PickWeapon(AWeaponBase* NewWeapon)
+bool ACharacterBase::PickWeapon(int32 NewWeaponID)
 {
 	if (!IsValid(GetInventoryRef())) return false;
-	if (!IsValid(NewWeapon)) return false;
-	bool result = InventoryRef->AddWeapon(NewWeapon);
+	bool result = InventoryRef->AddWeapon(NewWeaponID);
 	return result;
 }
 
@@ -207,14 +205,13 @@ void ACharacterBase::SwitchToNextWeapon()
 	InventoryRef->SwitchToNextWeapon();
 }
 
-bool ACharacterBase::DropWeapon()
+void ACharacterBase::DropWeapon()
 {
-	if (!IsValid(GetWeaponActorRef())) return false;
+	if (!IsValid(GetWeaponActorRef())) return;
 	AWeaponBase* weaponRef = GetWeaponActorRef();
 	weaponRef->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	/*---- 현재 무기를 월드에 버리는 기능은 미구현 -----*/
 	weaponRef->Destroy();
-	return true;
 }
 
 AWeaponInventoryBase* ACharacterBase::GetInventoryRef()
@@ -226,6 +223,7 @@ AWeaponInventoryBase* ACharacterBase::GetInventoryRef()
 AWeaponBase* ACharacterBase::GetWeaponActorRef()
 {
 	if (!IsValid(GetInventoryRef())) return nullptr;
+
 	return GetInventoryRef()->GetCurrentWeaponRef();
 }
 

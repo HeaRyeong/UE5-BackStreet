@@ -75,7 +75,8 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 
-	PlayerInputComponent->BindAction("WeaponSwitch", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
+	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -158,6 +159,7 @@ void AMainCharacterBase::StopAttack()
 
 void AMainCharacterBase::Die()
 {
+	Super::Die();
 }
 
 void AMainCharacterBase::RotateToCursor()
@@ -191,6 +193,11 @@ void AMainCharacterBase::ResetRotationToMovement()
 void AMainCharacterBase::SwitchToNextWeapon()
 {
 	Super::SwitchToNextWeapon();
+}
+
+void AMainCharacterBase::DropWeapon()
+{
+	Super::DropWeapon();
 }
 
 bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)

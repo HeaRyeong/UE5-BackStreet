@@ -124,13 +124,12 @@ void AItemBase::SelectWeapon()
 		WeaponID = 151;
 		break;
 	case 5:
-		WeaponID = 152;
+		WeaponID = 199;
 		break;
 	default:
 		break;
 	}
-		
-
+	MyCharacter->PickWeapon(WeaponID);
 }
 
 void AItemBase::SelectProjectile()
@@ -149,6 +148,4 @@ void AItemBase::SelectProjectile()
 	default:
 		break;
 	}
-	//MyCharacter->AddWeaponInventory(GameModeRef->GetAssetManager()->SpawnWeaponwithID(ProjectileID));
-
 }

@@ -6,8 +6,6 @@
 
 #define InventoryMaxSize 6
 
-DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
-
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -85,14 +83,13 @@ public:
 
 	//무기를 집는다. 인벤토리가 꽉 찼다면 false를 반환
 	UFUNCTION(BlueprintCallable)
-		bool PickWeapon(class AWeaponBase* NewWeapon);
+		bool PickWeapon(int32 NewWeaponID);
 
 	//다음 무기로 전환한다. 전환에 실패하면 false를 반환
 	virtual void SwitchToNextWeapon();
 
 	//무기를 Drop한다. (월드에서 아예 사라진다.)
-	UFUNCTION()
-		bool DropWeapon();
+	virtual void DropWeapon();
 
 	UFUNCTION(BlueprintCallable)
 		class AWeaponInventoryBase* GetInventoryRef();

@@ -139,11 +139,8 @@ void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, 
 	if (IsValid(TargetWeapon) && IsValid(WeaponStatTable))
 	{
 		FString rowName = FString::FromInt(WeaponID);
-		FWeaponStatStruct* newStat = WeaponStatTable->FindRow<FWeaponStatStruct>(FName(rowName), rowName);
-		if (newStat != nullptr)
-		{
-			TargetWeapon->UpdateWeaponStat(*newStat);
-		}
+		FWeaponStatStruct newStat = GetWeaponStatInfoWithID(WeaponID);
+		TargetWeapon->UpdateWeaponStat(newStat);
 	}
 }
 
@@ -158,4 +155,12 @@ void ABackStreetGameModeBase::UpdateProjectileStatWithID(AProjectileBase* Target
 			TargetProjectile->UpdateProjectileStat(*newStat);
 		}
 	}
+}
+
+FWeaponStatStruct ABackStreetGameModeBase::GetWeaponStatInfoWithID(const uint8 WeaponID)
+{
+	FString rowName = FString::FromInt(WeaponID);
+	FWeaponStatStruct* newStat = WeaponStatTable->FindRow<FWeaponStatStruct>(FName(rowName), rowName);
+	if (newStat == nullptr) return FWeaponStatStruct();
+	return *newStat;
 }

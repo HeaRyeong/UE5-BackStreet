@@ -14,10 +14,12 @@ AWeaponInventoryBase::AWeaponInventoryBase()
 
 void AWeaponInventoryBase::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 }
 
 void AWeaponInventoryBase::BeginPlay()
 {
+	Super::BeginPlay();
 }
 
 void AWeaponInventoryBase::InitInventory()
@@ -31,73 +33,83 @@ void AWeaponInventoryBase::InitInventory()
 	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());
 
 	InventoryArray.Empty();
-	for (int32 idx = 0; idx < MaxCapacity; idx++)
-		InventoryArray.Add(FInventoryItemInfoStruct());
+
+	//미리 클래스 / Id 정보를 초기화 함 
+	for (int32 classIdx = 0; classIdx < WeaponIDList.Num(); classIdx++)
+	{
+		WeaponClassInfoMap.Add(WeaponIDList[classIdx], WeaponClassList[classIdx]);
+	}
 }
 
-bool AWeaponInventoryBase::AddWeapon(AWeaponBase* NewWeapon)
+void AWeaponInventoryBase::EquipWeapon(int32 InventoryIdx)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ADD #-1"));
+	if (!InventoryArray.IsValidIndex(InventoryIdx)) return;
 
+	AWeaponBase* newWeapon = SpawnWeaponActor(InventoryArray[InventoryIdx].WeaponID);
+	if (IsValid(newWeapon))
+	{
+		SetCurrentWeaponRef(newWeapon);
+		OwnerCharacterRef->EquipWeapon(GetCurrentWeaponRef());
+		SetCurrentIdx(InventoryIdx);
+		SyncCurrentWeaponInfo();
+	}
+}
+
+bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
+{
 	if (!IsValid(OwnerCharacterRef)) return false;
+	if (!WeaponClassInfoMap.Contains(NewWeaponID)) return false;
 
-	UE_LOG(LogTemp, Warning, TEXT("ADD #0 / Capacity : %d,  Count : %d,  Idx : %d"), CurrentCapacity, CurrentWeaponCount, CurrentIdx);
+	FWeaponStatStruct newWeaponStat = GamemodeRef->GetWeaponStatInfoWithID(NewWeaponID);
 
-	if (MaxCapacity < NewWeapon->WeaponStat.WeaponWeight + CurrentCapacity) return false;
-
-	if (!WeaponClassInfoMap.Contains(NewWeapon->WeaponID))
+	//먼저, 원거리 무기의 중복 여부를 판단. 중복된다면 Ammo를 추가
+	int32 duplicateIdx = CheckWeaponDuplicate(NewWeaponID);
+	if (newWeaponStat.bHasProjectile && duplicateIdx != -1)
 	{
-		WeaponClassInfoMap.Add(NewWeapon->WeaponID, NewWeapon->GetClass());
+		InventoryArray[duplicateIdx].WeaponState.TotalAmmoCount += 25;
+		return false;
 	}
-	InventoryArray[GetNextInventoryIdx()] = {NewWeapon->WeaponID, NewWeapon->WeaponStat, NewWeapon->WeaponState};
-	NewWeapon->Destroy();
-
-	if (GetCurrentWeaponCount() == 0) //기존 인벤토리가 비어있었다면? 바로 장착까지 해줌
+	
+	//그렇지 않다면 무기 용량 체크를 진행하고 무기 추가를 진행
+	else if (newWeaponStat.WeaponWeight == 0 || newWeaponStat.WeaponWeight + CurrentCapacity <= MaxCapacity)
 	{
-		NewWeapon = SpawnWeaponActor(InventoryArray[GetNextInventoryIdx()].WeaponID);
-		if (!IsValid(NewWeapon))
+		InventoryArray.Add({ NewWeaponID, newWeaponStat, FWeaponStateStruct() });
+		if (GetCurrentWeaponCount() == 1) //기존 인벤토리가 비어있었다면? 바로 장착까지 해줌
 		{
-			UE_LOG(LogTemp, Warning, TEXT("HOLY MOLY"));
-			return false;
+			EquipWeapon(InventoryArray.Num() - 1);
 		}
-		CurrentWeaponRef = NewWeapon;
-		OwnerCharacterRef->EquipWeapon(NewWeapon);
+		CurrentCapacity += newWeaponStat.WeaponWeight;
+		SortInventory();
+
+		return true;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("ADD SUCCESSFUL"));
-
-	CurrentCapacity += NewWeapon->WeaponStat.WeaponWeight;
-	CurrentWeaponCount += 1;
-
-	return true;
+	return false;
 }
 
 void AWeaponInventoryBase::RemoveWeapon(int32 InventoryIdx)
 {
-	SortInventory();
+	if (!InventoryArray.IsValidIndex(InventoryIdx)) return;
+
+	InventoryArray.RemoveAt(GetCurrentIdx());
+	if (GetCurrentWeaponCount() >= 1)
+	{
+		SetCurrentIdx(0);
+		EquipWeapon(0);
+		SortInventory();
+	}
 }
 
 bool AWeaponInventoryBase::SwitchToNextWeapon()
 {
 	const int32 nextIdx = GetNextInventoryIdx();
-
-	UE_LOG(LogTemp, Warning, TEXT("Switch #0 / Capacity : %d,  Count : %d,  Idx : %d"), CurrentCapacity, CurrentWeaponCount, CurrentIdx);
-
 	if (GetCurrentWeaponCount() <= 1 || nextIdx == INVALID_INVENTORY_IDX) return false;
 	if (!InventoryArray.IsValidIndex(nextIdx)) return false;
 	if (!IsValid(OwnerCharacterRef)) return false;
 
-	FInventoryItemInfoStruct& targetWeaponInfo = InventoryArray[nextIdx];
-
 	RestoreCurrentWeapon(); //현재 무기를 Destroy하고, 정보만 List에 저장한다.
+	EquipWeapon(nextIdx);
+	SortInventory();
 
-	AWeaponBase* newWeapon = SpawnWeaponActor(targetWeaponInfo.WeaponID);
-	if(IsValid(newWeapon))
-	{
-		OwnerCharacterRef->EquipWeapon(newWeapon);
-		CurrentWeaponRef = newWeapon;
-		SetCurrentIdx(nextIdx);
-		return true;
-	}
 	return false;
 }
 
@@ -105,20 +117,19 @@ void AWeaponInventoryBase::SyncCurrentWeaponInfo()
 {
 	if (!IsValid(OwnerCharacterRef)) return;
 	if (GetCurrentWeaponCount() == 0) return;
-	if (InventoryArray.IsValidIndex(GetCurrentIdx()))
+	if (!InventoryArray.IsValidIndex(GetCurrentIdx()))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SyncCurrentWeaponInfo : Invalid Index"));
 		return;
 	}
 
-	AWeaponBase* currWeaponRef = OwnerCharacterRef->GetWeaponActorRef();
-	if (IsValid(currWeaponRef))
+	if (!IsValid(GetCurrentWeaponRef()))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SyncCurrentWeaponInfo : Weapon Not Found"));
 		return;
 	}
-	InventoryArray[GetCurrentIdx()].WeaponStat = currWeaponRef->WeaponStat;
-	InventoryArray[GetCurrentIdx()].WeaponState = currWeaponRef->WeaponState;
+	InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->WeaponStat;
+	InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->WeaponState;
 }
 
 AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
@@ -146,32 +157,69 @@ void AWeaponInventoryBase::RestoreCurrentWeapon()
 {
 	if (GetCurrentWeaponCount() <= 1) return;
 	if (!IsValid(OwnerCharacterRef)) return;
-	
+
 	SyncCurrentWeaponInfo();
-	DestroyCurrentWeapon();
+	GetCurrentWeaponRef()->Destroy();
 }
 
 void AWeaponInventoryBase::ClearInventory()
 {
-	int32 searchIdx = 0;
-	while (GetCurrentWeaponCount() > 0)
-	{
-		const int32 currWeight = InventoryArray[searchIdx].WeaponStat.WeaponWeight;
-		InventoryArray[searchIdx] = FInventoryItemInfoStruct();
-		searchIdx = (searchIdx + currWeight) % MaxCapacity;
-		CurrentWeaponCount -= 1;
-	}
+	RemoveCurrentWeapon();
+	InventoryArray.Empty();
 }
 
 void AWeaponInventoryBase::SortInventory()
 {
+	if (InventoryArray.Num() <= 1) return;
 
+	//Inventory의 최대 Len이 10이기 때문에
+	//O(n^2)이어도 상수 시간에 근접한 결과를 냄
+	for (int32 selIdx = 0; selIdx < GetCurrentWeaponCount()-1; selIdx++)
+	{
+		FInventoryItemInfoStruct tempInfo = FInventoryItemInfoStruct();
+		for (int32 compIdx = selIdx + 1; compIdx < GetCurrentWeaponCount(); compIdx++)
+		{
+			const int32 selWeight = InventoryArray[selIdx].WeaponStat.WeaponWeight;
+			const int32 compWeight = InventoryArray[compIdx].WeaponStat.WeaponWeight;
+			if (selWeight > compWeight)
+			{
+				tempInfo = InventoryArray[selIdx];
+				InventoryArray[selIdx] = InventoryArray[compIdx];
+				InventoryArray[compIdx] = tempInfo;
+
+				if (selWeight == GetCurrentIdx())
+				{
+					SetCurrentIdx(compIdx);
+				}
+			}
+		}
+	}
 }
 
-void AWeaponInventoryBase::DestroyCurrentWeapon()
+void AWeaponInventoryBase::RemoveCurrentWeapon()
 {
 	if (!IsValid(GetCurrentWeaponRef())) return;
 	CurrentWeaponRef->Destroy();
+	RemoveWeapon(GetCurrentIdx());
+}
+
+int32 AWeaponInventoryBase::CheckWeaponDuplicate(int32 TargetWeaponID)
+{
+	for (int32 inventoryIdx = 0; inventoryIdx < InventoryArray.Num(); inventoryIdx++)
+	{
+		auto& weaponInfo = InventoryArray[inventoryIdx];
+		if (weaponInfo.WeaponID == TargetWeaponID)
+		{
+			return inventoryIdx;
+		}
+	}
+	return -1;
+}
+
+AWeaponBase* AWeaponInventoryBase::GetCurrentWeaponRef()
+{
+	if (!IsValid(CurrentWeaponRef)) return nullptr;
+	return CurrentWeaponRef;
 }
 
 FInventoryItemInfoStruct AWeaponInventoryBase::GetCurrentWeaponInfo()
@@ -183,6 +231,13 @@ FInventoryItemInfoStruct AWeaponInventoryBase::GetCurrentWeaponInfo()
 int32 AWeaponInventoryBase::GetNextInventoryIdx()
 {
 	if (GetCurrentWeaponCount() == 0) return 0;
-	const int32 currentWeaponWeight = (GetCurrentWeaponInfo().WeaponStat).WeaponWeight;
-	return (GetCurrentIdx() + currentWeaponWeight) % MaxCapacity;
+	return (GetCurrentIdx() + 1) % InventoryArray.Num();
+}
+
+void AWeaponInventoryBase::SetCurrentWeaponRef(AWeaponBase* NewWeapon)
+{
+	if (!IsValid(NewWeapon)) return;
+	CurrentWeaponRef = NewWeapon;
+	CurrentWeaponRef->WeaponDestroyDelegate.BindUFunction(this, FName("RemoveCurrentWeapon"));
+	CurrentWeaponRef->SetOwnerCharacter(OwnerCharacterRef);
 }
