@@ -2,6 +2,7 @@
 
 
 #include "../public/EnemyCharacterBase.h"
+#include "../../AISystem/public/AIControllerBase.h"
 #include "../public/CharacterInfoStruct.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
@@ -11,6 +12,8 @@
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
 	bUseControllerRotationYaw = false;
+	AutoPossessAI = EAutoPossessAI::Spawned;
+
 	this->Tags.Add("Enemy");
 }
 
