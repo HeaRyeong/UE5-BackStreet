@@ -24,6 +24,9 @@ public:
 	UFUNCTION()
 		virtual void BeginPlay() override;
 
+	UFUNCTION()
+		void DeactivateAI();
+
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|AI")
 		class UAIPerceptionComponent* AIPerceptionComponent;
 

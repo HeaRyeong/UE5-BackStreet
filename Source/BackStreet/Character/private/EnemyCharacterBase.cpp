@@ -21,13 +21,13 @@ void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	TileRef = GamemodeRef->CurrentTile;
-	
 	if (IsValid(GetInventoryRef()))
 	{
 		GetInventoryRef()->AddWeapon(DefaultWeaponID);
 	}
 	CharacterStat.bInfiniteAmmo = true;
 	CharacterStat.bInfiniteDurability = true;
+	GamemodeRef->GameEndDelegate.AddDynamic(this, &AEnemyCharacterBase::ClearAllTimerHandle);
 }
 
 void AEnemyCharacterBase::InitEnemyStat()

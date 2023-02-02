@@ -12,18 +12,15 @@ class BACKSTREET_API AMainCharacterBase : public ACharacterBase
 {
 	GENERATED_BODY()
 
+//-------- Global -----------------
 public:
-	// Sets default values for this character's properties
 	AMainCharacterBase();
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 // ------- ÄÄÆ÷³ÍÆ® ----------

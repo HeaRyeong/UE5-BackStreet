@@ -2,6 +2,7 @@
 
 
 #include "../public/AIControllerBase.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Perception/AISenseConfig_Sight.h"
@@ -28,7 +29,12 @@ void AAIControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->GameEndDelegate.AddDynamic(this, &AAIControllerBase::DeactivateAI);
+}
 
+void AAIControllerBase::DeactivateAI()
+{
+	GetBrainComponent()->StopLogic(FString("GameOver"));
 }
 
 void AAIControllerBase::InitAIPerceptionSystem()

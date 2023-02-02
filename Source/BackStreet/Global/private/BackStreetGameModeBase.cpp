@@ -6,15 +6,17 @@
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "../../Character/public/MainCharacterBase.h"
 #include "../public/AssetManagerBase.h"
-#include "EngineUtils.h"
-#include "UObject/ConstructorHelpers.h"
-#include "Kismet/GameplayStatics.h"
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
-	
 
+}
+
+void ABackStreetGameModeBase::BeginPlay()
+{
+	GameEndDelegate.AddDynamic(this, &ABackStreetGameModeBase::GameOver);
 }
 
 void ABackStreetGameModeBase::InitializeChapter()
@@ -101,6 +103,7 @@ AAssetManagerBase* ABackStreetGameModeBase::GetAssetManager()
 {
 	return AssetDataManager;
 }
+
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)
 {

@@ -6,6 +6,9 @@
 #include "EngineMinimal.h"
 #include "CollisionQueryParams.h"
 #include "Perception/AIPerceptionTypes.h"
+#include "EngineUtils.h"
+#include "UObject/ConstructorHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 /* ----- ±¸Á¶Ã¼/Enum ------------ */
 #include "../../Character/public/CharacterInfoStruct.h"

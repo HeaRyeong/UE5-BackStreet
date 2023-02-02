@@ -53,6 +53,7 @@ void AMainCharacterBase::BeginPlay()
 	Super::BeginPlay();
 	
 	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	GamemodeRef->GameEndDelegate.AddDynamic(this, &AMainCharacterBase::ClearAllTimerHandle);
 }
 
 // Called every frame
@@ -160,6 +161,11 @@ void AMainCharacterBase::StopAttack()
 void AMainCharacterBase::Die()
 {
 	Super::Die();
+	if (IsValid(GamemodeRef))
+	{
+		GamemodeRef->GameEndDelegate.Broadcast();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("DIE DELEGATE"));
 }
 
 void AMainCharacterBase::RotateToCursor()

@@ -7,21 +7,27 @@
 #include "Engine/StreamableManager.h"
 #include "BackStreetGameModeBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateGameOver);
 
 UCLASS()
 class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateGameOver GameEndDelegate;
 
 public:
 	ABackStreetGameModeBase();
 
+protected:
+	virtual void BeginPlay() override;
+
+//---------- StageManager? -------------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitializeChapter();
+		void InitializeChapter(); //@ljh 아래 InitChapter과 겹치네요..
 
-// StageManager? ----
-public:
 	UFUNCTION(BlueprintCallable)
 		void InitChapter();
 
@@ -52,7 +58,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float ChapterStatValue;
 
-//-- Asset관련-------------------
+//----- Asset관련--------------------------------------
 public:
 	UFUNCTION()
 		void CreateAssetManager();
@@ -76,6 +82,9 @@ public:
 
 // ----- Gameplay Manager -------------------
 public:
+	UFUNCTION(BlueprintImplementableEvent)
+		void GameOver();
+
 	UFUNCTION()
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
 
