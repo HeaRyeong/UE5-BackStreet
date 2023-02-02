@@ -150,6 +150,9 @@ protected:
 		class UAnimMontage* RollAnimMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* DieAnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* ReloadAnimMontage;
 
 // ------ 그 외 캐릭터 프로퍼티  ---------------

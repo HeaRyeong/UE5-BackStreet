@@ -71,6 +71,9 @@ void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
 
 void ACharacterBase::ResetActionState()
 {
+	if (CharacterState.CharacterActionState == ECharacterActionType::E_Stun
+		|| CharacterState.CharacterActionState == ECharacterActionType::E_Die) return;
+
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	if (!GetWorldTimerManager().IsTimerActive(AtkIntervalHandle))
 	{
@@ -102,7 +105,6 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 
 float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer)
 {
-	//추후 디버프 당 파티클 시스템 추가 예정
 	if (!IsValid(Causer)) return 0.0f;
 	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
 	return DamageAmount;
@@ -124,7 +126,21 @@ void ACharacterBase::Die()
 	ClearAllTimerHandle();
 	
 	GetCharacterMovement()->Deactivate();
+	if (IsValid(GetInventoryRef()))
+	{
+		GetInventoryRef()->RemoveCurrentWeapon();
+		GetInventoryRef()->Destroy();
+	}
 	bUseControllerRotationYaw = false;
+
+	if (DieAnimMontage != nullptr)
+	{
+		PlayAnimMontage(DieAnimMontage);
+	}
+	else
+	{
+		Destroy();
+	}
 }
 
 void ACharacterBase::TryAttack()
@@ -207,11 +223,10 @@ void ACharacterBase::SwitchToNextWeapon()
 
 void ACharacterBase::DropWeapon()
 {
-	if (!IsValid(GetWeaponActorRef())) return;
-	AWeaponBase* weaponRef = GetWeaponActorRef();
-	weaponRef->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	if (!IsValid(GetInventoryRef())) return;
+
+	GetInventoryRef()->RemoveCurrentWeapon();
 	/*---- 현재 무기를 월드에 버리는 기능은 미구현 -----*/
-	weaponRef->Destroy();
 }
 
 AWeaponInventoryBase* ACharacterBase::GetInventoryRef()

@@ -66,8 +66,9 @@ void AEnemyCharacterBase::StopAttack()
 
 void AEnemyCharacterBase::Die()
 {
-	EnemyDeathDelegate.ExecuteIfBound(this);
 	Super::Die();
+	EnemyDeathDelegate.ExecuteIfBound(this);
+	Controller->Destroy();
 }
 
 void AEnemyCharacterBase::Turn(float Angle)

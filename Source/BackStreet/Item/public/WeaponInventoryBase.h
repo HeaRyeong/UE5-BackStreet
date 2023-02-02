@@ -35,9 +35,9 @@ public:
 	UFUNCTION()
 		bool AddWeapon(int32 NewWeaponID);
 
-	//무기를 인벤토리로부터 제거
+	//현재 장착하고 있는 Weapon Actor 정보를 제거한다.
 	UFUNCTION()
-		void RemoveWeapon(int32 InventoryIdx);
+		void RemoveCurrentWeapon();
 
 	//다음 무기로 전환
 	UFUNCTION()
@@ -63,9 +63,9 @@ protected:
 	UFUNCTION()
 		void SortInventory();
 
-	//현재 장착하고 있는 Weapon Actor 정보를 제거한다.
+	//무기를 인벤토리로부터 제거
 	UFUNCTION()
-		void RemoveCurrentWeapon();
+		void RemoveWeapon(int32 InventoryIdx);
 
 	//인벤토리에 TargetWeaponID라는 ID를 가진 Weapon이 있는지 체크.
 	//중복되는게 있다면 해당 인벤토리의 Idx를 반환
