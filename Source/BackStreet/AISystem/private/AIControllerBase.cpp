@@ -29,7 +29,15 @@ void AAIControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->GameEndDelegate.AddDynamic(this, &AAIControllerBase::DeactivateAI);
+	GetBrainComponent()->PauseLogic(FString("PrevGameStart"));
+	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->ClearResourceDelegate.AddDynamic(this, &AAIControllerBase::DeactivateAI);
+	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->StartChapterDelegate.AddDynamic(this, &AAIControllerBase::ActivateAI);
+}
+
+void AAIControllerBase::ActivateAI()
+{
+	GetBrainComponent()->ResumeLogic(FString("GameStart"));
+	UE_LOG(LogTemp, Warning, TEXT("ActivateAI"));
 }
 
 void AAIControllerBase::DeactivateAI()

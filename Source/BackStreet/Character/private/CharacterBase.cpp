@@ -40,6 +40,7 @@ void ACharacterBase::BeginPlay()
 		GetInventoryRef()->InitInventory();
 	}
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
 
 // Called every frame

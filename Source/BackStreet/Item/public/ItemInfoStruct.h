@@ -27,7 +27,6 @@ enum class EStatUpCategoryInfo : uint8
 	E_ATKSpeed				UMETA(DisplayName = "ATKSpeed"),
 	E_MoveSpeed				UMETA(DisplayName = "MoveSpeed"),
 	E_Defense				UMETA(DisplayName = "Defense"),
-
 };
 
 //인벤토리를 구성하는 요소들의 정보를 담은 구조체

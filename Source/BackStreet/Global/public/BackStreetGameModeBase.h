@@ -7,7 +7,8 @@
 #include "Engine/StreamableManager.h"
 #include "BackStreetGameModeBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateGameOver);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateSingleParam, bool, bGameIsOver);
 
 UCLASS()
 class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
@@ -15,7 +16,13 @@ class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateGameOver GameEndDelegate;
+		FDelegateNoParam StartChapterDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateSingleParam FinishChapterDelegate;
+	
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam ClearResourceDelegate;
 
 public:
 	ABackStreetGameModeBase();
@@ -46,8 +53,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATileBase* CurrentTile;
-	// ³²Àº Ã©ÅÍ ¼ö 
 
+	// ³²Àº Ã©ÅÍ ¼ö 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 RemainChapter;
 
@@ -82,8 +89,14 @@ public:
 
 // ----- Gameplay Manager -------------------
 public:
+	UFUNCTION()
+		void StartChapter();
+
 	UFUNCTION(BlueprintImplementableEvent)
-		void GameOver();
+		void FinishChapter(bool bGameIsOver);
+
+	UFUNCTION(BlueprintCallable)
+		void RewardStageClear(EStatUpCategoryInfo RewardType);
 
 	UFUNCTION()
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
@@ -122,4 +135,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
 		TArray<TSubclassOf<UCameraShakeBase> > CameraShakeEffectList;
+
+//------ Ref ¸â¹ö ---------------
+private:
+	UPROPERTY()
+		class AMainCharacterBase* PlayerCharacterRef;
 };

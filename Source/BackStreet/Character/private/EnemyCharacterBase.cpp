@@ -31,8 +31,7 @@ void AEnemyCharacterBase::BeginPlay()
 
 	SetDefaultWeapon();
 	SetDefaultStat();
-	InitFloatingHpWidget();
-	GamemodeRef->GameEndDelegate.AddDynamic(this, &AEnemyCharacterBase::ClearAllTimerHandle);
+	InitFloatingHpWidget();	
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
