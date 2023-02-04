@@ -29,14 +29,18 @@ void AAIControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GetBrainComponent()->PauseLogic(FString("PrevGameStart"));
+	//시작 시, AI 로직을 잠시 멈춰 둔다.
+	if (IsValid(GetBrainComponent()))
+	{
+		GetBrainComponent()->PauseLogic(FString("PrevGameStart"));
+	}
 	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->ClearResourceDelegate.AddDynamic(this, &AAIControllerBase::DeactivateAI);
 	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->StartChapterDelegate.AddDynamic(this, &AAIControllerBase::ActivateAI);
 }
 
 void AAIControllerBase::ActivateAI()
 {
-	GetBrainComponent()->ResumeLogic(FString("GameStart"));
+	GetBrainComponent()->ResumeLogic(FString("GameStart")); //Delegate를 통해 Chapter이 초기화 되면, Activate 한다.
 	UE_LOG(LogTemp, Warning, TEXT("ActivateAI"));
 }
 

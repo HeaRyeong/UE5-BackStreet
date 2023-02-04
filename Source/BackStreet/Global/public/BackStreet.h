@@ -9,6 +9,8 @@
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "LevelSequenceActor.h"
+#include "LevelSequencePlayer.h"
 
 /* ----- ±¸Á¶Ã¼/Enum ------------ */
 #include "../../Character/public/CharacterInfoStruct.h"

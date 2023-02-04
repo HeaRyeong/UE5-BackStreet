@@ -75,6 +75,7 @@ void ACharacterBase::ResetActionState()
 	if (CharacterState.CharacterActionState == ECharacterActionType::E_Stun
 		|| CharacterState.CharacterActionState == ECharacterActionType::E_Die) return;
 
+	StopAttack();
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	if (!GetWorldTimerManager().IsTimerActive(AtkIntervalHandle))
 	{
