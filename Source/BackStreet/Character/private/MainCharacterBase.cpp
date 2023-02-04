@@ -164,6 +164,7 @@ void AMainCharacterBase::Die()
 	{
 		GamemodeRef->FinishChapterDelegate.Broadcast(true);
 	}
+	ClearAllTimerHandle();
 	UE_LOG(LogTemp, Warning, TEXT("DIE DELEGATE"));
 }
 

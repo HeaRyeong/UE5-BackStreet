@@ -71,6 +71,7 @@ void AEnemyCharacterBase::StopAttack()
 void AEnemyCharacterBase::Die()
 {
 	Super::Die();
+
 	EnemyDeathDelegate.ExecuteIfBound(this);
 	Controller->Destroy();
 }

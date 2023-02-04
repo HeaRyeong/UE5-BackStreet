@@ -224,8 +224,10 @@ void AWeaponBase::MeleeAttack()
 			const FVector& endPoint = currTracePositionList[tracePointIdx];
 			GetWorld()->LineTraceSingleByChannel(hitResult, beginPoint, endPoint, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
 
-			if (hitResult.bBlockingHit && hitResult.GetActor()->ActorHasTag("Character")
-				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1]))
+			if (hitResult.bBlockingHit && IsValid(hitResult.GetActor()) //hitResult와 hitActor의 Validity 체크
+				&& OwnerCharacterRef->Tags.IsValidIndex(1) //hitActor의 Tags 체크(1)
+				&& hitResult.GetActor()->ActorHasTag("Character") //hitActor의 Type 체크
+				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1])) //공격자와 피격자의 타입이 같은지 체크
 			{
 				bIsMeleeTraceSucceed = true;
 				DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor::Yellow, false, 1.0f, 0, 1.5f);
