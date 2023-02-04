@@ -13,7 +13,6 @@ class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 {
 	GENERATED_BODY()
 
-	
 public:
 	AEnemyCharacterBase();
 	
@@ -30,8 +29,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATileBase* TileRef;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UDataTable* EnemyRankDataTable;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gameplay")
+		int32 EnemyID;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		int32 DefaultWeaponID;
 
 public:
 	UFUNCTION(BlueprintCallable)

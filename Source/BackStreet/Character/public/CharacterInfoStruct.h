@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "../../Global/public/BackStreet.h"
+#include "CharacteInfoEnum.h"
 #include "CharacterInfoStruct.generated.h"
 
 USTRUCT(BlueprintType)
@@ -15,6 +15,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 		bool bInfiniteAmmo = false;
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bInfiniteDurability = false; 
 
 	//PlayerMaxHP´Â 1.0f
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0.5f, UIMax = 10.0f))
