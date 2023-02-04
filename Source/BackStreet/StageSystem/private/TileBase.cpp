@@ -8,7 +8,7 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemInfoStruct.h"
-#include "../../Character/public/CharacterInfoStruct.h"
+//#include "../../Character/public/CharacterInfoStruct.h"
 #include "TimerManager.h"
 #include "../public/GridBase.h"
 #include "UObject/SoftObjectPath.h"
@@ -30,10 +30,9 @@ void ATileBase::Tick(float DeltaTime)
 void ATileBase::BeginPlay()
 {
 	Super::BeginPlay();
-	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	GameMode = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	AssetDataManagerRef = GameMode->AssetDataManager;
-	Chapter = GameMode->Chapter;
+	CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	Chapter = GamemodeRef->Chapter;
 
 	SelectMap();
 }
@@ -49,8 +48,7 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 	Gate.Add(false); // LEFT
 	Gate.Add(false); // RIGHT
 
-
-	StageLevel = FMath::RandRange(1, 5);
+	StageType = EStageCategoryInfo::E_Normal;
 	ClearTime = 0;
 }
 
@@ -88,6 +86,14 @@ void ATileBase::SelectMap()
 
 void ATileBase::InitMission(bool IsBoss)
 {
+	if (IsBoss)
+	{
+		StageType = EStageCategoryInfo::E_Boss;
+	}
+	else
+	{
+		StageType = EStageCategoryInfo::E_Normal;
+	}
 	bIsMainMission = true;
 	bIsBossStage = IsBoss;
 	MissionInfo = NewObject<UMissionBase>(this);
@@ -98,7 +104,7 @@ void ATileBase::InitMission(bool IsBoss)
 
 void ATileBase::LoadLevel()
 {
-	
+	AssetDataManagerRef = GamemodeRef->AssetDataManager;
 	if (LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
@@ -106,14 +112,14 @@ void ATileBase::LoadLevel()
 		LevelRef->SetShouldBeVisible(true);
 
 		// 플레이어 위치 스폰 위치 수정 필요
-		MyCharacter->SetActorLocation(this->GetActorLocation()+ FVector(0, 0, 500));
+		CharacterRef->SetActorLocation(this->GetActorLocation()+ FVector(0, 0, 500));
 		// Timer
 		GetWorldTimerManager().UnPauseTimer(ClearTimerHandle);
 
 	}else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
-		FString name = FString::FromInt(GameMode->RemainChapter);
+		FString name = FString::FromInt(GamemodeRef->RemainChapter);
 		name += FString(TEXT("Stage"));
 		name += FString::FromInt(YPos * 5 + XPos);
 		LevelRef=UGameplayStatics::GetStreamingLevel(GetWorld(), LevelToLoad)->CreateInstance(name);
@@ -123,7 +129,7 @@ void ATileBase::LoadLevel()
 		LevelRef->SetShouldBeVisible(true);
 
 		// 플레이어 위치 스폰 위치 수정 필요
-		MyCharacter->SetActorLocation(this->GetActorLocation()+FVector(0,0,500));
+		CharacterRef->SetActorLocation(this->GetActorLocation()+FVector(0,0,500));
 		// Clear Timer 설정
 		GetWorldTimerManager().SetTimer(ClearTimerHandle, this, &ATileBase::SetReward, 60.0f, true);
 
@@ -172,7 +178,6 @@ void ATileBase::LoadMonster()
 
 }
 
-
 void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 {
 	UE_LOG(LogTemp, Log, TEXT("Call MonsterDie()"));
@@ -190,18 +195,17 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 		UE_LOG(LogTemp, Log, TEXT("Stage Clear"));
 		bIsClear = true;
 
-		// 스테이지 클리어 보상 처리
-		StageReward();
-		
+		// 스테이지 클리어 처리
+		GamemodeRef->FinishChapterDelegate.Broadcast(false);
 	}
 }
 
 void ATileBase::BindDelegate()
 {
-	for (ACharacterBase* enemy : MonsterList)
+	for (AEnemyCharacterBase* enemy : MonsterList)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Binding Func"));
-		enemy->FDieDelegate.BindUFunction(this, FName("MonsterDie"));
+		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));
 	}
 }
 
@@ -222,8 +226,13 @@ void ATileBase::LoadItem()
 			ItemSpawnPoints[SelectidxB] = Temp;
 
 		}
-
-		AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Buff, ItemSpawnPoints);
+		int8 SpawnMax = FMath::RandRange(1, MaxItemSpawn);
+		for (int8 i = 0; i < SpawnMax; i++)
+		{
+			int8 ItemType = FMath::RandRange(1, 3);
+			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo(ItemType), ItemSpawnPoints[i]);
+		}
+		
 	}
 }
 
@@ -248,7 +257,7 @@ void ATileBase::LoadMissionAsset()
 
 		if(MissionInfo->Type == 1) // 아이템 습득
 		{
-			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Mission, MissionSpawnPoints);
+			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo::E_Mission, MissionSpawnPoints[0]);
 		}
 		else if(MissionInfo->Type == 2)// 몬스터 잡기
 		{
@@ -295,23 +304,24 @@ void ATileBase::LoadMissionAsset()
 
 void ATileBase::StageReward()
 {
+	/*
 	EStatUpCategoryInfo Type = (EStatUpCategoryInfo)FMath::RandRange(1, 5);
-	FCharacterStatStruct NewStat = MyCharacter->GetCharacterStat();
+	FCharacterStatStruct NewStat = CharacterRef->GetCharacterStat();
 	float RewardValue;
 
 	if (ClearTime < 1) // A등급
 	{
-		RewardValue = GameMode->ChapterStatValue + 0.3f;
+		RewardValue = GamemodeRef->ChapterStatValue + 0.3f;
 		UE_LOG(LogTemp, Log, TEXT("A Rank %f"),RewardValue);
 	}
 	else if (ClearTime < 3) // B등급
 	{
-		RewardValue = GameMode->ChapterStatValue + 0.2f;
+		RewardValue = GamemodeRef->ChapterStatValue + 0.2f;
 		UE_LOG(LogTemp, Log, TEXT("B Rank %f"), RewardValue);
 	}
 	else // C등급
 	{
-		RewardValue = GameMode->ChapterStatValue + 0.1f;
+		RewardValue = GamemodeRef->ChapterStatValue + 0.1f;
 		UE_LOG(LogTemp, Log, TEXT("C Rank %f"), RewardValue);
 	}
 
@@ -343,7 +353,7 @@ void ATileBase::StageReward()
 		break;
 	}
 
-	MyCharacter->UpdateCharacterStat(NewStat);
+	CharacterRef->UpdateCharacterStat(NewStat);*/
 }
 
 void ATileBase::SetReward()

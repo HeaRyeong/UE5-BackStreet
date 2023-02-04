@@ -32,8 +32,6 @@ void UBTStateManageServiceBase::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 	else 
 	{
 		UpdateAIState();
-
-		const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
 		BlackboardRef->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
 	}
 }
@@ -89,9 +87,12 @@ bool UBTStateManageServiceBase::CheckChaseState()
 
 bool UBTStateManageServiceBase::CheckAttackState()
 {
-	const AActor* targetCharacterRef = Cast<AActor>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
-	float distanceToTarget = GetDistanceTo(targetCharacterRef->GetActorLocation());
-	return distanceToTarget <= (OwnerCharacterRef->GetWeaponActorRef())->GetAttackRange();
+	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
+	AWeaponBase* weaponActorRef = OwnerCharacterRef->GetWeaponActorRef();
+	
+	float distanceToTarget = IsValid(targetCharacterRef) ? GetDistanceTo(targetCharacterRef->GetActorLocation()) : 100.0f;
+	float attackRange = IsValid(weaponActorRef) ? (weaponActorRef->GetAttackRange()) : 100.0f;
+	return distanceToTarget <= attackRange;
 }
 
 float UBTStateManageServiceBase::GetDistanceTo(const FVector& EndLocation)

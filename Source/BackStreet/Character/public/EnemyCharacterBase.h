@@ -6,21 +6,27 @@
 #include "CharacterBase.h"
 #include "EnemyCharacterBase.generated.h"
 
-/**
- * 
- */
+DECLARE_DELEGATE_OneParam(FDelegateEnemyDeath, class AEnemyCharacterBase*);
+
 UCLASS()
 class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
 {
 	GENERATED_BODY()
 
-	
+// ------ Global, Component ------------
 public:
 	AEnemyCharacterBase();
+	
+	//적 Death 이벤트
+	FDelegateEnemyDeath EnemyDeathDelegate;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|UI")
+		class UWidgetComponent* FloatingHpBar;
 
 // ----- 기본 함수들 ------
 public:
@@ -28,8 +34,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ATileBase* TileRef;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UDataTable* EnemyRankDataTable;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gameplay")
+		int32 EnemyID;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		int32 DefaultWeaponID;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -48,7 +57,21 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
-// ---- 적 캐릭터 Ation ----
+	UFUNCTION()
+		virtual void Die() override;
+
+protected:
+	UFUNCTION()
+		void SetDefaultWeapon();
+
+	UFUNCTION()
+		void SetDefaultStat();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void InitFloatingHpWidget();
+
+// ---- 적 캐릭터 Action ----
+public:
 	UFUNCTION(BlueprintCallable)
 		void Turn(float Angle);
 

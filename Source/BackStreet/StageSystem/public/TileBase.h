@@ -3,8 +3,10 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
+#include "../public/StageInfoStruct.h"
+#include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
-
+#define MaxItemSpawn 3
 
 UCLASS()
 class BACKSTREET_API ATileBase :public AActor
@@ -18,16 +20,18 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
- 
-	// ===============초기화===============
 
+ // ===============초기화===============
 public:
 	UFUNCTION(BlueprintCallable)
 		void InitTile(int XPosition, int YPosition);
+
 	UFUNCTION(BlueprintCallable)
 		bool IsVisited();
+
 	UFUNCTION(BlueprintCallable)
 		void SelectMap();
+
 	UFUNCTION(BlueprintCallable)
 		void InitMission(bool IsBoss);
 
@@ -35,19 +39,21 @@ public:
 	// Grid에서 해당 타일의 좌표정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 XPos;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 YPos;
 	// Gate 존재 여부
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<bool> Gate; 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 StageLevel;
+		EStageCategoryInfo StageType;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName LevelToLoad;
 
 
-	// ============스테이지 전환============
-
+// ============스테이지 전환============
 public:
 	UFUNCTION(BlueprintCallable)
 		void LoadLevel();
@@ -58,20 +64,25 @@ public:
 	// ULevelStreaming Instance Ref
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ULevelStreaming* LevelRef;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsClear;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsSpawned;
 
 
-	// ================ 몬스터 관련 ==================
+// ================ 몬스터 관련 ==================
 public:
 	UFUNCTION(BlueprintCallable)
 		void LoadMonster();
+
 	UFUNCTION(BlueprintCallable)
 		void MonsterDie(AEnemyCharacterBase* Target);
+
 	UFUNCTION(BlueprintCallable)
 		void BindDelegate();
 
@@ -80,8 +91,7 @@ public:
 		TArray<AActor*> MonsterSpawnPoints;
 
 
-	// =============== 아이템 스폰 ====================
-
+// =============== 아이템 스폰 ====================
 public:
 	UFUNCTION(BlueprintCallable)
 		void LoadItem();
@@ -90,7 +100,7 @@ public:
 		TArray<AActor*> ItemSpawnPoints;
 
 
-	// ==============		미션	=================
+// ==============  미션	=================
 public:
 	UFUNCTION(BlueprintCallable)
 		void LoadMissionAsset();
@@ -98,10 +108,13 @@ public:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MissionSpawnPoints;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UMissionBase* MissionInfo = nullptr;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsMainMission;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsBossStage;
 
@@ -119,11 +132,16 @@ public:
 
 	// ---- 참조 -----
 public:
-	class AGridBase* Chapter;
-	class ACharacterBase* MyCharacter;
-	class ABackStreetGameModeBase* GameMode;
+	UPROPERTY()
+		class AGridBase* Chapter;
 
 	UPROPERTY()
-		class UAssetManagerBase* AssetDataManagerRef;
+		class ACharacterBase* CharacterRef;
+	
+	UPROPERTY()
+		class ABackStreetGameModeBase* GamemodeRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		 AAssetManagerBase* AssetDataManagerRef;
 
 };

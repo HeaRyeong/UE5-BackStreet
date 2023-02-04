@@ -1,8 +1,8 @@
-﻿WeaponID,WeaponName,Description,WeaponAtkSpeedRate,WeaponDamageRate,bCanMeleeAtk,WeaponMeleeDamage,DebuffType,bIsInfiniteAmmo,bHasProjectile,bInfiniteMagazine,MaxAmmoPerMagazine,LoadingDelayTime
-100,유리병,흔히 볼 수 있는 유리병이다.,1,1,TRUE,0.3,0,FALSE,FALSE,FALSE,0,0
-101,나무막대,누군가 버린 나무 막대이다.,2,1,TRUE,0.25,0,FALSE,FALSE,FALSE,0,0
-102,페트병,흔한 페트병이다. 아주 가볍다.,0.8,1,TRUE,0.2,0,FALSE,FALSE,FALSE,0,0
-103,테이저 스틱,로봇의 동력이 있어야 제대로 동작을 하는 테이저 스틱이다.,1,1,TRUE,0.3,E_Slow,FALSE,FALSE,FALSE,0,0
-199,맨손,(게임 상으로는 보이지 않음) 발사체를 던지기 위한 기본 무기 클래스,1,1,FALSE,0,0,FALSE,TRUE,FALSE,5,1
-200,에너지블래스터,로봇의 동력이 있어야 제대로 종작을 하는 블래스터이다.,1,1,FALSE,0,0,TRUE,TRUE,TRUE,10,1.5
-201,BB탄 총,누군가 가지고 놀다가 버린 BB탄 총,10,1,FALSE,0,0,FALSE,TRUE,FALSE,30,1.75
+﻿WeaponID,WeaponName,Description,WeaponAtkSpeedRate,WeaponDamageRate,WeaponWeight,WeaponMeleeDamage,bCanMeleeAtk,DebuffType,bInfiniteDurability,MaxDurability,bIsInfiniteAmmo,bHasProjectile,bInfiniteMagazine,MaxAmmoPerMagazine,LoadingDelayTime
+100,유리병,흔히 볼 수 있는 유리병이다.,1,1,3,0.3,TRUE,0,FALSE,100,FALSE,FALSE,FALSE,0,0
+101,나무막대,누군가 버린 나무 막대이다.,2,1,3,0.25,TRUE,0,FALSE,100,FALSE,FALSE,FALSE,0,0
+102,페트병,흔한 페트병이다. 아주 가볍다.,0.8,1,3,0.2,TRUE,0,FALSE,100,FALSE,FALSE,FALSE,0,0
+103,테이저 스틱,로봇의 동력이 있어야 제대로 동작을 하는 테이저 스틱이다.,1,1,3,0.3,TRUE,E_Slow,FALSE,100,FALSE,FALSE,FALSE,0,0
+199,맨손,(게임 상으로는 보이지 않음) 발사체를 던지기 위한 기본 무기 클래스,1,1,1,0,FALSE,0,TRUE,100,FALSE,TRUE,FALSE,5,1
+200,에너지블래스터,로봇의 동력이 있어야 제대로 종작을 하는 블래스터이다.,1,1,3,0,FALSE,0,FALSE,100,TRUE,TRUE,TRUE,10,1.5
+201,BB탄 총,누군가 가지고 놀다가 버린 BB탄 총,10,1,3,0,FALSE,0,FALSE,100,FALSE,TRUE,FALSE,30,1.75

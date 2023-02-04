@@ -3,26 +3,38 @@
 #pragma once
 
 #include "../public/BackStreet.h"
-#include "../../StageSystem/public/DirectionEnumInfo.h"
 #include "GameFramework/GameModeBase.h"
-#include "AssetManagerBase.h"
+#include "Engine/StreamableManager.h"
 #include "BackStreetGameModeBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateSingleParam, bool, bGameIsOver);
 
 UCLASS()
 class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam StartChapterDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateSingleParam FinishChapterDelegate;
+	
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam ClearResourceDelegate;
 
 public:
 	ABackStreetGameModeBase();
 
+protected:
+	virtual void BeginPlay() override;
+
+//---------- StageManager? -------------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitializeChapter();
+		void InitializeChapter(); //@ljh 아래 InitChapter과 겹치네요..
 
-// StageManager? ----
-public:
 	UFUNCTION(BlueprintCallable)
 		void InitChapter();
 
@@ -40,9 +52,9 @@ public:
 		class AGridBase* Chapter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ATileBase* CurrTile;
-	// 남은 챕터 수 
+		class ATileBase* CurrentTile;
 
+	// 남은 챕터 수 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 RemainChapter;
 
@@ -53,19 +65,39 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float ChapterStatValue;
 
-//-- Asset관련-------------------
+//----- Asset관련--------------------------------------
 public:
-	UPROPERTY(EditAnywhere)
-		class UAssetManagerBase* AssetDataManager;
+	UFUNCTION()
+		void CreateAssetManager();
 
-//	UPROPERTY(EditAnywhere)
-		FStreamableManager StreamableManager;
+	UFUNCTION(BlueprintCallable)
+		AAssetManagerBase* GetAssetManager();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		AAssetManagerBase* AssetDataManager;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		FSoftObjectPath AssetManagerBPPath;
+
+	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
+
+	FStreamableManager StreamableManager = FStreamableManager();
 
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;
 
-//Gameplay Manager
+// ----- Gameplay Manager -------------------
 public:
+	UFUNCTION()
+		void StartChapter();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void FinishChapter(bool bGameIsOver);
+
+	UFUNCTION(BlueprintCallable)
+		void RewardStageClear(EStatUpCategoryInfo RewardType);
+
 	UFUNCTION()
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
 
@@ -85,6 +117,9 @@ public:
 	UFUNCTION()
 		void UpdateProjectileStatWithID(class AProjectileBase* TargetProjectile, const uint8 ProjectileID);
 
+	UFUNCTION()
+		FWeaponStatStruct GetWeaponStatInfoWithID(const uint8 WeaponID);
+
 protected:
 	//적의 스탯 테이블
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
@@ -100,4 +135,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
 		TArray<TSubclassOf<UCameraShakeBase> > CameraShakeEffectList;
+
+//------ Ref 멤버 ---------------
+private:
+	UPROPERTY()
+		class AMainCharacterBase* PlayerCharacterRef;
 };
