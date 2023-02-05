@@ -33,9 +33,6 @@ protected:
 //---------- StageManager? -------------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitializeChapter(); //@ljh 아래 InitChapter과 겹치네요..
-
-	UFUNCTION(BlueprintCallable)
 		void InitChapter();
 
 	UFUNCTION(BlueprintCallable)

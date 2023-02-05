@@ -4,7 +4,6 @@
 
 #include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
-#include "Sound/SoundCue.h"
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000
 

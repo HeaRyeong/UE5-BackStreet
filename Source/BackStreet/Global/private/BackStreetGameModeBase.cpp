@@ -31,19 +31,15 @@ void ABackStreetGameModeBase::BeginPlay()
 	StartChapter();
 }
 
-void ABackStreetGameModeBase::InitializeChapter()
-{
-	AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
-	RemainChapter = 2;
-	ChapterStatValue = 0;
-	InitChapter();
-}
-
 void ABackStreetGameModeBase::InitChapter()
 {
 	FActorSpawnParameters spawnParams;
 	FRotator rotator;
 	FVector spawnLocation = FVector::ZeroVector;
+
+	AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
+	RemainChapter = 2;
+	ChapterStatValue = 0;
 
 	Chapter = GetWorld()->SpawnActor<AGridBase>(AGridBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	Chapter->CreateMaze(3, 3);
@@ -120,7 +116,7 @@ AAssetManagerBase* ABackStreetGameModeBase::GetAssetManager()
 
 void ABackStreetGameModeBase::StartChapter()
 {
-	InitializeChapter();
+	InitChapter();
 
 	FTimerHandle delegateBindDelayTimer;
 	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([&]()

@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+#include "Sound/SoundCue.h"
 
 /* ----- ±¸Á¶Ã¼/Enum ------------ */
 #include "../../Character/public/CharacterInfoStruct.h"

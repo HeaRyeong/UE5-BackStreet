@@ -64,6 +64,18 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
+	// Sound
+	if (WieldSound != nullptr)
+	{
+		AudioComponent->SetSound(WieldSound);
+		AudioComponent->Play();
+		UE_LOG(LogTemp, Warning, TEXT("YES"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NONO"));
+	}
+
 	UpdateDurabilityState();
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1);
 }
@@ -216,14 +228,6 @@ void AWeaponBase::MeleeAttack()
 	bool bIsMeleeTraceSucceed = false;
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
-
-	// Sound
-	if (WieldSound->IsValidLowLevelFast())
-	{
-		AudioComponent->SetSound(WieldSound);
-		AudioComponent->Play();
-	}
-		
 
 	//검로 Trace
 	//근접 무기의 각 지점에서 이전 월드 좌표 -> 현재 월드 좌표로 LineTrace를 진행 

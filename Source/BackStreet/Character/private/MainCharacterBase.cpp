@@ -7,7 +7,7 @@
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
-#include "Sound/SoundCue.h"
+
 #include "NiagaraComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"

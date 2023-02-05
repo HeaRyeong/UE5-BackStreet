@@ -7,7 +7,7 @@
 #include "../../Character/public/CharacterBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "Sound/SoundCue.h"
+
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,6 +26,21 @@ AItemBase::AItemBase()
 	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OverlapBegins);
 }
 
+// Called every frame
+void AItemBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+
+// Called when the game starts or when spawned
+void AItemBase::BeginPlay()
+{
+	Super::BeginPlay();
+	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+}
 
 void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -69,23 +84,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 			break;
 		}
 	}
-
-// Called every frame
-void AItemBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
-
-
-// Called when the game starts or when spawned
-void AItemBase::BeginPlay()
-{
-	Super::BeginPlay();
-	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-}
-
 
 void AItemBase::InitItem(EItemCategoryInfo SetType)
 {
