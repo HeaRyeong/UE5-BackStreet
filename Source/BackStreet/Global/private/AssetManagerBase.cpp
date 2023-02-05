@@ -6,10 +6,17 @@
 #include "../../Item/public/WeaponBase.h"
 #include "../public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/MissionBase.h"
+#include "UObject/ConstructorHelpers.h"
 #include "../../Character/public/EnemyCharacterBase.h"
 
 AAssetManagerBase::AAssetManagerBase()
 {
+static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Map/Stages/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
+	if (DataTable.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("DataTable Succeed!"));
+		StageTypeTable = DataTable.Object;
+	}
 
 }
 
@@ -18,6 +25,7 @@ void AAssetManagerBase::BeginPlay()
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("Being Play"));
 	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	
 }
 
 void AAssetManagerBase::LoadItemAsset(EItemCategoryInfo Type, AActor* SpawnPoints)
@@ -121,42 +129,79 @@ void AAssetManagerBase::LoadMonsterAsset(TArray<AActor*> SpawnPoints, class ATil
 {
 	TArray<int32> EnemyIDList;
 	int32 StageType = FMath::RandRange(0, NormalStageTypeNum - 1);
-	FStageEnemyTypeStruct StageTypeRow = ReturnStageEnemyTypeStruct(StageType);
-	int8 SpawnNum = FMath::RandRange(StageTypeRow.MinSpawn, StageTypeRow.MaxSpawn);
+	//FStageEnemyTypeStruct StageTypeRow = ReturnStageEnemyTypeStruct(StageType);
+	FString rowName = FString::FromInt(StageType);
+	FStageEnemyTypeStruct* StageTypeRow = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName), rowName);
+	int8 SpawnNum = FMath::RandRange(StageTypeRow->MinSpawn, StageTypeRow->MaxSpawn);
 
-	UE_LOG(LogTemp, Log, TEXT("StageType : %d MaxSpawn : %d"), StageType,SpawnNum);
+	UE_LOG(LogTemp, Log, TEXT("StageType : %d MaxSpawn : %d"), StageType, SpawnNum);
 
-	if (StageTypeRow.ID_1001)
+	if (StageTypeRow->ID_1001)
 	{
 		EnemyIDList.AddUnique(1001);
-		
+
 	}
-		
-	if (StageTypeRow.ID_1002)
+
+	if (StageTypeRow->ID_1002)
 	{
 		EnemyIDList.AddUnique(1002);
-		
+
 	}
-	if (StageTypeRow.ID_1003)
+	if (StageTypeRow->ID_1003)
 	{
 		EnemyIDList.AddUnique(1003);
-		
+
 	}
-	if (StageTypeRow.ID_1100)
+	if (StageTypeRow->ID_1100)
 	{
 		EnemyIDList.AddUnique(1100);
-		
+
 	}
-	if (StageTypeRow.ID_1101)
+	if (StageTypeRow->ID_1101)
 	{
 		EnemyIDList.AddUnique(1101);
-		
+
 	}
-	if (StageTypeRow.ID_1102)
+	if (StageTypeRow->ID_1102)
 	{
 		EnemyIDList.AddUnique(1102);
-		
 	}
+	
+	
+	//int8 SpawnNum = FMath::RandRange(StageTypeRow.MinSpawn, StageTypeRow.MaxSpawn);
+
+	//UE_LOG(LogTemp, Log, TEXT("StageType : %d MaxSpawn : %d"), StageType,SpawnNum);
+
+	//if (StageTypeRow.ID_1001)
+	//{
+	//	EnemyIDList.AddUnique(1001);
+	//	
+	//}
+	//	
+	//if (StageTypeRow.ID_1002)
+	//{
+	//	EnemyIDList.AddUnique(1002);
+	//	
+	//}
+	//if (StageTypeRow.ID_1003)
+	//{
+	//	EnemyIDList.AddUnique(1003);
+	//	
+	//}
+	//if (StageTypeRow.ID_1100)
+	//{
+	//	EnemyIDList.AddUnique(1100);
+	//	
+	//}
+	//if (StageTypeRow.ID_1101)
+	//{
+	//	EnemyIDList.AddUnique(1101);
+	//	
+	//}
+	//if (StageTypeRow.ID_1102)
+	//{
+	//	EnemyIDList.AddUnique(1102);
+	//}
 	AssetStreamingHandle = GameModeRef->StreamableManager.RequestAsyncLoad(EnemyAssets, FStreamableDelegate::CreateUObject(this, &AAssetManagerBase::SpawnMonster, SpawnPoints, TileRef, EnemyIDList,SpawnNum));
 }
 
@@ -213,6 +258,8 @@ void AAssetManagerBase::SpawnMonster(TArray<AActor*> SpawnPoints, class ATileBas
 
 		}
 	}
+	UE_LOG(LogTemp, Log, TEXT("finish spawn monster"));
+
 
 	TileRef->BindDelegate();
 }
@@ -307,24 +354,28 @@ AWeaponBase* AAssetManagerBase::SpawnWeaponwithID(int32 ID)
 
 FStageEnemyTypeStruct AAssetManagerBase::ReturnStageEnemyTypeStruct(int32 StageType)
 {
-	FString rowName = FString::FromInt(StageType);
-	FStageEnemyTypeStruct* TypeInfo = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName), rowName);
+	if (StageTypeTable !=  nullptr)
+	{
+		FString rowName = FString::FromInt(StageType);
+		FStageEnemyTypeStruct* TypeInfo = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName), rowName);
 
 
+		FStageEnemyTypeStruct Data;
+		
+		Data.ID_1001 = TypeInfo->ID_1001;
+		Data.ID_1002 = TypeInfo->ID_1002;
+		Data.ID_1003 = TypeInfo->ID_1003;
+		Data.ID_1100 = TypeInfo->ID_1100;
+		Data.ID_1101 = TypeInfo->ID_1101;
+		Data.ID_1102 = TypeInfo->ID_1102;
+		Data.ID_1200 = TypeInfo->ID_1200;
+		Data.MaxSpawn = TypeInfo->MaxSpawn;
+		Data.MinSpawn = TypeInfo->MinSpawn;
+
+		return Data;
+	}
 	FStageEnemyTypeStruct Data;
-
-	Data.ID_1001 = TypeInfo->ID_1001;
-	Data.ID_1002 = TypeInfo->ID_1002;
-	Data.ID_1003 = TypeInfo->ID_1003;
-	Data.ID_1100 = TypeInfo->ID_1100;
-	Data.ID_1101 = TypeInfo->ID_1101;
-	Data.ID_1102 = TypeInfo->ID_1102;
-	Data.ID_1200 = TypeInfo->ID_1200;
-	Data.MaxSpawn = TypeInfo->MaxSpawn;
-	Data.MinSpawn = TypeInfo->MinSpawn;
-
 	return Data;
-
 
 }
 

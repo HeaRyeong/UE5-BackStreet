@@ -3,6 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
 #define AUTO_RELOAD_DELAY_VALUE 0.1
@@ -19,6 +20,9 @@ AWeaponBase::AWeaponBase()
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WEAPON_MESH"));
 	WeaponMesh->SetupAttachment(DefaultSceneRoot);
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SOUND"));
+
 }
 
 // Called when the game starts or when spawned
@@ -60,6 +64,18 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
+	// Sound
+	if (WieldSound != nullptr)
+	{
+		AudioComponent->SetSound(WieldSound);
+		AudioComponent->Play();
+		UE_LOG(LogTemp, Warning, TEXT("YES"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NONO"));
+	}
+
 	UpdateDurabilityState();
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1);
 }
@@ -186,7 +202,7 @@ float AWeaponBase::GetAttackRange()
 	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo
 		|| (WeaponState.CurrentAmmoCount == 0.0f && WeaponState.TotalAmmoCount == 0.0f))
 	{
-		return 200.0f;
+		return 200.0f; //매크로나 const 멤버로 수정하기 
 	}
 	return 700.0f;
 }
@@ -242,6 +258,12 @@ void AWeaponBase::MeleeAttack()
 	//hitResult가 Valid하다면 아래 조건문에서 데미지를 가함
 	if (bIsMeleeTraceSucceed)
 	{
+		// 사운드
+		if (HitSound->IsValidLowLevelFast())
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+		}
+
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);

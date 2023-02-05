@@ -70,7 +70,7 @@ void AGateBase::UpdateNewTile()
 ULevelStreaming* AGateBase::UpdateGateInfo()
 {
 	// game mode 받아오기
-	ULevelStreaming* ToUnLoadLevel = CurrTileRef->LevelRef;
+	ULevelStreaming* toUnLoadLevel = CurrTileRef->LevelRef;
 
 	if (!(this->Tags[1].Compare(FName(TEXT("UP")))))
 	{
@@ -93,7 +93,7 @@ ULevelStreaming* AGateBase::UpdateGateInfo()
 		UE_LOG(LogTemp, Log, TEXT("Left Gate"));
 	}
 
-	return ToUnLoadLevel;
+	return toUnLoadLevel;
 }
 
 void AGateBase::InitTileTravelSequence()

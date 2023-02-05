@@ -33,9 +33,6 @@ protected:
 //---------- StageManager? -------------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitializeChapter(); //@ljh 아래 InitChapter과 겹치네요..
-
-	UFUNCTION(BlueprintCallable)
 		void InitChapter();
 
 	UFUNCTION(BlueprintCallable)
@@ -46,6 +43,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void ClearChapter();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void UpdateMiniMapUI();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -82,7 +82,7 @@ public:
 
 	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
 
-	FStreamableManager StreamableManager = FStreamableManager();
+	FStreamableManager StreamableManager /*= FStreamableManager()*/;
 
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;
@@ -106,7 +106,7 @@ public:
 
 	//UREFLECTION은 함수 오버로딩 미지원
 	UFUNCTION()
-		void UpdateCharacterStatWithID(class ACharacterBase* TargetCharacter, const uint8 CharacterID);
+		void UpdateCharacterStatWithID(class ACharacterBase* TargetCharacter, const uint32 CharacterID);
 
 	UFUNCTION()
 		void UpdateWeaponStat(class AWeaponBase* TargetWeapon, FWeaponStatStruct NewStat);

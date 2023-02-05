@@ -6,6 +6,8 @@
 #include "../../Item/public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/AudioComponent.h"
+
 #include "NiagaraComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
@@ -36,6 +38,8 @@ AMainCharacterBase::AMainCharacterBase()
 	DirectionNiagaraEmitter = CreateDefaultSubobject<UNiagaraComponent>(TEXT("DIRECTION_EFFECT"));
 	DirectionNiagaraEmitter->SetupAttachment(GetMesh());
 	DirectionNiagaraEmitter->SetRelativeRotation({ 0.0f, 90.0f, 0.0f });
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SOUND"));
 
 
 	this->bUseControllerRotationYaw = false;
@@ -101,6 +105,12 @@ void AMainCharacterBase::Roll()
 
 	FRotator newRotation = { 0, FMath::Atan2(newDirection.Y, newDirection.X) * 180.0f / 3.141592, 0.0f};
 	newRotation.Yaw += 270.0f;
+
+	// 사운드
+	if (RollSound->IsValidLowLevelFast())
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, RollSound, GetActorLocation());
+	}
 
 	GetMesh()->SetWorldRotation(newRotation);
 	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle); //Roll 도중에 Rotation이 바뀌는 현상 방지
@@ -221,6 +231,19 @@ bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType
 			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
 			BuffNiagaraEmitter->Activate();
 		}
+
+		// 사운드
+		if (bIsDebuff)
+		{
+			if (DeBuffSound->IsValidLowLevelFast())
+				UGameplayStatics::PlaySoundAtLocation(this, DeBuffSound, GetActorLocation());
+		
+		}
+		else
+		{	if (BuffSound->IsValidLowLevelFast())
+				UGameplayStatics::PlaySoundAtLocation(this, BuffSound, GetActorLocation());
+		}
+		
 	}
 	return result;
 }	

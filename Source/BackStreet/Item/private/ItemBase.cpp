@@ -7,6 +7,7 @@
 #include "../../Character/public/CharacterBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -25,53 +26,6 @@ AItemBase::AItemBase()
 	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OverlapBegins);
 }
 
-
-void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (!OtherActor->ActorHasTag(FName(TEXT("Player")))) return;
-	
-	FBuffItemInfoStruct Stat;
-	UE_LOG(LogTemp, Log, TEXT("Get Item %d"), Type);
-	switch (Type)
-	{
-	case EItemCategoryInfo::E_None:
-		break;
-
-	case EItemCategoryInfo::E_Weapon:
-		UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
-		SelectWeapon();
-		Destroy();
-		break;
-
-	case EItemCategoryInfo::E_Bullet:
-		UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
-		SelectProjectile();
-		Destroy();
-		break;
-
-	case EItemCategoryInfo::E_Buff:
-		Stat = DA->BuffStat;
-		MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
-		Destroy();
-		break;
-
-	case EItemCategoryInfo::E_DeBuff:
-		break;
-
-	case EItemCategoryInfo::E_StatUp:
-		break;
-
-	case EItemCategoryInfo::E_Mission:
-		TileRef->MissionInfo->ItemList.Remove(this);
-		TileRef->MissionInfo->ClearCheck();
-		Destroy();
-		break;
-
-	default:
-		break;
-	}
-}
-
 // Called every frame
 void AItemBase::Tick(float DeltaTime)
 {
@@ -88,6 +42,49 @@ void AItemBase::BeginPlay()
 	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
+void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->ActorHasTag(FName(TEXT("Player"))))
+	{
+		FBuffItemInfoStruct Stat;
+		UE_LOG(LogTemp, Log, TEXT("Get Item %d"), Type);
+		switch (Type)
+		{
+		case EItemCategoryInfo::E_None:
+			break;
+		case EItemCategoryInfo::E_Weapon:
+			UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
+			if (SearchSound->IsValidLowLevelFast())
+				UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
+			SelectWeapon();
+			Destroy();
+			break;
+		case EItemCategoryInfo::E_Bullet:
+			UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
+			if (SearchSound->IsValidLowLevelFast())
+				UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
+			SelectProjectile();
+			Destroy();
+			break;
+		case EItemCategoryInfo::E_Buff:
+			Stat = DA->BuffStat;
+			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
+			Destroy();
+			break;
+		case EItemCategoryInfo::E_DeBuff:
+			break;
+		case EItemCategoryInfo::E_StatUp:
+			break;
+		case EItemCategoryInfo::E_Mission:
+			TileRef->MissionInfo->ItemList.Remove(this);
+			TileRef->MissionInfo->ClearCheck();
+			Destroy();
+			break;
+		default:
+			break;
+		}
+	}
+}
 
 void AItemBase::InitItem(EItemCategoryInfo SetType)
 {
@@ -104,32 +101,32 @@ void AItemBase::InitItem(EItemCategoryInfo SetType)
 
 void AItemBase::SelectWeapon()
 {
-	int8 WeaponType = FMath::RandRange(0, MaxWeaponType - 1);
-	int32 WeaponID = 0;
-	switch (WeaponType)
+	int8 weaponType = FMath::RandRange(0, MaxWeaponType - 1);
+	int32 weaponID = 0;
+	switch (weaponType)
 	{
 	case 0:
-		WeaponID = 100;
+		weaponID = 100;
 		break;
 	case 1:
-		WeaponID = 101;
+		weaponID = 101;
 		break;
 	case 2:
-		WeaponID = 102;
+		weaponID = 102;
 		break;
 	case 3:
-		WeaponID = 103;
+		weaponID = 103;
 		break;
 	case 4:
-		WeaponID = 151;
+		weaponID = 151;
 		break;
 	case 5:
-		WeaponID = 199;
+		weaponID = 199;
 		break;
 	default:
 		break;
 	}
-	MyCharacter->PickWeapon(WeaponID);
+	MyCharacter->PickWeapon(weaponID);
 }
 
 void AItemBase::SelectProjectile()

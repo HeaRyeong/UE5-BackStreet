@@ -45,6 +45,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* HitEffectParticle;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		USoundCue* WieldSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		USoundCue* HitSound;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* DestroyEffectParticle;
 
