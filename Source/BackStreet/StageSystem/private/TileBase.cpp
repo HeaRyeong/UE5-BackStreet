@@ -144,7 +144,10 @@ void ATileBase::UnLoadLevel()
 		LevelRef->SetShouldBeLoaded(false);
 		LevelRef->SetShouldBeVisible(false);
 		bIsSpawned = true;
-
+		for (AEnemyCharacterBase* Target : MonsterList)
+		{
+			Target->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+		}
 		// Pause Timer
 		GetWorldTimerManager().PauseTimer(ClearTimerHandle);
 	}
@@ -178,7 +181,6 @@ void ATileBase::LoadMonster()
 
 }
 
-
 void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 {
 	UE_LOG(LogTemp, Log, TEXT("Call MonsterDie()"));
@@ -204,10 +206,10 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* Target)
 
 void ATileBase::BindDelegate()
 {
-	for (ACharacterBase* enemy : MonsterList)
+	for (AEnemyCharacterBase* enemy : MonsterList)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Binding Func"));
-		enemy->FDieDelegate.BindUFunction(this, FName("MonsterDie"));
+		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));
 	}
 }
 
@@ -229,7 +231,7 @@ void ATileBase::LoadItem()
 
 		}
 		int8 SpawnMax = FMath::RandRange(1, MaxItemSpawn);
-		for (int8 i = 0; i < SpawnMax; i++)
+		for (int8 i = 0; i < 1; i++)
 		{
 			int8 ItemType = FMath::RandRange(1, 3);
 			AssetDataManagerRef->LoadItemAsset(EItemCategoryInfo(ItemType), ItemSpawnPoints[i]);

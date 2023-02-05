@@ -7,6 +7,7 @@
 #include "../../Character/public/CharacterBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Sound/SoundCue.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -37,18 +38,21 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 			break;
 		case EItemCategoryInfo::E_Weapon:
 			UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
-			SelectWeapon();
+			if (SearchSound->IsValidLowLevelFast())
+				UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
+			//SelectWeapon();
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_Bullet:
 			UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
-			SelectProjectile();
+			if (SearchSound->IsValidLowLevelFast())
+				UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
+			//SelectProjectile();
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_Buff:
 			Stat = DA->BuffStat;
-			UE_LOG(LogTemp, Log, TEXT("E_Buff case %d"), Stat.Type);
-			MyCharacter->SetBuffTimer(false, (uint8)Stat.Type, this, Stat.Time, Stat.Time);
+			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_DeBuff:

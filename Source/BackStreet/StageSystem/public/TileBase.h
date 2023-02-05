@@ -3,7 +3,7 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "../public/StageInfoStructBase.h"
+#include "../public/StageInfoStruct.h"
 #include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
 #define MaxItemSpawn 3

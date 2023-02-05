@@ -34,6 +34,7 @@ void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		ATileBase* UnLoadTile = gamemodeRef->CurrentTile; // 이동하기전 스테이지 ( 이제 언로드 시킬 타일 )
 
 		UpdateGateInfo();
+		UpdateMiniMap();
 		ATileBase* LoadTile = gamemodeRef->CurrentTile;
 		LoadTile->LoadLevel();
 		UnLoadTile->UnLoadLevel();
@@ -79,6 +80,10 @@ ULevelStreaming* AGateBase::UpdateGateInfo()
 	return ToUnLoadLevel;
 }
 
+void AGateBase::UpdateMiniMap()
+{
+	
+}
 
 void AGateBase::CheckHaveToActive()
 {

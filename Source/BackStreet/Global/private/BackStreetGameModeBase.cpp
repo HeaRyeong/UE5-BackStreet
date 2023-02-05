@@ -7,19 +7,28 @@
 #include "../../Item/public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../public/AssetManagerBase.h"
+#include "../public/GameInstanceBase.h"
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
-	
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Character/EnemyCharacter/Data/D_EnemyStatDataTable.D_EnemyStatDataTable"));
+	if (DataTable.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyStatDataTable Succeed!"));
+		EnemyStatTable = DataTable.Object;
+	}
 
+	
 }
 
-void ABackStreetGameModeBase::InitGame()
+void ABackStreetGameModeBase::InitializeChapter()
 {
-	AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
+	//StreamableManager=(Cast<UGameInstanceBase>(GetGameInstance()))->ReturnStreamManager();
+
+	//AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
 	RemainChapter = 2;
 	ChapterStatValue = 0;
 	InitChapter();
@@ -62,6 +71,7 @@ void ABackStreetGameModeBase::NextStage(uint8 Dir)
 		break;
 	}
 	MoveTile(Dir);
+	UpdateMiniMapUI();
 }
 
 void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
@@ -109,76 +119,66 @@ void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType,
 	Location = Location + FVector(-700.0f, 0.0f, 1212.0f); //캐릭터의 Camera의 위치에 맞게 변환
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius);
 }
-//
-//void ABackStreetGameModeBase::UpdateCharacterStat(ACharacterBase* TargetCharacter, FCharacterStatStruct NewStat)
-//{
-//	if (IsValid(TargetCharacter))
-//	{
-//		TargetCharacter->UpdateCharacterStat(NewStat);
-//	}
-//}
-//
-//void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCharacter, const uint8 CharacterID)
-//{
-//	if (IsValid(TargetCharacter) && TargetCharacter->ActorHasTag("Enemy"))
-//	{
-//		//DataTable로 부터 Read
-//	}
-//}
-//
-//void ABackStreetGameModeBase::UpdateWeaponStat(AWeaponBase* TargetWeapon, FWeaponStatStruct NewStat)
-//{
-//	if (IsValid(TargetWeapon))
-//	{
-//		TargetWeapon->UpdateWeaponStat(NewStat);
-//	}
-//}
-//
-//void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, const uint8 WeaponID)
-//{
-//	if (IsValid(TargetWeapon))
-//	{
-//		FString rowName = FString::FromInt(WeaponID);
-//		FWeaponStatStruct* newStat = WeaponStatTable->FindRow<FWeaponStatStruct>(FName(rowName), rowName);
-//		if (newStat != nullptr)
-//		{
-//			TargetWeapon->UpdateWeaponStat(*newStat);
-//		}
-//	}
-//}
-//
-//void ABackStreetGameModeBase::UpdateProjectileStatWithID(AProjectileBase* TargetProjectile, const uint8 ProjectileID)
-//{
-//	if (IsValid(TargetProjectile))
-//	{
-//		FString rowName = FString::FromInt(ProjectileID);
-//		FProjectileStatStruct* newStat = ProjectileStatTable->FindRow<FProjectileStatStruct>(FName(rowName), rowName);
-//		if (newStat != nullptr)
-//		{
-//			TargetProjectile->UpdateProjectileStat(*newStat);
-//		}
-//	}
-//}
-//
-//FStageEnemyTypeStruct ABackStreetGameModeBase::ReturnStageEnemyTypeStruct(int32 StageType)
-//{
-//	FString rowName = FString::FromInt(StageType);
-//	FStageEnemyTypeStruct* TypeInfo = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName),rowName);
-//
-//
-//	FStageEnemyTypeStruct Data;
-//
-//	Data.ID_1001 = TypeInfo->ID_1001;
-//	Data.ID_1002 = TypeInfo->ID_1002;
-//	Data.ID_1003 = TypeInfo->ID_1003;
-//	Data.ID_1100 = TypeInfo->ID_1100;
-//	Data.ID_1101 = TypeInfo->ID_1101;
-//	Data.ID_1102 = TypeInfo->ID_1102;
-//	Data.ID_1200 = TypeInfo->ID_1200;
-//	Data.MaxSpawn = TypeInfo->MaxSpawn;
-//	Data.MinSpawn = TypeInfo->MinSpawn;
-//
-//	return Data;
-//
-//
-//}
+
+void ABackStreetGameModeBase::UpdateCharacterStat(ACharacterBase* TargetCharacter, FCharacterStatStruct NewStat)
+{
+	if (IsValid(TargetCharacter))
+	{
+		TargetCharacter->UpdateCharacterStat(NewStat);
+	}
+}
+
+void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCharacter, const uint32 CharacterID)
+{
+	if (IsValid(TargetCharacter) && TargetCharacter->ActorHasTag("Enemy"))
+	{
+		//DataTable로 부터 Read
+		FString rowName = FString::FromInt(CharacterID);
+		FEnemyStatStruct* TypeInfo = EnemyStatTable->FindRow<FEnemyStatStruct>(FName(rowName), rowName);
+
+
+		FCharacterStatStruct NewStat;
+		NewStat.CharacterMaxHP = TypeInfo->CharacterMaxHP;
+		NewStat.CharacterDefense = TypeInfo->CharacterDefense;
+		NewStat.CharacterAtkSpeed = TypeInfo->CharacterAtkSpeed;
+		NewStat.CharacterAtkMultiplier = TypeInfo->CharacterAtkMultiplier;
+		NewStat.CharacterMoveSpeed = TypeInfo->CharacterMoveSpeed;
+
+		TargetCharacter->UpdateCharacterStat(NewStat);
+
+	}
+}
+
+void ABackStreetGameModeBase::UpdateWeaponStat(AWeaponBase* TargetWeapon, FWeaponStatStruct NewStat)
+{
+	if (IsValid(TargetWeapon))
+	{
+		TargetWeapon->UpdateWeaponStat(NewStat);
+	}
+}
+
+void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, const uint8 WeaponID)
+{
+	if (IsValid(TargetWeapon) && IsValid(WeaponStatTable))
+	{
+		FString rowName = FString::FromInt(WeaponID);
+		FWeaponStatStruct* newStat = WeaponStatTable->FindRow<FWeaponStatStruct>(FName(rowName), rowName);
+		if (newStat != nullptr)
+		{
+			TargetWeapon->UpdateWeaponStat(*newStat);
+		}
+	}
+}
+
+void ABackStreetGameModeBase::UpdateProjectileStatWithID(AProjectileBase* TargetProjectile, const uint8 ProjectileID)
+{
+	if (IsValid(TargetProjectile) && IsValid(ProjectileStatTable))
+	{
+		FString rowName = FString::FromInt(ProjectileID);
+		FProjectileStatStruct* newStat = ProjectileStatTable->FindRow<FProjectileStatStruct>(FName(rowName), rowName);
+		if (newStat != nullptr)
+		{
+			TargetProjectile->UpdateProjectileStat(*newStat);
+		}
+	}
+}
