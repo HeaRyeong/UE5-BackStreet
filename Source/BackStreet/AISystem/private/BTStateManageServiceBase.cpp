@@ -89,8 +89,9 @@ bool UBTStateManageServiceBase::CheckAttackState()
 {
 	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
 	AWeaponBase* weaponActorRef = OwnerCharacterRef->GetWeaponActorRef();
-	float distanceToTarget = GetDistanceTo(targetCharacterRef->GetActorLocation());
-	float attackRange = IsValid(weaponActorRef) ? (weaponActorRef->GetAttackRange()) : 0;
+	
+	float distanceToTarget = IsValid(targetCharacterRef) ? GetDistanceTo(targetCharacterRef->GetActorLocation()) : 100.0f;
+	float attackRange = IsValid(weaponActorRef) ? (weaponActorRef->GetAttackRange()) : 100.0f;
 	return distanceToTarget <= attackRange;
 }
 
