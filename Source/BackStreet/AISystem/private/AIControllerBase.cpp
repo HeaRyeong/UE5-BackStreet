@@ -2,6 +2,7 @@
 
 
 #include "../public/AIControllerBase.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Perception/AISenseConfig_Sight.h"
@@ -28,7 +29,24 @@ void AAIControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	//시작 시, AI 로직을 잠시 멈춰 둔다.
+	if (IsValid(GetBrainComponent()))
+	{
+		GetBrainComponent()->PauseLogic(FString("PrevGameStart"));
+	}
+	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->ClearResourceDelegate.AddDynamic(this, &AAIControllerBase::DeactivateAI);
+	Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode())->StartChapterDelegate.AddDynamic(this, &AAIControllerBase::ActivateAI);
+}
 
+void AAIControllerBase::ActivateAI()
+{
+	GetBrainComponent()->ResumeLogic(FString("GameStart")); //Delegate를 통해 Chapter이 초기화 되면, Activate 한다.
+	UE_LOG(LogTemp, Warning, TEXT("ActivateAI"));
+}
+
+void AAIControllerBase::DeactivateAI()
+{
+	GetBrainComponent()->StopLogic(FString("GameOver"));
 }
 
 void AAIControllerBase::InitAIPerceptionSystem()

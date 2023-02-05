@@ -6,14 +6,12 @@
 
 #define InventoryMaxSize 6
 
-DECLARE_DELEGATE_OneParam(FEnemyDieDelegate, class ACharacterBase*);
-
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
-		//----- 기본 함수 ----------
+//----- Global / Component ----------
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
@@ -27,6 +25,10 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		UChildActorComponent* InventoryComponent; 
 
 // ------- Character Action 기본 ------- 
 public:
@@ -61,7 +63,7 @@ public:
 	UFUNCTION()
 		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
 
-// ------- Character Stat/State ------- 
+// ------- Character Stat/State ------------------------------
 public:
 	//캐릭터의 상태 정보를 초기화
 	UFUNCTION()
@@ -74,15 +76,23 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStatStruct GetCharacterStat() { return CharacterStat; }
 
-	// ------ 무기 관련 ----------------
+// ------ 무기 관련 -------------------------------------------
 public:
-	//새로운 무기를 초기화
+	UFUNCTION()
+		bool EquipWeapon(class AWeaponBase* TargetWeapon);
+
+	//무기를 집는다. 인벤토리가 꽉 찼다면 false를 반환
 	UFUNCTION(BlueprintCallable)
-		void InitWeapon(class AWeaponBase* NewWeapon);
+		bool PickWeapon(int32 NewWeaponID);
+
+	//다음 무기로 전환한다. 전환에 실패하면 false를 반환
+	virtual void SwitchToNextWeapon();
 
 	//무기를 Drop한다. (월드에서 아예 사라진다.)
-	UFUNCTION()
-		void DropWeapon();
+	virtual void DropWeapon();
+
+	UFUNCTION(BlueprintCallable)
+		class AWeaponInventoryBase* GetInventoryRef();
 
 	//무기 Ref를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -92,7 +102,7 @@ public:
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
-	// ------ 캐릭터 버프 / 디버프 ---------------
+// ------ 캐릭터 버프 / 디버프 ------------------------------------
 public:
 	//버프와 디버프를 건다
 	virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
@@ -102,7 +112,7 @@ public:
 
 	//특정 Buff/Debuff의 타이머를 해제한다.
 	virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
-	
+		
 	//모든 Buff/Debuff의 타이머를 해제
 	virtual void ClearAllBuffDebuffTimer(bool bIsDebuff);
 
@@ -128,7 +138,7 @@ public:
 	UFUNCTION()
 		FTimerHandle& GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType);
 
-	// ----- 캐릭터 애니메이션 -------------------
+// ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		TArray<UAnimMontage*> AttackAnimMontageArray;
@@ -140,16 +150,13 @@ protected:
 		class UAnimMontage* RollAnimMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* DieAnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* ReloadAnimMontage;
 
-	// ------ 그 외 캐릭터 프로퍼티 / 함수 ---------------
+// ------ 그 외 캐릭터 프로퍼티  ---------------
 protected:
-	UFUNCTION()
-		void InitGamemodeRef();
-
-	//UFUNCTION()
-		virtual void ClearAllTimerHandle();
-
 	//캐릭터의 스탯
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 		FCharacterStatStruct CharacterStat;
@@ -162,11 +169,11 @@ protected:
 		class ABackStreetGameModeBase* GamemodeRef;
 
 	UPROPERTY()
-		class AWeaponBase* WeaponRef;
+		class AWeaponInventoryBase* InventoryRef;
 
-private:
-	UPROPERTY()
-		TArray<FTimerHandle> BuffDebuffTimerHandleList;
+// ----- 타이머 관련 ---------------------------------
+protected:
+	virtual void ClearAllTimerHandle();
 
 private:
 	//공격 간 딜레이 핸들
@@ -176,28 +183,7 @@ private:
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
 
-
-// ---------무기 인벤토리 관련 (임시, 크래시 발생) ----------------
-public:
-
-	UFUNCTION(BlueprintCallable)
-		void InitWeaponInventory();
-	UFUNCTION(BlueprintCallable)
-		void AddWeaponInventory(AWeaponBase* Weapon);
-	UFUNCTION(BlueprintCallable)
-		void SwitchWeapon();
-	UFUNCTION(BlueprintCallable)
-		void ChangeWeapon(AWeaponBase* newWeaponClass);
-
-public:
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		TArray<AWeaponBase*> WeaponInventory;
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		TArray<int32> WeaponIDInventory;
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		int8 InventorySize;
-	UPROPERTY(EditAnywhere, Category = "WeaponInventory")
-		int8 InventoryIdx;
-
+	UPROPERTY()
+		TArray<FTimerHandle> BuffDebuffTimerHandleList;
 
 };

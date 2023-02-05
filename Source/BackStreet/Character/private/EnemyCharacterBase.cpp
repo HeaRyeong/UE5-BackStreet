@@ -2,14 +2,25 @@
 
 
 #include "../public/EnemyCharacterBase.h"
+#include "../../AISystem/public/AIControllerBase.h"
 #include "../public/CharacterInfoStruct.h"
+#include "../../Item/public/WeaponInventoryBase.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "Components/WidgetComponent.h"
 #include "../../StageSystem/public/TileBase.h"
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
+	FloatingHpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("FLOATING_HP_BAR"));
+	FloatingHpBar->SetupAttachment(GetCapsuleComponent());
+	FloatingHpBar->SetRelativeLocation(FVector(0.0f, 0.0f, 85.0f));
+	FloatingHpBar->SetWorldRotation(FRotator(0.0f, 180.0f, 0.0f));
+	FloatingHpBar->SetDrawSize({ 80.0f, 10.0f });
+
 	bUseControllerRotationYaw = false;
+	AutoPossessAI = EAutoPossessAI::Spawned;
+
 	this->Tags.Add("Enemy");
 }
 
@@ -17,6 +28,10 @@ void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	TileRef = GamemodeRef->CurrentTile;
+
+	SetDefaultWeapon();
+	SetDefaultStat();
+	InitFloatingHpWidget();	
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
@@ -55,8 +70,24 @@ void AEnemyCharacterBase::StopAttack()
 
 void AEnemyCharacterBase::Die()
 {
-	EnemyDeathDelegate.ExecuteIfBound(this);
 	Super::Die();
+
+	EnemyDeathDelegate.ExecuteIfBound(this);
+	Controller->Destroy();
+}
+
+void AEnemyCharacterBase::SetDefaultWeapon()
+{
+	if (IsValid(GetInventoryRef()))
+	{
+		GetInventoryRef()->AddWeapon(DefaultWeaponID);
+	}
+}
+
+void AEnemyCharacterBase::SetDefaultStat()
+{
+	CharacterStat.bInfiniteAmmo = true;
+	CharacterStat.bInfiniteDurability = true;
 }
 
 void AEnemyCharacterBase::Turn(float Angle)

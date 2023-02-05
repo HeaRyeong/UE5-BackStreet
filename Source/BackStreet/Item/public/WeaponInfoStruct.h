@@ -25,7 +25,6 @@ public:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		FName Description;
-	
 
 	//----- 공통 Stat -------
 	
@@ -36,6 +35,10 @@ public:
 	//무기 데미지
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float WeaponDamageRate = 1.0f;
+
+	//인벤토리를 차지하는 칸 수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		uint8 WeaponWeight = 1;
 
 	//----- 근접 관련 Property --------------------
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -54,7 +57,7 @@ public:
 		bool bInfiniteDurability = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 Durability = 10;
+		int32 MaxDurability = 10;
 
 	//----- 발사체 관련 Property ------------------
 	//무한 탄약인지?
@@ -78,3 +81,26 @@ public:
 		float LoadingDelayTime;
 };
 
+
+USTRUCT(BlueprintType)
+struct FWeaponStateStruct
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+	//현재 내구도
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		int32 CurrentDurability = 10;
+
+	//콤보 수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		int32 ComboCount = 0;
+
+	//현재 탄창에 있는 발사체 수
+	UPROPERTY(BlueprintReadOnly)
+		int32 CurrentAmmoCount = 1;
+
+	//탄창에 있는 탄환들의 총합
+	UPROPERTY(BlueprintReadOnly)
+		int32 TotalAmmoCount = 0;
+};

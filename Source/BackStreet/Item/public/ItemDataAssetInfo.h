@@ -51,3 +51,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DeBuff")
 		FDeBuffItemInfoStruct DeBuffStat;
 };
+

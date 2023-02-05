@@ -2,6 +2,7 @@
 
 #include "Engine/DataTable.h"
 #include "../../Character/public/CharacteInfoEnum.h"
+#include "WeaponInfoStruct.h"
 #include "ItemInfoStruct.generated.h"
 
 
@@ -26,9 +27,24 @@ enum class EStatUpCategoryInfo : uint8
 	E_ATKSpeed				UMETA(DisplayName = "ATKSpeed"),
 	E_MoveSpeed				UMETA(DisplayName = "MoveSpeed"),
 	E_Defense				UMETA(DisplayName = "Defense"),
-
 };
 
+//인벤토리를 구성하는 요소들의 정보를 담은 구조체
+USTRUCT(BlueprintType)
+struct FInventoryItemInfoStruct
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(VisibleDefaultsOnly)
+		int32 WeaponID;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		FWeaponStatStruct WeaponStat; 
+
+	UPROPERTY(VisibleDefaultsOnly)
+		FWeaponStateStruct WeaponState;
+};
 
 USTRUCT(BlueprintType)
 struct FBuffItemInfoStruct : public FTableRowBase
@@ -82,7 +98,7 @@ public:
 		bool bInfiniteDurability;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 Durability = 10;
+		int32 MaxDurability = 10;
 
 	// --------- 원거리 관련 -------
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
