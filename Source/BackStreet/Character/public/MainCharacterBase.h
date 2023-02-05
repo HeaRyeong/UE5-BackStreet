@@ -109,6 +109,22 @@ public:
 	UFUNCTION()
 		void DeactivateBuffNiagara();
 
+// -------- Sound ----------------
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* RollSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* WalkSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* BuffSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* DeBuffSound;
+
 // ------- ±× ¿Ü -----------
 public:
 	//UFUNCTION()

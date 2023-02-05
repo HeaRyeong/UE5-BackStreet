@@ -32,6 +32,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		ULevelStreaming* UpdateGateInfo();
 	UFUNCTION(BlueprintCallable)
+		void UpdateMiniMap();
+	UFUNCTION(BlueprintCallable)
 		void CheckHaveToActive();
 
 };

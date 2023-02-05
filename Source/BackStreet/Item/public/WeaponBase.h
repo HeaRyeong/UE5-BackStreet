@@ -4,6 +4,7 @@
 
 #include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
+#include "Sound/SoundCue.h"
 #include "WeaponBase.generated.h"
 #define MAX_AMMO_LIMIT_CNT 2000
 
@@ -37,6 +38,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* HitEffectParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		UAudioComponent* AudioComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		USoundCue* WieldSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		USoundCue* HitSound;
 
 	//Weapon¿« ¡æ«’ Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")

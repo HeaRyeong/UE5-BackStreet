@@ -7,19 +7,28 @@
 #include "../../Item/public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../public/AssetManagerBase.h"
+#include "../public/GameInstanceBase.h"
 #include "EngineUtils.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
 ABackStreetGameModeBase::ABackStreetGameModeBase()
 {
-	
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Character/EnemyCharacter/Data/D_EnemyStatDataTable.D_EnemyStatDataTable"));
+	if (DataTable.Succeeded())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnemyStatDataTable Succeed!"));
+		EnemyStatTable = DataTable.Object;
+	}
 
+	
 }
 
 void ABackStreetGameModeBase::InitializeChapter()
 {
-	AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
+	//StreamableManager=(Cast<UGameInstanceBase>(GetGameInstance()))->ReturnStreamManager();
+
+	//AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
 	RemainChapter = 2;
 	ChapterStatValue = 0;
 	InitChapter();
@@ -62,6 +71,7 @@ void ABackStreetGameModeBase::NextStage(uint8 Dir)
 		break;
 	}
 	MoveTile(Dir);
+	UpdateMiniMapUI();
 }
 
 void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
@@ -118,11 +128,24 @@ void ABackStreetGameModeBase::UpdateCharacterStat(ACharacterBase* TargetCharacte
 	}
 }
 
-void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCharacter, const uint8 CharacterID)
+void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCharacter, const uint32 CharacterID)
 {
 	if (IsValid(TargetCharacter) && TargetCharacter->ActorHasTag("Enemy"))
 	{
 		//DataTable·Î ºÎÅÍ Read
+		FString rowName = FString::FromInt(CharacterID);
+		FEnemyStatStruct* TypeInfo = EnemyStatTable->FindRow<FEnemyStatStruct>(FName(rowName), rowName);
+
+
+		FCharacterStatStruct NewStat;
+		NewStat.CharacterMaxHP = TypeInfo->CharacterMaxHP;
+		NewStat.CharacterDefense = TypeInfo->CharacterDefense;
+		NewStat.CharacterAtkSpeed = TypeInfo->CharacterAtkSpeed;
+		NewStat.CharacterAtkMultiplier = TypeInfo->CharacterAtkMultiplier;
+		NewStat.CharacterMoveSpeed = TypeInfo->CharacterMoveSpeed;
+
+		TargetCharacter->UpdateCharacterStat(NewStat);
+
 	}
 }
 

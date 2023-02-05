@@ -48,6 +48,10 @@ public:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
 		class UItemDataAssetInfo* DA;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* SearchSound;
+
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		EItemCategoryInfo Type = EItemCategoryInfo::E_None;

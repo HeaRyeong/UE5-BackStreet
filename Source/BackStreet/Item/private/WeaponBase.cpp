@@ -3,6 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
 #define AUTO_RELOAD_DELAY_VALUE 0.1
@@ -19,6 +20,9 @@ AWeaponBase::AWeaponBase()
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WEAPON_MESH"));
 	WeaponMesh->SetupAttachment(DefaultSceneRoot);
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SOUND"));
+
 }
 
 // Called when the game starts or when spawned
@@ -165,6 +169,14 @@ void AWeaponBase::MeleeAttack()
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
+	// Sound
+	if (WieldSound->IsValidLowLevelFast())
+	{
+		AudioComponent->SetSound(WieldSound);
+		AudioComponent->Play();
+	}
+		
+
 	//검로 Trace
 	//근접 무기의 각 지점에서 이전 월드 좌표 -> 현재 월드 좌표로 LineTrace를 진행 
 	TArray<FVector> currTracePositionList = GetCurrentMeleePointList();
@@ -193,6 +205,12 @@ void AWeaponBase::MeleeAttack()
 	//hitResult가 Valid하다면 아래 조건문에서 데미지를 가함
 	if (bIsMeleeTraceSucceed)
 	{
+		// 사운드
+		if (HitSound->IsValidLowLevelFast())
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+		}
+
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
@@ -242,3 +260,4 @@ void AWeaponBase::InitWeapon(ACharacterBase* NewOwnerCharacterRef)
 	OwnerCharacterRef = NewOwnerCharacterRef;
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
+

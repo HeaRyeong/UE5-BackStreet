@@ -21,8 +21,6 @@ void AEnemyCharacterBase::BeginPlay()
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-	TArray< FEnemyStatStruct> DataTable;
-	FString ContextString;
 
 	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
 }
