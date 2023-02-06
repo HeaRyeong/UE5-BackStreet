@@ -13,7 +13,8 @@ class BACKSTREET_API AProjectileBase : public AActor
 	GENERATED_BODY()
 
 	friend class AWeaponBase;
-	
+
+//------ Global, Component -------------------
 public:	
 	// Sets default values for this actor's properties
 	AProjectileBase();
@@ -21,13 +22,42 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-		uint8 ProjectileID;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+	UPROPERTY(VisibleDefaultsOnly)
+		USphereComponent* SphereCollision;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		USphereComponent* TargetingCollision;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		class UProjectileMovementComponent* ProjectileMovement;
+
+//------- 기본 프로퍼티 -------------------
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+		uint8 ProjectileID;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		USoundCue* HitSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		USoundCue* ExplosionSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
+		UParticleSystem* HitParticle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+		struct FProjectileStatStruct ProjectileStat;
+
+//------ 핵심 함수  ------------------
 public:
 	UFUNCTION()
 		void InitProjectile(class ACharacterBase* NewCharacterRef);
@@ -49,26 +79,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		ACharacterBase* GetOwnerCharacterRef() { return OwnerCharacterRef; }
 
-public:	
-	UPROPERTY(VisibleDefaultsOnly)
-		USphereComponent* SphereCollision;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		USphereComponent* TargetingCollision;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		UStaticMeshComponent* Mesh; 
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		class UProjectileMovementComponent* ProjectileMovement;
-
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-		UParticleSystem* HitParticle;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		struct FProjectileStatStruct ProjectileStat;
-
+//------ private 프로퍼티 ------------------
 private: 
 	UPROPERTY()
 		bool bIsActivated = false;

@@ -64,16 +64,11 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
-	// Sound
+	// Sound Ãâ·Â
 	if (WieldSound != nullptr)
 	{
 		AudioComponent->SetSound(WieldSound);
 		AudioComponent->Play();
-		UE_LOG(LogTemp, Warning, TEXT("YES"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NONO"));
 	}
 
 	UpdateDurabilityState();

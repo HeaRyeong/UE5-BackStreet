@@ -79,6 +79,11 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ProjectileStat.ProjectileDamage, ProjectileStat.ProjectileDamage / 2.0f
 														, SweepResult.Location, 100.0f, 200.0f, 25.0f, nullptr, {}, OwnerCharacterRef, OwnerCharacterRef->Controller);
 			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Explosion, SweepResult.Location, 100.0f);
+			
+			if (ExplosionSound != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+			}
 		}
 		else
 		{
@@ -89,7 +94,11 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		Cast<ACharacterBase>(OtherActor)->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
+	if (HitSound != nullptr && HitParticle != nullptr)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
+	}
 	Destroy();
 }
 

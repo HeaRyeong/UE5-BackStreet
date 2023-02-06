@@ -37,6 +37,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UStaticMeshComponent* WeaponMesh;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		UAudioComponent* AudioComponent;
+
 //------- 기본 프로퍼티, Action -------------------
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
@@ -44,9 +47,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* HitEffectParticle;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		UAudioComponent* AudioComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		USoundCue* WieldSound;
@@ -57,13 +57,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		UParticleSystem* DestroyEffectParticle;
 
+public:
 	//Weapon의 종합 Stat
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat") 
 		FWeaponStatStruct WeaponStat;
 
 	//Weapon 상태 정보
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		FWeaponStateStruct WeaponState; 
+		FWeaponStateStruct WeaponState;
 
 public:
 	//공격 처리
