@@ -20,9 +20,6 @@ AWeaponBase::AWeaponBase()
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WEAPON_MESH"));
 	WeaponMesh->SetupAttachment(DefaultSceneRoot);
-
-	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SOUND"));
-
 }
 
 // Called when the game starts or when spawned
@@ -57,22 +54,27 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bHasProjectile)
 	{
 		TryFireProjectile();
+
+		//if(ThrowSound != nullptr)
+		{
+			//UGameplayStatics::PlaySoundAtLocation(GetWorld(), ThrowSound, GetActorLocation());
+		}
 	}
 	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
-	}
-	// Sound 출력
-	if (WieldSound != nullptr)
-	{
-		AudioComponent->SetSound(WieldSound);
-		AudioComponent->Play();
+
+		// Sound 출력
+		if (WieldSound != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WieldSound, GetActorLocation());
+		}
 	}
 
 	UpdateDurabilityState();
-	WeaponState.ComboCount = (WeaponState.ComboCount + 1);
+	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
 
 void AWeaponBase::StopAttack()
@@ -254,9 +256,12 @@ void AWeaponBase::MeleeAttack()
 	if (bIsMeleeTraceSucceed)
 	{
 		// 사운드
-		if (HitSound->IsValidLowLevelFast())
+		if (HitImpactSoundList.Num() > 0)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+			for (auto& hitSoundRef : HitImpactSoundList)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, hitSoundRef, GetActorLocation());
+			}
 		}
 
 		//데미지를 주고

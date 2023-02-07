@@ -9,7 +9,6 @@
 
 DECLARE_DELEGATE(FDelegateWeaponDestroy);
 
-
 UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
 {
@@ -37,27 +36,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UStaticMeshComponent* WeaponMesh;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		UAudioComponent* AudioComponent;
-
 //------- 기본 프로퍼티, Action -------------------
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 		uint8 WeaponID;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
-		UParticleSystem* HitEffectParticle;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		USoundCue* WieldSound;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		USoundCue* HitSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
-		UParticleSystem* DestroyEffectParticle;
-
-public:
 	//Weapon의 종합 Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat") 
 		FWeaponStatStruct WeaponStat;
@@ -158,10 +141,23 @@ private:
 	//UPROPERTY()
 	FCollisionQueryParams MeleeLineTraceQueryParams;
 
-//-------- 그 외 -------------------------------
+//-------- 그 외 (Ref, VFX 등)-------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
 		void SetOwnerCharacter(class ACharacterBase* NewOwnerCharacterRef);
+
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class UParticleSystem* HitEffectParticle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class UParticleSystem* DestroyEffectParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* WieldSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		TArray<class USoundCue*> HitImpactSoundList; //SQ_ Mix 기능으로 대체 예정 
 
 private:
 	//캐릭터 Ref

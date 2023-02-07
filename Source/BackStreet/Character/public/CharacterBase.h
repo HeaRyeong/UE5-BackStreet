@@ -4,8 +4,6 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
-#define InventoryMaxSize 6
-
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
