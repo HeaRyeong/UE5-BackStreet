@@ -3,6 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "../../Character/public/CharacterBuffManager.h"
 #include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
@@ -256,18 +257,15 @@ void AWeaponBase::MeleeAttack()
 	if (bIsMeleeTraceSucceed)
 	{
 		// 사운드
-		if (HitImpactSoundList.Num() > 0)
+		if (HitImpactSound != nullptr)
 		{
-			for (auto& hitSoundRef : HitImpactSoundList)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, hitSoundRef, GetActorLocation());
-			}
+			UGameplayStatics::PlaySoundAtLocation(this, HitImpactSound, GetActorLocation());
 		}
 
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
+		(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

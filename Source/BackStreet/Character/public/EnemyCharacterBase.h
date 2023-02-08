@@ -67,20 +67,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void InitEnemyStat();
 
+	UFUNCTION(BlueprintCallable)
+		virtual	void AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+
 protected:
 	UFUNCTION()
 		void SetDefaultWeapon();
 
 	UFUNCTION()
 		void SetDefaultStat();
-
-//	//버프 or 디버프 상태를 지정
-	UFUNCTION(BlueprintCallable)
-		virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
-
-	//버프 or 디버프 상태를 초기화한다
-	UFUNCTION(BlueprintCallable)
-		virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal) override;
 
 // ---- 그 외 (위젯, 사운드 등) ----
 public:

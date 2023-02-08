@@ -19,7 +19,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	FloatingHpBar->SetDrawSize({ 80.0f, 10.0f });
 
 	bUseControllerRotationYaw = false;
-	AutoPossessAI = EAutoPossessAI::Spawned;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	this->Tags.Add("Enemy");
 }
@@ -32,12 +32,19 @@ void AEnemyCharacterBase::BeginPlay()
 	SetDefaultWeapon();
 	SetDefaultStat();
 	InitFloatingHpWidget();	
+	InitEnemyStat();
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-
 	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
+	CharacterState.CharacterCurrHP = CharacterStat.CharacterMaxHP;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
+}
+
+void AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+{
+	Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -107,16 +114,4 @@ void AEnemyCharacterBase::Turn(float Angle)
 		return;
 	}
 	CharacterState.TurnDirection = 0;
-}
-
-bool AEnemyCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
-{
-	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
-	return result;
-}
-
-void AEnemyCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
-{
-	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
-
 }

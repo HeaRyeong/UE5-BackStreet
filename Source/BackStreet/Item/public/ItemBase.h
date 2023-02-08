@@ -46,14 +46,13 @@ public:
 		class UBoxComponent* OverlapVolume;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
-		class UNiagaraComponent* NiagaraCompo;
+		class UNiagaraComponent* ItemParticleComponent;
 	
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
 		class UItemDataAssetInfo* DA;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class USoundCue* SearchSound;
-
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

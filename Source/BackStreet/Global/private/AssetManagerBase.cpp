@@ -220,7 +220,7 @@ void AAssetManagerBase::SpawnMonster(TArray<AActor*> SpawnPoints, class ATileBas
 				AEnemyCharacterBase* Target = GetWorld()->SpawnActor<AEnemyCharacterBase>(Gen->GeneratedClass, SpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 				TileRef->MonsterList.AddUnique(Target);
 				Target->EnemyID = EnemyIDList[EnemyIDIdx];
-				Target->InitEnemyStat();
+				//Target->InitEnemyStat();
 			}
 		}
 		else if (EnemyIDList[EnemyIDIdx] == 1003)
@@ -231,7 +231,7 @@ void AAssetManagerBase::SpawnMonster(TArray<AActor*> SpawnPoints, class ATileBas
 				AEnemyCharacterBase* Target = GetWorld()->SpawnActor<AEnemyCharacterBase>(Gen->GeneratedClass, SpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 				TileRef->MonsterList.AddUnique(Target);
 				Target->EnemyID = EnemyIDList[EnemyIDIdx];
-				Target->InitEnemyStat();
+				//Target->InitEnemyStat();
 			}
 		}
 		else if (EnemyIDList[EnemyIDIdx] == 1100)
@@ -242,7 +242,7 @@ void AAssetManagerBase::SpawnMonster(TArray<AActor*> SpawnPoints, class ATileBas
 				AEnemyCharacterBase* Target = GetWorld()->SpawnActor<AEnemyCharacterBase>(Gen->GeneratedClass, SpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 				TileRef->MonsterList.AddUnique(Target);
 				Target->EnemyID = EnemyIDList[EnemyIDIdx];
-				Target->InitEnemyStat();
+				//Target->InitEnemyStat();
 			}
 		}
 		else if (EnemyIDList[EnemyIDIdx] == 1101 || EnemyIDList[EnemyIDIdx] == 1102)
@@ -253,7 +253,7 @@ void AAssetManagerBase::SpawnMonster(TArray<AActor*> SpawnPoints, class ATileBas
 				AEnemyCharacterBase* Target = GetWorld()->SpawnActor<AEnemyCharacterBase>(Gen->GeneratedClass, SpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 				TileRef->MonsterList.AddUnique(Target);
 				Target->EnemyID = EnemyIDList[EnemyIDIdx];
-				Target->InitEnemyStat();
+				//Target->InitEnemyStat();
 			}
 
 		}

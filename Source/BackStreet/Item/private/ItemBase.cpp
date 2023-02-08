@@ -5,11 +5,7 @@
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
-
-#include "UObject/ConstructorHelpers.h"
-#include "Kismet/GameplayStatics.h"
+#include "../../Character/public/CharacterBuffManager.h"
 
 // Sets default values
 AItemBase::AItemBase()
@@ -18,10 +14,10 @@ AItemBase::AItemBase()
 	PrimaryActorTick.bCanEverTick = true;
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
-	NiagaraCompo = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
+	ItemParticleComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComponent"));
 
 	OverlapVolume->SetupAttachment(RootComponent);
-	NiagaraCompo->SetupAttachment(RootComponent);
+	ItemParticleComponent->SetupAttachment(RootComponent);
 
 	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OverlapBegins);
 }
@@ -32,7 +28,6 @@ void AItemBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
 
 // Called when the game starts or when spawned
 void AItemBase::BeginPlay()
@@ -68,7 +63,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 			break;
 		case EItemCategoryInfo::E_Buff:
 			Stat = DA->BuffStat;
-			MyCharacter->SetBuffTimer(Stat.Type, this, Stat.Time, Stat.Time);
+			MyCharacter->AddNewBuffDebuff(false, (uint8)Stat.Type, this, Stat.Time, Stat.Time);
 			Destroy();
 			break;
 		case EItemCategoryInfo::E_DeBuff:

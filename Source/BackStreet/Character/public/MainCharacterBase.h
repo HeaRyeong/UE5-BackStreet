@@ -78,25 +78,13 @@ public:
 		virtual void DropWeapon() override;
 
 // ------- 버프 / 디버프 ---------------
-public: 
+protected: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
-
-	//버프 or 디버프 상태를 초기화한다
-	UFUNCTION(BlueprintCallable)
-		virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal) override;
-
-	//특정 Debuff의 타이머를 해제한다.
-	UFUNCTION(BlueprintCallable)
-		virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType) override;
-
-	//모든 Buff/Debuff의 타이머를 해제
-	UFUNCTION(BlueprintCallable)
-		virtual void ClearAllBuffDebuffTimer(bool bIsDebuff) override;
+		virtual	void AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 // -------- VFX -----------
-public:
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		class UNiagaraComponent* BuffNiagaraEmitter;
 
@@ -108,6 +96,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		TArray<class UNiagaraSystem*> DebuffNiagaraEffectList;
+
+	UFUNCTION()
+		void ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType);
 
 	UFUNCTION()
 		void DeactivateBuffNiagara();
@@ -126,7 +117,7 @@ public:
 		class USoundCue* BuffSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* DeBuffSound;
+		class USoundCue* DebuffSound;
 
 // ------- 그 외 -----------
 public:

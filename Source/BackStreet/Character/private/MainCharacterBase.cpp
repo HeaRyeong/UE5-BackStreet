@@ -3,12 +3,10 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/MainCharacterController.h"
+#include "../public/CharacterBuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
-
-#include "NiagaraComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 
@@ -57,6 +55,11 @@ void AMainCharacterBase::BeginPlay()
 	Super::BeginPlay();
 	
 	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	if (IsValid(GetBuffManagerRef()))
+	{
+		GetBuffManagerRef()->BuffEmitterDeactivateDelegate.AddDynamic(this, &AMainCharacterBase::DeactivateBuffNiagara);
+	}
 }
 
 // Called every frame
@@ -216,63 +219,34 @@ void AMainCharacterBase::DropWeapon()
 	Super::DropWeapon();
 }
 
-bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
+void AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
+	Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
 
-	if(result)
+	if (DebuffSound && BuffSound)
 	{
-		TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
-		
-		if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
-		{
-			BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
-			BuffNiagaraEmitter->Deactivate();
-			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
-			BuffNiagaraEmitter->Activate();
-		}
-
-		// »ç¿îµå
-		if (bIsDebuff)
-		{
-			if (DeBuffSound->IsValidLowLevelFast())
-				UGameplayStatics::PlaySoundAtLocation(this, DeBuffSound, GetActorLocation());
-		
-		}
-		else
-		{	if (BuffSound->IsValidLowLevelFast())
-				UGameplayStatics::PlaySoundAtLocation(this, BuffSound, GetActorLocation());
-		}
-		
+		UGameplayStatics::PlaySoundAtLocation(this, bIsDebuff ? DebuffSound : BuffSound, GetActorLocation());
 	}
-	return result;
-}	
-
-void AMainCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
-{
-	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
+	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 }
 
-void AMainCharacterBase::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
+void AMainCharacterBase::ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType)
 {
-	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType)
-		: GetBuffIsActive((ECharacterBuffType)BuffDebuffType))
-	{
-		DeactivateBuffNiagara();
-	}
-	Super::ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
-}
+	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
 
-void AMainCharacterBase::ClearAllBuffDebuffTimer(bool bIsDebuff)
-{
-	Super::ClearAllBuffDebuffTimer(bIsDebuff);
-	DeactivateBuffNiagara();
+	if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
+	{
+		BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
+		BuffNiagaraEmitter->Deactivate();
+		BuffNiagaraEmitter->bHiddenInGame = false;
+		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
+		BuffNiagaraEmitter->Activate();
+	}
 }
 
 void AMainCharacterBase::DeactivateBuffNiagara()
 {
-	BuffNiagaraEmitter->SetAsset(nullptr, false);
-	BuffNiagaraEmitter->Deactivate();
+	BuffNiagaraEmitter->Deactivate(); 
 }
 
 void AMainCharacterBase::ClearAllTimerHandle()

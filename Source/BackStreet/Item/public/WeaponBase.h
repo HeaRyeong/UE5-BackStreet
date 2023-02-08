@@ -157,7 +157,7 @@ protected:
 		class USoundCue* WieldSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		TArray<class USoundCue*> HitImpactSoundList; //SQ_ Mix 기능으로 대체 예정 
+		class USoundCue* HitImpactSound;
 
 private:
 	//캐릭터 Ref

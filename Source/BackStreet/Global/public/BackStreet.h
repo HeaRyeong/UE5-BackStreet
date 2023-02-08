@@ -11,7 +11,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+
+/* ----- Niagara 및 사운드 --------*/
 #include "Sound/SoundCue.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 /* ----- 구조체/Enum ------------ */
 #include "../../Character/public/CharacterInfoStruct.h"

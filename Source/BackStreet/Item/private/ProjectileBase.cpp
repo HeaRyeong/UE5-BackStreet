@@ -3,6 +3,7 @@
 
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "../../Character/public/CharacterBuffManager.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -91,7 +92,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 				SpawnInstigator, OwnerCharacterRef, nullptr);
 		}
 		
-		Cast<ACharacterBase>(OtherActor)->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+		(Cast<ACharacterBase>(OtherActor)->GetBuffManagerRef())->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	if (HitSound != nullptr && HitParticle != nullptr)
