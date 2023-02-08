@@ -101,7 +101,7 @@ protected:
 		void ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType);
 
 	UFUNCTION()
-		void DeactivateBuffNiagara();
+		void DeactivateBuffEffect();
 
 // -------- Sound ----------------
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")

@@ -58,7 +58,7 @@ void AMainCharacterBase::BeginPlay()
 
 	if (IsValid(GetBuffManagerRef()))
 	{
-		GetBuffManagerRef()->BuffEmitterDeactivateDelegate.AddDynamic(this, &AMainCharacterBase::DeactivateBuffNiagara);
+		GetBuffManagerRef()->BuffEmitterDeactivateDelegate.AddDynamic(this, &AMainCharacterBase::DeactivateBuffEffect);
 	}
 }
 
@@ -226,6 +226,7 @@ void AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, 
 	if (DebuffSound && BuffSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, bIsDebuff ? DebuffSound : BuffSound, GetActorLocation());
+		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
 	}
 	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 }
@@ -238,14 +239,14 @@ void AMainCharacterBase::ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffTyp
 	{
 		BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
 		BuffNiagaraEmitter->Deactivate();
-		BuffNiagaraEmitter->bHiddenInGame = false;
 		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
 		BuffNiagaraEmitter->Activate();
 	}
 }
 
-void AMainCharacterBase::DeactivateBuffNiagara()
+void AMainCharacterBase::DeactivateBuffEffect()
 {
+	BuffNiagaraEmitter->SetAsset(nullptr, false);
 	BuffNiagaraEmitter->Deactivate(); 
 }
 

@@ -238,7 +238,6 @@ void ACharacterBuffManager::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuf
 {
 	if (!IsValid(OwnerCharacterRef)) return;
 	BuffEmitterDeactivateDelegate.Broadcast();
-	OwnerCharacterRef->AddNewBuffDebuff(bIsDebuff, BuffDebuffType, false);
 	GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType));
 }
 
