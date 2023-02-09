@@ -95,7 +95,8 @@ void ACharacterBase::UpdateCharacterState(FCharacterStateStruct NewState)
 void ACharacterBase::ResetActionState()
 {
 	if (CharacterState.CharacterActionState == ECharacterActionType::E_Stun
-		|| CharacterState.CharacterActionState == ECharacterActionType::E_Die) return;
+		|| CharacterState.CharacterActionState == ECharacterActionType::E_Die
+		|| CharacterState.CharacterActionState == ECharacterActionType::E_Reload) return;
 
 	StopAttack();
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
@@ -183,11 +184,11 @@ void ACharacterBase::TryAttack()
 
 	if (GetWeaponActorRef()->WeaponStat.WeaponType == EWeaponType::E_Shoot)
 	{
-		PlayAnimMontage(ShootAnimMontage);
+		PlayAnimMontage(ShootAnimMontage, CharacterStat.CharacterAtkSpeed + 1.0f);
 	}
 	else
 	{
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
+		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], CharacterStat.CharacterAtkSpeed + 1.0f);
 	}
 }
 
@@ -195,7 +196,7 @@ void ACharacterBase::Attack()
 {
 	if (!IsValid(GetWeaponActorRef())) return;
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, FMath::Max(0.0f, 1.25f - CharacterStat.CharacterAtkSpeed));
+										, 1.0f, false, FMath::Max(0.0f, 1.0f - CharacterStat.CharacterAtkSpeed));
 	GetWeaponActorRef()->Attack();
 }
  

@@ -15,10 +15,6 @@ AProjectileBase::AProjectileBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	//DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SCENE_ROOT"));
-	//DefaultSceneRoot->SetupAttachment(RootComponent);
-	//SetRootComponent(DefaultSceneRoot);
-
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SPHERE_COLLISION"));
 	SphereCollision->SetupAttachment(RootComponent);
 	SphereCollision->SetCollisionProfileName(TEXT("OverlapAll"));
@@ -74,6 +70,8 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 	if (!ProjectileMovement->IsActive() || OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
 	if (OtherActor->ActorHasTag("Character"))
 	{
+		
+
 		//폭발하는 발사체라면?
 		if (ProjectileStat.bIsExplosive)
 		{
@@ -83,7 +81,8 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 			
 			if (ExplosionSound != nullptr)
 			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation());
+				const float soundVolume = OwnerCharacterRef->ActorHasTag("Player") ? 1.0f : 0.2f;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation(), soundVolume);
 			}
 		}
 		else
@@ -97,8 +96,9 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	if (HitSound != nullptr && HitParticle != nullptr)
 	{
+		const float soundVolume = OwnerCharacterRef->ActorHasTag("Player") ? 1.0f : 0.2;
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation(), soundVolume);
 	}
 	Destroy();
 }

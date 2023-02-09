@@ -51,16 +51,24 @@ void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponState
 
 void AWeaponBase::Attack()
 {
-	PlayEffectSound(AttackSound);
-
 	//발사체가 있는 무기라면 발사
 	if (WeaponStat.bHasProjectile)
 	{
 		TryFireProjectile();
+		
+		if (OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Reload)
+		{
+			//PlayEffectSound(AttackSound); 빈 방아쇠 소리?
+		}
+		else
+		{
+			PlayEffectSound(AttackSound);
+		}
 	}
 	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
 	if (WeaponStat.bCanMeleeAtk)
 	{
+		PlayEffectSound(AttackSound);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
