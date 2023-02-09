@@ -126,7 +126,10 @@ public:
 // ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		TArray<UAnimMontage*> AttackAnimMontageArray;
+		TArray<class UAnimMontage*> AttackAnimMontageArray;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* ShootAnimMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* HitAnimMontage;

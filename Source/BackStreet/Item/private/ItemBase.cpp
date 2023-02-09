@@ -96,7 +96,7 @@ void AItemBase::InitItem(EItemCategoryInfo SetType)
 
 void AItemBase::SelectWeapon()
 {
-	int8 weaponType = FMath::RandRange(0, MaxWeaponType - 1);
+	int8 weaponType = FMath::RandRange(0, MaxWeaponType);
 	int32 weaponID = 0;
 	switch (weaponType)
 	{
@@ -116,6 +116,9 @@ void AItemBase::SelectWeapon()
 		weaponID = 151;
 		break;
 	case 5:
+		weaponID = 152;
+		break;
+	case 6:
 		weaponID = 199;
 		break;
 	default:

@@ -180,7 +180,15 @@ void ACharacterBase::TryAttack()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
 	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
-	PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
+
+	if (GetWeaponActorRef()->WeaponStat.WeaponType == EWeaponType::E_Shoot)
+	{
+		PlayAnimMontage(ShootAnimMontage);
+	}
+	else
+	{
+		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx]);
+	}
 }
 
 void ACharacterBase::Attack()

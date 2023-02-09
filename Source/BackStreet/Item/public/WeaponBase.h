@@ -147,6 +147,9 @@ public:
 		void SetOwnerCharacter(class ACharacterBase* NewOwnerCharacterRef);
 
 protected:
+	UFUNCTION()
+		void PlayEffectSound(class USoundCue* EffectSound);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		class UParticleSystem* HitEffectParticle;
 
@@ -154,10 +157,13 @@ protected:
 		class UParticleSystem* DestroyEffectParticle;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* WieldSound;
+		class USoundCue* HitImpactSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* HitImpactSound;
+		class USoundCue* AttackSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* ReloadSound;
 
 private:
 	//Ä³¸¯ÅÍ Ref

@@ -51,29 +51,19 @@ void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponState
 
 void AWeaponBase::Attack()
 {
+	PlayEffectSound(AttackSound);
+
 	//발사체가 있는 무기라면 발사
 	if (WeaponStat.bHasProjectile)
 	{
 		TryFireProjectile();
-
-		//if(ThrowSound != nullptr)
-		{
-			//UGameplayStatics::PlaySoundAtLocation(GetWorld(), ThrowSound, GetActorLocation());
-		}
 	}
 	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
-
-		// Sound 출력
-		if (WieldSound != nullptr)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(), WieldSound, GetActorLocation());
-		}
 	}
-
 	UpdateDurabilityState();
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
@@ -97,6 +87,12 @@ void AWeaponBase::SetOwnerCharacter(ACharacterBase* NewOwnerCharacterRef)
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
 }
 
+void AWeaponBase::PlayEffectSound(USoundCue* EffectSound)
+{
+	if (EffectSound == nullptr || !IsValid(OwnerCharacterRef) || !OwnerCharacterRef->ActorHasTag("Player")) return;
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), EffectSound, GetActorLocation());
+}
+
 void AWeaponBase::ClearAllTimerHandle()
 {
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
@@ -116,8 +112,16 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 
 	SpawnRotation.Pitch = 0.0f;
 	SpawnRotation.Yaw += 90.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+
+	if (WeaponStat.WeaponType == EWeaponType::E_Shoot)
+	{
+		SpawnLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
+	}
+	else
+	{
+		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
+		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+	}
 
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
@@ -142,7 +146,7 @@ bool AWeaponBase::TryReload()
 	{
 		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - WeaponState.CurrentAmmoCount);
 	}
-
+	PlayEffectSound(ReloadSound);
 	WeaponState.CurrentAmmoCount += addAmmoCnt;
 	WeaponState.TotalAmmoCount -= addAmmoCnt;
 
