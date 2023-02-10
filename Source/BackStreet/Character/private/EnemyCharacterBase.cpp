@@ -55,6 +55,7 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 
 	GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation()); 
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitImpactSound, GetActorLocation());
+	EnemyDamageDelegate.ExecuteIfBound(DamageCauser);
 
 	return damageAmount;
 }
@@ -114,4 +115,11 @@ void AEnemyCharacterBase::Turn(float Angle)
 		return;
 	}
 	CharacterState.TurnDirection = 0;
+}
+
+float AEnemyCharacterBase::PlayPreChaseAnimation()
+{
+	if (PreChaseAnimMontage == nullptr) return 0.0f;
+
+	return PlayAnimMontage(PreChaseAnimMontage);
 }

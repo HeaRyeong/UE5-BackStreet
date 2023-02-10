@@ -17,7 +17,8 @@ public:
 	UBTStateManageServiceBase(const FObjectInitializer& ObjectInitializer);
 
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override; 
-public:
+
+protected:
 	UFUNCTION()
 		void UpdateAIState();
 
@@ -33,14 +34,16 @@ public:
 	UFUNCTION()
 		bool CheckAttackState();
 
-public:
 	UFUNCTION()
 		float GetDistanceTo(const FVector& EndLocation);
+
+	UFUNCTION()
+		void OnOwnerGetDamaged(AActor* Causer);
 
 private:
 	//캐릭터 레퍼런스
 	UPROPERTY()
-		class ACharacterBase* OwnerCharacterRef;
+		class AEnemyCharacterBase* OwnerCharacterRef;
 
 	UPROPERTY()
 		class UBlackboardComponent* BlackboardRef;

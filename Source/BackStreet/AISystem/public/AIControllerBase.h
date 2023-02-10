@@ -53,6 +53,7 @@ public:
 	UFUNCTION()
 		void UpdateTargetPerception(AActor* Actor, FAIStimulus Stimulus);
 
+
 //--자원 관리 ---------------------
 public:
 	//게임 종료 이벤트에 바인딩해서 사용

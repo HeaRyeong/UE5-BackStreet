@@ -7,6 +7,7 @@
 #include "EnemyCharacterBase.generated.h"
 
 DECLARE_DELEGATE_OneParam(FDelegateEnemyDeath, class AEnemyCharacterBase*);
+DECLARE_DELEGATE_OneParam(FDelegateEnemyDamage, class AActor*);
 
 UCLASS()
 class BACKSTREET_API AEnemyCharacterBase : public ACharacterBase
@@ -19,6 +20,9 @@ public:
 	
 	//적 Death 이벤트
 	FDelegateEnemyDeath EnemyDeathDelegate;
+
+	//적 Hit 이벤트
+	FDelegateEnemyDamage EnemyDamageDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -62,6 +66,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void Turn(float Angle);
 
+	//플레이어를 발견한 직후 취할 Action(Anim), 재생 시간을 반환
+	UFUNCTION(BlueprintCallable)
+		float PlayPreChaseAnimation();
+
 // ----- 캐릭터 스탯 및 상태 관련 ---------
 public:
 	UFUNCTION(BlueprintCallable)
@@ -84,4 +92,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		USoundCue* HitImpactSound;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* PreChaseAnimMontage;
 };
