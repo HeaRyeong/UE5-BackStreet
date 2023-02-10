@@ -8,7 +8,6 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemInfoStruct.h"
-//#include "../../Character/public/CharacterInfoStruct.h"
 #include "TimerManager.h"
 #include "../public/GridBase.h"
 #include "UObject/SoftObjectPath.h"
@@ -64,13 +63,13 @@ void ATileBase::SelectMap()
 	switch (NextMap)
 	{
 	case 1:
-		LevelToLoad = FName(TEXT("Main1"));
+		LevelToLoad = FName(TEXT("Map1_JH"));
 		break;
 	case 2:
-		LevelToLoad = FName(TEXT("Main2"));
+		LevelToLoad = FName(TEXT("Map2_JH"));
 		break;
 	case 3:
-		LevelToLoad = FName(TEXT("Main3"));
+		LevelToLoad = FName(TEXT("Map3_JH"));
 		break;
 		//case 4:
 		//	NextLevelToLoad = FName(TEXT("Sub1Prefab"));
@@ -238,9 +237,6 @@ void ATileBase::LoadItem()
 		
 	}
 }
-
-
-
 
 void ATileBase::LoadMissionAsset()
 {

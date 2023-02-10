@@ -36,7 +36,6 @@ void ACharacterBase::BeginPlay()
 		GetInventoryRef()->InitInventory();
 		BuffManagerRef->SetOwner(this);
 	}
-
 	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
 
@@ -224,7 +223,7 @@ void ACharacterBase::TryReload()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
 		GetWeaponActorRef()->TryReload();
-		ResetActionState();
+		CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	}), 1.0f, false, reloadTime);
 }
 

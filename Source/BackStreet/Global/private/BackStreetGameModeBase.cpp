@@ -200,18 +200,19 @@ void ABackStreetGameModeBase::UpdateCharacterStatWithID(ACharacterBase* TargetCh
 	{
 		//DataTable·Î ºÎÅÍ Read
 		FString rowName = FString::FromInt(CharacterID);
-		FEnemyStatStruct* TypeInfo = EnemyStatTable->FindRow<FEnemyStatStruct>(FName(rowName), rowName);
+		FEnemyStatStruct* typeInfo = EnemyStatTable->FindRow<FEnemyStatStruct>(FName(rowName), rowName);
 
+		if (typeInfo)
+		{
+			FCharacterStatStruct NewStat;
+			NewStat.CharacterMaxHP = typeInfo->CharacterMaxHP;
+			NewStat.CharacterDefense = typeInfo->CharacterDefense;
+			NewStat.CharacterAtkSpeed = typeInfo->CharacterAtkSpeed;
+			NewStat.CharacterAtkMultiplier = typeInfo->CharacterAtkMultiplier;
+			NewStat.CharacterMoveSpeed = typeInfo->CharacterMoveSpeed;
 
-		FCharacterStatStruct NewStat;
-		NewStat.CharacterMaxHP = TypeInfo->CharacterMaxHP;
-		NewStat.CharacterDefense = TypeInfo->CharacterDefense;
-		NewStat.CharacterAtkSpeed = TypeInfo->CharacterAtkSpeed;
-		NewStat.CharacterAtkMultiplier = TypeInfo->CharacterAtkMultiplier;
-		NewStat.CharacterMoveSpeed = TypeInfo->CharacterMoveSpeed;
-
-		TargetCharacter->UpdateCharacterStat(NewStat);
-
+			TargetCharacter->UpdateCharacterStat(NewStat);
+		}
 	}
 }
 
