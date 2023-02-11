@@ -13,11 +13,13 @@
 
 ACharacterBuffManager::ACharacterBuffManager()
 {
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENE_ROOT"));
 	SetActorTickEnabled(false);
 }
 
 void ACharacterBuffManager::BeginPlay()
 {
+	Super::BeginPlay();
 	if (IsValid(GetOwner()) && GetOwner()->ActorHasTag("Character"))
 	{
 		OwnerCharacterRef = Cast<ACharacterBase>(GetOwner());
@@ -269,12 +271,14 @@ bool ACharacterBuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, AAct
 
 bool ACharacterBuffManager::GetDebuffIsActive(ECharacterDebuffType DebuffType)
 {
+	if (!IsValid(OwnerCharacterRef)) return false;
 	if (OwnerCharacterRef->GetCharacterState().CharacterDebuffState & (1 << (int)DebuffType)) return true;
 	return false;
 }
 
 bool ACharacterBuffManager::GetBuffIsActive(ECharacterBuffType BuffType)
 {
+	if (!IsValid(OwnerCharacterRef)) return false;
 	if (OwnerCharacterRef->GetCharacterState().CharacterBuffState & (1 << (int)BuffType)) return true;
 	return false;
 }

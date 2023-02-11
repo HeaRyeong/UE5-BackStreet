@@ -104,7 +104,10 @@ void ABackStreetGameModeBase::CreateAssetManager()
 	if (AssetManagerBPPath.IsValid())
 	{
 		UBlueprint* Gen = Cast<UBlueprint>(AssetManagerBPPath.ResolveObject());
-		AssetDataManager = GetWorld()->SpawnActor<AAssetManagerBase>(Gen->GeneratedClass, FVector::ZeroVector, FRotator::ZeroRotator);
+		if (Gen != nullptr)
+		{
+			AssetDataManager = GetWorld()->SpawnActor<AAssetManagerBase>(Gen->GeneratedClass, FVector::ZeroVector, FRotator::ZeroRotator);
+		}
 	}
 }
 
