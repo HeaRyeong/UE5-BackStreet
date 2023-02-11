@@ -41,15 +41,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 		uint8 WeaponID;
 
-	//Weapon의 종합 Stat
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat") 
-		FWeaponStatStruct WeaponStat;
-
-	//Weapon 상태 정보
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		FWeaponStateStruct WeaponState;
-
-public:
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
 		void Attack();
@@ -76,6 +67,21 @@ public:
 
 	UFUNCTION()
 		void UpdateDurabilityState();
+
+	UFUNCTION(BlueprintCallable)
+		FWeaponStatStruct GetWeaponStat() { return WeaponStat; }
+
+	UFUNCTION(BlueprintCallable)
+		FWeaponStateStruct GetWeaponState() { return WeaponState; }
+
+protected:
+	//Weapon의 종합 Stat
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+		FWeaponStatStruct WeaponStat;
+
+	//Weapon 상태 정보
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+		FWeaponStateStruct WeaponState;
 
 //------ Projectile 관련----------------------------
 public:

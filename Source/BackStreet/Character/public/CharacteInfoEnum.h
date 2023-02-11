@@ -21,7 +21,7 @@ enum class ECharacterBuffType : uint8
 	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
 	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
 	E_Invincibility		UMETA(DisplayName = "Invincibility"),
-	E_InfiniteAmmo		UMETA(DisplayName = "InfiniteAmmo")
+	E_Infinite			UMETA(DisplayName = "Infinite")
 };
 
 UENUM(BlueprintType)

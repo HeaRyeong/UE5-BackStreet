@@ -20,11 +20,6 @@ ACharacterBuffManager::ACharacterBuffManager()
 void ACharacterBuffManager::BeginPlay()
 {
 	Super::BeginPlay();
-	if (IsValid(GetOwner()) && GetOwner()->ActorHasTag("Character"))
-	{
-		OwnerCharacterRef = Cast<ACharacterBase>(GetOwner());
-	}
-
 	for (int newTimerIdx = 0; newTimerIdx < 18; newTimerIdx += 1)
 	{
 		BuffDebuffTimerHandleList.Add(FTimerHandle());
@@ -35,12 +30,13 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 
+	UE_LOG(LogTemp, Warning, TEXT("BUFF #3"));
+
 	FTimerDelegate timerDelegate;
 	FTimerHandle& timerHandle = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
 	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
-	AWeaponBase* characterWeaponRef = OwnerCharacterRef->GetWeaponActorRef();
 
 	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType))
 		|| (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffDebuffType)))
@@ -72,10 +68,6 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 		case ECharacterDebuffType::E_Slow:
 			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed *= Variable;
 			characterStat.CharacterAtkSpeed *= Variable;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponAtkSpeedRate *= Variable;
-			}
 			break;
 		case ECharacterDebuffType::E_AttackDown:
 			characterStat.CharacterAtkMultiplier *= Variable;
@@ -95,6 +87,8 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 	/*---- 버프 타이머 세팅 ----------------------------*/
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("BUFF #4"));
+
 		Variable = 1.0f + FMath::Abs(Variable); //값 정제
 		characterState.CharacterBuffState |= (1 << (int)BuffDebuffType);
 
@@ -109,10 +103,6 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 			//----스탯 조정 버프-------------------
 		case ECharacterBuffType::E_AttackUp:
 			characterStat.CharacterAtkMultiplier *= Variable;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponDamageRate *= Variable;
-			}
 			break;
 		case ECharacterBuffType::E_DefenseUp:
 			characterStat.CharacterDefense *= Variable;
@@ -120,21 +110,13 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 		case ECharacterBuffType::E_SpeedUp:
 			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed *= Variable;
 			characterStat.CharacterAtkSpeed *= Variable;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponAtkSpeedRate *= Variable;
-			}
 			break;
 		case ECharacterBuffType::E_Invincibility:
 			characterStat.bIsInvincibility = true;
 			break;
-		case ECharacterBuffType::E_InfiniteAmmo:
-			if (characterStat.bInfiniteAmmo) return false; //스탯으로써 무한 탄약 능력을 갖고 있다면?
-			if (IsValid(characterWeaponRef))
-			{
-				characterStat.bInfiniteAmmo = true;
-				characterWeaponRef->SetInfiniteAmmoMode(true);
-			}
+		case ECharacterBuffType::E_Infinite:
+			if (characterStat.bInfinite) return false; //스탯으로써 무한 능력을 갖고 있다면?
+			characterStat.bInfinite = true;
 			break;
 		}
 		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
@@ -153,7 +135,6 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
 	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
-	AWeaponBase* characterWeaponRef = OwnerCharacterRef->GetWeaponActorRef();
 
 	if (bIsDebuff)
 	{
@@ -169,10 +150,6 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 		case ECharacterDebuffType::E_Slow:
 			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed = characterStat.CharacterMoveSpeed;
 			characterStat.CharacterAtkSpeed /= ResetVal;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponAtkSpeedRate /= ResetVal;
-			}
 			break;
 		case ECharacterDebuffType::E_Stun:
 			OwnerCharacterRef->ResetActionState();
@@ -180,10 +157,6 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			break;
 		case ECharacterDebuffType::E_AttackDown:
 			characterStat.CharacterAtkMultiplier /= ResetVal;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponDamageRate /= ResetVal;
-			}
 			break;
 		case ECharacterDebuffType::E_DefenseDown:
 			characterStat.CharacterDefense /= ResetVal;
@@ -204,36 +177,23 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			break;
 		case ECharacterBuffType::E_AttackUp:
 			characterStat.CharacterAtkMultiplier /= ResetVal;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponDamageRate /= ResetVal;
-			}
 			break;
 		case ECharacterBuffType::E_SpeedUp:
 			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed /= ResetVal;
 			characterStat.CharacterAtkSpeed /= ResetVal;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->WeaponStat.WeaponAtkSpeedRate /= ResetVal;
-			}
 			break;
 		case ECharacterBuffType::E_Invincibility:
 			characterStat.bIsInvincibility = false;
 			ClearAllBuffDebuffTimer(true);
 			break;
-		case ECharacterBuffType::E_InfiniteAmmo:
-			characterStat.bInfiniteAmmo = false;
-			if (IsValid(characterWeaponRef))
-			{
-				characterWeaponRef->SetInfiniteAmmoMode(false);
-			}
+		case ECharacterBuffType::E_Infinite:
+			characterStat.bInfinite = false;
 			break;
 		}
 	}
 	UE_LOG(LogTemp, Warning, TEXT("DEACTIVATE #00"));
 	OwnerCharacterRef->UpdateCharacterStat(characterStat);
 	OwnerCharacterRef->UpdateCharacterState(characterState);
-	ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
 void ACharacterBuffManager::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
@@ -257,9 +217,17 @@ void ACharacterBuffManager::ClearAllBuffDebuffTimer(bool bIsDebuff)
 	}
 }
 
+void ACharacterBuffManager::InitBuffManager(ACharacterBase* NewOwnerRef)
+{
+	if (!IsValid(NewOwnerRef)) return;
+	SetOwner(NewOwnerRef);
+	OwnerCharacterRef = NewOwnerRef;
+}
+
 bool ACharacterBuffManager::SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
+	UE_LOG(LogTemp, Warning, TEXT("BUFF #2"));
 	return SetBuffDebuffTimer(false, (uint8)BuffType, Causer, TotalTime, Variable);
 }
 

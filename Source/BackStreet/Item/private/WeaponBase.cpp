@@ -85,6 +85,7 @@ void AWeaponBase::StopAttack()
 
 void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 {
+	if (NewStat.MaxDurability == 0) return;
 	WeaponStat = NewStat;
 }
 
@@ -182,6 +183,7 @@ void AWeaponBase::AddMagazine(int32 Count)
 
 bool AWeaponBase::TryFireProjectile()
 {
+	if (!IsValid(OwnerCharacterRef)) return false;
 	if (WeaponState.CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
 	{
 		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
@@ -197,7 +199,7 @@ bool AWeaponBase::TryFireProjectile()
 	//스폰한 발사체가 Valid 하다면 발사
 	if (IsValid(newProjectile))
 	{
-		if (!WeaponStat.bIsInfiniteAmmo)
+		if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
 		{
 			WeaponState.CurrentAmmoCount -= 1;
 		}
@@ -219,7 +221,7 @@ float AWeaponBase::GetAttackRange()
 
 void AWeaponBase::UpdateDurabilityState()
 {
-	if (OwnerCharacterRef->GetCharacterStat().bInfiniteDurability) return;
+	if (OwnerCharacterRef->GetCharacterStat().bInfinite) return;
 	if (--WeaponState.CurrentDurability == 0)
 	{
 		if (IsValid(DestroyEffectParticle))

@@ -34,7 +34,7 @@ void ACharacterBase::BeginPlay()
 	{
 		GetInventoryRef()->SetOwner(this);
 		GetInventoryRef()->InitInventory();
-		BuffManagerRef->SetOwner(this);
+		BuffManagerRef->InitBuffManager(this);
 	}
 	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
@@ -59,12 +59,15 @@ void ACharacterBase::InitCharacterState()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 }
 
-void ACharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool ACharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	if (!IsValid(GetBuffManagerRef())) return;
+	if (!IsValid(GetBuffManagerRef())) return false;
 
-	if (!bIsDebuff) GetBuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, Causer, TotalTime, Value);
-	else GetBuffManagerRef()->SetDebuffTimer((ECharacterDebuffType)BuffDebuffType, Causer, TotalTime, Value);
+	UE_LOG(LogTemp, Warning, TEXT("BUFF #1"));
+
+	bool result = !bIsDebuff ? GetBuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, Causer, TotalTime, Value)
+							: GetBuffManagerRef()->SetDebuffTimer((ECharacterDebuffType)BuffDebuffType, Causer, TotalTime, Value);
+	return result;
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
@@ -88,6 +91,12 @@ void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
 void ACharacterBase::UpdateCharacterState(FCharacterStateStruct NewState)
 {
 	CharacterState = NewState;
+}
+
+void ACharacterBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
+{
+	if (!IsValid(GetWeaponActorRef())) return;
+	GetWeaponActorRef()->UpdateWeaponStat(NewStat);
 }
 
 void ACharacterBase::ResetActionState()
@@ -180,7 +189,7 @@ void ACharacterBase::TryAttack()
 
 	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
 
-	if (GetWeaponActorRef()->WeaponStat.WeaponType == EWeaponType::E_Shoot)
+	if (GetWeaponActorRef()->GetWeaponStat().WeaponType == EWeaponType::E_Shoot)
 	{
 		PlayAnimMontage(ShootAnimMontage, CharacterStat.CharacterAtkSpeed + 1.0f);
 	}
@@ -213,7 +222,7 @@ void ACharacterBase::TryReload()
 		return;
 	}
 
-	float reloadTime = GetWeaponActorRef()->WeaponStat.LoadingDelayTime;
+	float reloadTime = GetWeaponActorRef()->GetWeaponStat().LoadingDelayTime;
 	if (IsValid(ReloadAnimMontage))
 	{
 		PlayAnimMontage(ReloadAnimMontage);

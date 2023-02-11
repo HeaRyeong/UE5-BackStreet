@@ -66,7 +66,7 @@ public:
 
 	// 내구도 PROPERTY 추가
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bInfiniteDurability = false;
+		bool bInfinite = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int32 MaxDurability = 10;

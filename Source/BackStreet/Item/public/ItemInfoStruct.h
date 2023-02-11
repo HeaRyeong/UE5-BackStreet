@@ -95,7 +95,7 @@ public:
 		float WeaponDamage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bInfiniteDurability;
+		bool bInfinite;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int32 MaxDurability = 10;

@@ -219,9 +219,9 @@ void AMainCharacterBase::DropWeapon()
 	Super::DropWeapon();
 }
 
-void AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
+	if (!Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value)) return false;
 
 	if (DebuffSound && BuffSound)
 	{
@@ -229,6 +229,7 @@ void AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, 
 		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
 	}
 	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
+	return true;
 }
 
 void AMainCharacterBase::ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType)

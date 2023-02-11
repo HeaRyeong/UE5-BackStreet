@@ -81,7 +81,7 @@ public:
 protected: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	void AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+		virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 // -------- VFX -----------
 protected:

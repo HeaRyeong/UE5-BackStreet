@@ -128,8 +128,8 @@ void AWeaponInventoryBase::SyncCurrentWeaponInfo()
 		UE_LOG(LogTemp, Warning, TEXT("SyncCurrentWeaponInfo : Weapon Not Found"));
 		return;
 	}
-	InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->WeaponStat;
-	InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->WeaponState;
+	InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->GetWeaponStat();
+	InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->GetWeaponState();
 }
 
 AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)

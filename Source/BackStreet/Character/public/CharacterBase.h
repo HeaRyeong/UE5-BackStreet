@@ -71,7 +71,7 @@ public:
 		void InitCharacterState();
 
 	//캐릭터의 버프/디버프 정보를 업데이트
-	virtual	void AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+	virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -87,6 +87,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void UpdateCharacterState(FCharacterStateStruct NewState);
+
+	UFUNCTION(BlueprintCallable)
+		void UpdateWeaponStat(FWeaponStatStruct NewStat);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStatStruct GetCharacterStat() { return CharacterStat; }

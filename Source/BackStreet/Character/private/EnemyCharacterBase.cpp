@@ -42,9 +42,9 @@ void AEnemyCharacterBase::InitEnemyStat()
 	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
 }
 
-void AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
+	return Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -93,8 +93,8 @@ void AEnemyCharacterBase::SetDefaultWeapon()
 
 void AEnemyCharacterBase::SetDefaultStat()
 {
-	CharacterStat.bInfiniteAmmo = true;
-	CharacterStat.bInfiniteDurability = true;
+	CharacterStat.bInfinite = true;
+	CharacterStat.bInfinite = true;
 }
 
 void AEnemyCharacterBase::Turn(float Angle)

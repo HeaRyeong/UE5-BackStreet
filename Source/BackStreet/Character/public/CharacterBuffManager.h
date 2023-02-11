@@ -25,7 +25,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public: 
 	//버프와 디버프를 건다
 	UFUNCTION()
 		bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
@@ -37,16 +36,20 @@ public:
 	//특정 Buff/Debuff의 타이머를 해제한다.
 	UFUNCTION()
 		void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
-	
-	//모든 Buff/Debuff의 타이머를 해제
+
+public: 
 	UFUNCTION()
-		void ClearAllBuffDebuffTimer(bool bIsDebuff);
+		void InitBuffManager(class ACharacterBase* NewOwnerRef);
 
 	UFUNCTION(BlueprintCallable)
 		bool SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
 
 	UFUNCTION(BlueprintCallable)
 		bool SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+
+	//모든 Buff/Debuff의 타이머를 해제
+	UFUNCTION()
+		void ClearAllBuffDebuffTimer(bool bIsDebuff);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION()
