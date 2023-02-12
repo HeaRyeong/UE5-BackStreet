@@ -32,23 +32,21 @@ public:
 	UFUNCTION()
 		void OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+		void InitGate();
 public:
 	//새 타일을 로드 / 기존 타일을 언로드 한다.
 	UFUNCTION()
 		void UpdateNewTile();
 
-	// return 언로드시킬 level instance
-	UFUNCTION(BlueprintCallable)
-		ULevelStreaming* UpdateGateInfo();
-
 	UFUNCTION(BlueprintCallable)
 		void CheckHaveToActive();
 
-private:
-	//언로드시킬 현재의 타일
+public:
 	UPROPERTY()
-		class ATileBase* CurrTileRef;
+		bool bIsInit = false;
 
+private:
 
 //----------- 레벨 시퀀스 관련 ----------
 public:

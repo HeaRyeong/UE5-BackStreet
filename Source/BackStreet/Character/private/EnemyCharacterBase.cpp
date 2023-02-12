@@ -27,8 +27,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	TileRef = GamemodeRef->CurrentTile;
-
+	
 	SetDefaultWeapon();
 	SetDefaultStat();
 	InitFloatingHpWidget();	
@@ -36,7 +35,6 @@ void AEnemyCharacterBase::BeginPlay()
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-
 	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
 }
 

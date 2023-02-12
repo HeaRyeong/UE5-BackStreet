@@ -32,60 +32,33 @@ protected:
 
 //---------- StageManager? -------------------------------------
 public:
-	UFUNCTION(BlueprintCallable)
-		void InitChapter();
-
-	UFUNCTION(BlueprintCallable)
-		void NextStage(uint8 Dir);
-
-	UFUNCTION(BlueprintCallable)
-		void MoveTile(uint8 NextDir);
-
-	UFUNCTION(BlueprintCallable)
-		void ClearChapter();
+	UFUNCTION()
+		void StartGame();
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateMiniMapUI();
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class AGridBase* Chapter;
+	UPROPERTY()
+		class AChapterManagerBase* ChapterManager;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ATileBase* CurrentTile;
 
-	// 남은 챕터 수 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int32 RemainChapter;
+// Asset
 
-	// 다음 스테이지 기준으로 입구 게이트
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		uint8 PreDir = (uint8)(EDirection::E_DOWN);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float ChapterStatValue;
-
-//----- Asset관련--------------------------------------
 public:
 	UFUNCTION()
 		void CreateAssetManager();
 
 	UFUNCTION(BlueprintCallable)
-		AAssetManagerBase* GetAssetManager();
+		AAssetManagerBase* GetAssetManager() { return AssetManager; }
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		AAssetManagerBase* AssetDataManager;
+		TSubclassOf<class AAssetManagerBase> AssetManagerBP;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-		FSoftObjectPath AssetManagerBPPath;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class AAssetManagerBase* AssetManager;
 
-	TSharedPtr<struct FStreamableHandle> AssetStreamingHandle;
-
-	FStreamableManager StreamableManager /*= FStreamableManager()*/;
-
-	UPROPERTY(BlueprintReadWrite)
-		bool bIsGamePaused = false;
 
 // ----- Gameplay Manager -------------------
 public:
@@ -120,6 +93,9 @@ public:
 	UFUNCTION()
 		FWeaponStatStruct GetWeaponStatInfoWithID(const uint8 WeaponID);
 
+	UFUNCTION()
+		FStageEnemyTypeStruct GetStageTypeInfoWithRow(uint16 rowName);
+
 protected:
 	//적의 스탯 테이블
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
@@ -133,8 +109,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
 		UDataTable* ProjectileStatTable;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
+		UDataTable* StageTypeTable;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
 		TArray<TSubclassOf<UCameraShakeBase> > CameraShakeEffectList;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool bIsGamePaused = false;
 
 //------ Ref 멤버 ---------------
 private:

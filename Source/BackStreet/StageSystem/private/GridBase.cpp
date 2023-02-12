@@ -2,14 +2,12 @@
 #include "../public/GridBase.h"
 #include "../public/TileBase.h"
 
-void AGridBase::CreateMaze(int32 WidthPara, int32 HightPara)
+void AGridBase::CreateMaze()
 {
-	Width = WidthPara;
-	Hight = HightPara;
 	UWorld* world = GetWorld();
-	for (int y = 0; y < HightPara; y++)
+	for (int y = 0; y < ChapterSize; y++)
 	{
-		for (int x = 0; x < WidthPara; x++)
+		for (int x = 0; x < ChapterSize; x++)
 		{
 			FActorSpawnParameters spawnParams;
 			FRotator rotator;
@@ -24,47 +22,20 @@ void AGridBase::CreateMaze(int32 WidthPara, int32 HightPara)
 
 	// starting point
 	Tracks.Add(StageArray[0]);
-	CurrentTile = StageArray[0];
 	RecursiveBacktracking();
 
-	// 미션 타일 뽑기 ( 메인 3 , 보스 1 )
-	TArray<int32> MissionTileidxList;
-
-	for (int i = 0; i < Width * Hight; i++)
-	{
-		MissionTileidxList.Add(i);
-	}
-
-	for (int i = 0; i < 100; i++)
-	{
-		int32 SelectidxA = FMath::RandRange(0, Width*Hight -1);
-		int32 SelectidxB = FMath::RandRange(0, Width * Hight - 1);
-		int32 Temp;
-	
-		Temp = MissionTileidxList[SelectidxA];
-		MissionTileidxList[SelectidxA] = MissionTileidxList[SelectidxB];
-		MissionTileidxList[SelectidxB] = Temp;
-	}
-
-
-	for (int i = 0; i < 4; i++)
-	{
-		if (i == 0)
-		{
-			UE_LOG(LogTemp, Log, TEXT("[Grid::CreateMaze()] BossMissionTildidx : %d"), MissionTileidxList[i]);
-			MissionStageArray.Add(StageArray[MissionTileidxList[0]]);
-			StageArray[MissionTileidxList[0]]->InitMission(true);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("[Grid::CreateMaze()] MissionTildidx : %d"), MissionTileidxList[i]);
-			MissionStageArray.Add(StageArray[MissionTileidxList[i]]);
-			StageArray[MissionTileidxList[i]]->InitMission(false);
-		}
-	}
-
-
 }
+
+void AGridBase::RemoveChapter()
+{
+	for (ATileBase* tile : StageArray)
+	{
+		if (!IsValid(tile)) continue;
+		tile->Destroy();
+	}
+	Destroy();
+}
+
 
 void AGridBase::RecursiveBacktracking()
 {
@@ -107,33 +78,6 @@ ATileBase* AGridBase::GetRandomNeighbourTile(ATileBase* Tile)
 	return neighbourTiles[ItemType];
 }
 
-ATileBase* AGridBase::MoveCurrentTile(uint8 Dir)
-{
-	switch ((EDirection)Dir)
-	{
-	case EDirection::E_UP:
-		CurrentTile = GetTile(CurrentTile->XPos, CurrentTile->YPos + 1);
-		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
-		break;
-	case EDirection::E_DOWN:
-		CurrentTile = GetTile(CurrentTile->XPos, CurrentTile->YPos - 1);
-		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
-		break;
-	case EDirection::E_LEFT:
-		CurrentTile = GetTile(CurrentTile->XPos - 1, CurrentTile->YPos);
-		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
-		break;
-	case EDirection::E_RIGHT:
-		CurrentTile = GetTile(CurrentTile->XPos + 1, CurrentTile->YPos);
-		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
-		break;
-	default:
-		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
-		break;
-	}
-	return CurrentTile;
-}
-
 void AGridBase::VisitTile(ATileBase* CurrentTilePara, ATileBase* NextTilePara)
 {
 	if (CurrentTilePara->XPos < NextTilePara->XPos)
@@ -162,33 +106,13 @@ void AGridBase::VisitTile(ATileBase* CurrentTilePara, ATileBase* NextTilePara)
 
 ATileBase* AGridBase::GetTile(int32 XPosition, int32 YPosition)
 {
-	if (XPosition >= 0 && XPosition < Width && YPosition >= 0 && YPosition < Hight)
+	if (XPosition >= 0 && XPosition < ChapterSize && YPosition >= 0 && YPosition < ChapterSize)
 	{
-		return (StageArray[(YPosition * Width) + XPosition]);
+		return (StageArray[(YPosition * ChapterSize) + XPosition]);
 	}
 
 	return nullptr;
 }
 
-ATileBase* AGridBase::GetCurrentTile()
-{
-	return CurrentTile;
-}
 
-void AGridBase::RemoveChapter()
-{
-	for (ATileBase* tile : StageArray)
-	{
-		if (!IsValid(tile)) continue;
-		tile->Destroy();
-	}
-	Destroy();
-}
 
-void AGridBase::CheckChapterClear()
-{
-	if (Missions.IsEmpty())
-	{
-		bIsChapterClear = true;
-	}
-}
