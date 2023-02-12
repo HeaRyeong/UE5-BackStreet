@@ -30,9 +30,6 @@ public:
 
 // ----- 기본 함수들 ------
 public:
-	// 소속 타일
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ATileBase* TileRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Gameplay")
 		int32 EnemyID;

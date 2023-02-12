@@ -62,9 +62,6 @@ public:
 // ------ 참조 프로퍼티 ---------------------------------------------
 private:
 	UPROPERTY(VisibleDefaultsOnly)
-		class ATileBase* TileRef;
-
-	UPROPERTY(VisibleDefaultsOnly)
 		class ABackStreetGameModeBase* GameModeRef;
 
 	UPROPERTY(VisibleDefaultsOnly)

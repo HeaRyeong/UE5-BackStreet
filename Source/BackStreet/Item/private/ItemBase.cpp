@@ -4,10 +4,10 @@
 #include "../../StageSystem/public/MissionBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../StageSystem/public//ChapterManagerBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -76,8 +76,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		case EItemCategoryInfo::E_StatUp:
 			break;
 		case EItemCategoryInfo::E_Mission:
-			TileRef->MissionInfo->ItemList.Remove(this);
-			TileRef->MissionInfo->ClearCheck();
+			GameModeRef->ChapterManager->RemoveMissionItem(this);
 			Destroy();
 			break;
 		default:
@@ -86,17 +85,10 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 	}
 }
 
-void AItemBase::InitItem(EItemCategoryInfo SetType)
+void AItemBase::InitItem(EItemCategoryInfo setType)
 {
-	TileRef = GameModeRef->CurrentTile;
-	AssetManagerRef = GameModeRef->AssetDataManager;
+	Type = setType;
 
-	Type = SetType;
-
-	if (SetType == EItemCategoryInfo::E_Mission)
-	{
-		TileRef->MissionInfo->ItemList.AddUnique(this);
-	}
 }
 
 void AItemBase::SelectWeapon()
