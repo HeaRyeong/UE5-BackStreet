@@ -10,6 +10,7 @@
 #define MAX_DEBUFF_IDX 7
 #define HEAL_BUFF_TIMER_IDX 6
 #define DEBUFF_DAMAGE_TIMER_IDX 15
+#define MAX_BUFF_INFO_LIST_IDX 24
 
 ACharacterBuffManager::ACharacterBuffManager()
 {
@@ -20,17 +21,17 @@ ACharacterBuffManager::ACharacterBuffManager()
 void ACharacterBuffManager::BeginPlay()
 {
 	Super::BeginPlay();
-	for (int newTimerIdx = 0; newTimerIdx < 18; newTimerIdx += 1)
+
+	for (int newTimerIdx = 0; newTimerIdx <= MAX_BUFF_INFO_LIST_IDX; newTimerIdx += 1)
 	{
 		BuffDebuffTimerHandleList.Add(FTimerHandle());
+		BuffDebuffResetValueList.Add(0.0f);
 	}
 }
 
 bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
-
-	UE_LOG(LogTemp, Warning, TEXT("BUFF #3"));
 
 	FTimerDelegate timerDelegate;
 	FTimerHandle& timerHandle = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
@@ -41,10 +42,12 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 	if ((bIsDebuff && GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType))
 		|| (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffDebuffType)))
 	{
-		const float newTime = GetWorldTimerManager().GetTimerRemaining(timerHandle) + TotalTime;
-		GetWorldTimerManager().SetTimer(timerHandle, 1.0f, false, newTime);
-		return true;
+		float& resetValue = BuffDebuffResetValueList[GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType)];
+		ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, resetValue);
+		resetValue = 0.0f;
+		return SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
 	}
+
 	/*---- 디버프 타이머 세팅 ----------------------------*/
 	if (bIsDebuff)
 	{
@@ -76,8 +79,11 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 			characterStat.CharacterDefense *= Variable;
 			break;
 		}
+		BuffDebuffResetValueList[GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType)] = Variable;
+
 		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 0.1f, false, TotalTime);
+
 		OwnerCharacterRef->UpdateCharacterStat(characterStat);
 		OwnerCharacterRef->UpdateCharacterState(characterState);
 
@@ -87,8 +93,6 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 	/*---- 버프 타이머 세팅 ----------------------------*/
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BUFF #4"));
-
 		Variable = 1.0f + FMath::Abs(Variable); //값 정제
 		characterState.CharacterBuffState |= (1 << (int)BuffDebuffType);
 
@@ -119,8 +123,11 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 			characterStat.bInfinite = true;
 			break;
 		}
+		BuffDebuffResetValueList[GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType)] = Variable;
+
 		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
 		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 0.1f, false, TotalTime);
+
 		OwnerCharacterRef->UpdateCharacterStat(characterStat);
 		OwnerCharacterRef->UpdateCharacterState(characterState);
 
@@ -132,7 +139,6 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
 	if (!IsValid(OwnerCharacterRef)) return;
-
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
 	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
 
@@ -191,15 +197,14 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			break;
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("DEACTIVATE #00"));
 	OwnerCharacterRef->UpdateCharacterStat(characterStat);
 	OwnerCharacterRef->UpdateCharacterState(characterState);
+	ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
 void ACharacterBuffManager::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	if (!IsValid(OwnerCharacterRef)) return;
-	BuffEmitterDeactivateDelegate.Broadcast();
 	GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType));
 }
 
@@ -207,9 +212,6 @@ void ACharacterBuffManager::ClearAllBuffDebuffTimer(bool bIsDebuff)
 {
 	const uint16 startIdx = bIsDebuff ? MAX_BUFF_IDX + 2 : 0;
 	const uint16 endIdx = bIsDebuff ? startIdx + MAX_DEBUFF_IDX : MAX_BUFF_IDX + 1;
-
-	UE_LOG(LogTemp, Warning, TEXT("DEACTIVATE #01"));
-	BuffEmitterDeactivateDelegate.Broadcast();
 	
 	for (uint16 timerIdx = startIdx; timerIdx <= endIdx; timerIdx++)
 	{
@@ -227,7 +229,6 @@ void ACharacterBuffManager::InitBuffManager(ACharacterBase* NewOwnerRef)
 bool ACharacterBuffManager::SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
-	UE_LOG(LogTemp, Warning, TEXT("BUFF #2"));
 	return SetBuffDebuffTimer(false, (uint8)BuffType, Causer, TotalTime, Variable);
 }
 
@@ -259,7 +260,12 @@ float ACharacterBuffManager::GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebu
 
 FTimerHandle& ACharacterBuffManager::GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType)
 {
-	int16 targetListIdx = bIsDebuff ? BuffDebuffType + MAX_BUFF_IDX + 1 : BuffDebuffType;
-	targetListIdx = BuffDebuffTimerHandleList.IsValidIndex(targetListIdx) ? targetListIdx : 0;
-	return BuffDebuffTimerHandleList[targetListIdx];
+	int16 targetListIdx = GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType);
+	return BuffDebuffTimerHandleList.IsValidIndex(targetListIdx) ? BuffDebuffTimerHandleList[targetListIdx]
+																	: BuffDebuffTimerHandleList[MAX_BUFF_INFO_LIST_IDX];
+}
+
+int16 ACharacterBuffManager::GetBuffDebuffInfoListIndex(bool bIsDebuff, uint8 BuffDebuffType)
+{
+	return bIsDebuff ? BuffDebuffType + MAX_BUFF_IDX + 1 : BuffDebuffType;
 }

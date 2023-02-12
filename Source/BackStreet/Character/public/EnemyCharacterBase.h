@@ -85,6 +85,12 @@ protected:
 	UFUNCTION()
 		void SetDefaultStat();
 
+// ---- VFX ---------------------
+public:
+	UFUNCTION(BlueprintCallable)
+		void SetFacialMaterialEffect(bool NewState);
+
+
 // ---- 그 외 (위젯, 사운드 등) ----
 public:
 	UFUNCTION(BlueprintImplementableEvent)

@@ -33,6 +33,8 @@ void AEnemyCharacterBase::BeginPlay()
 	SetDefaultStat();
 	InitFloatingHpWidget();	
 	InitEnemyStat();
+
+	InitDynamicMeshMaterial(GetMesh()->GetMaterial(0));
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
@@ -95,6 +97,15 @@ void AEnemyCharacterBase::SetDefaultStat()
 {
 	CharacterStat.bInfinite = true;
 	CharacterStat.bInfinite = true;
+}
+
+void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)
+{
+	if (CurrentDynamicMaterial == nullptr) return;
+
+	CurrentDynamicMaterial->SetScalarParameterValue(FName("EyeBrightness"), NewState ? 5.0f : 35.0f);
+	CurrentDynamicMaterial->SetVectorParameterValue(FName("EyeColor"), NewState ? FColor::Red : FColor::Yellow);
+	InitDynamicMeshMaterial(CurrentDynamicMaterial);
 }
 
 void AEnemyCharacterBase::Turn(float Angle)

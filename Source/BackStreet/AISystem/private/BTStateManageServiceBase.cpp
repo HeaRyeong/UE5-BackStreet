@@ -54,13 +54,11 @@ void UBTStateManageServiceBase::UpdateAIState()
 	}
 	else if (CheckChaseState())
 	{
+		AIBehaviorState = EAIBehaviorType::E_Chase;
+
 		if (CheckAttackState())
 		{
 			AIBehaviorState = EAIBehaviorType::E_Attack;
-		}
-		else
-		{
-			AIBehaviorState = EAIBehaviorType::E_Chase;
 		}
 	}
 	else
@@ -90,6 +88,8 @@ bool UBTStateManageServiceBase::CheckChaseState()
 
 bool UBTStateManageServiceBase::CheckAttackState()
 {
+	if(!BlackboardRef->GetValueAsBool(FName("ReadyToAttack"))) return false;
+
 	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
 	AWeaponBase* weaponActorRef = OwnerCharacterRef->GetWeaponActorRef();
 	

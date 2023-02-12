@@ -26,7 +26,7 @@ protected:
 // ------- 컴포넌트 ----------
 public:
 	//플레이어 메인 카메라 붐
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		USpringArmComponent* CameraBoom;
 
 	//플레이어의 메인 카메라
@@ -43,6 +43,9 @@ public:
 
 	UFUNCTION()
 		void Roll();
+
+	UFUNCTION()
+		void ZoomIn(float Value);
 
 	UFUNCTION()
 		virtual void TryReload() override;
@@ -97,13 +100,34 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		TArray<class UNiagaraSystem*> DebuffNiagaraEffectList;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		class UMaterialInterface* NormalMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		class UMaterialInterface* WallThroughMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		TArray<class UTexture*> EmotionTextureList;
+
+private:
+	UPROPERTY()
+		bool bIsWallThroughEffectActivated = false;
+
 	UFUNCTION()
 		void ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType);
 
 	UFUNCTION()
 		void DeactivateBuffEffect();
 
+	UFUNCTION()
+		void UpdateWallThroughEffect();
+
+	//캐릭터가 데미지를 입을 시, 빨간 Pulse 효과와 표정 텍스쳐 효과를 적용
+	UFUNCTION()
+		void SetFacialDamageEffect(bool NewState);
+
 // -------- Sound ----------------
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class UAudioComponent* AudioComponent;
 
@@ -140,4 +164,12 @@ private:
 	//구르기 딜레이 타이머
 	UPROPERTY()
 		FTimerHandle RollTimerHandle;
+
+	//버프 나이아가라 이펙트 리셋 타이머
+	UPROPERTY()
+		FTimerHandle BuffEffectResetTimerHandle;
+
+	//캐릭터 얼굴 효과 (머티리얼 값 변경) 리셋 타이머
+	UPROPERTY()
+		FTimerHandle FacialEffectResetTimerHandle;
 };

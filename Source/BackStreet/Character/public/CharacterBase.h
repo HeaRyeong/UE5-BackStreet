@@ -126,6 +126,14 @@ public:
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
+// ----- VFX -------------------
+protected:
+	UFUNCTION()
+		void InitDynamicMeshMaterial(UMaterialInterface* NewMaterial);
+
+	UPROPERTY()
+		class UMaterialInstanceDynamic* CurrentDynamicMaterial;
+
 // ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")

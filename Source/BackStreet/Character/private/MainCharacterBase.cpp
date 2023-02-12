@@ -9,12 +9,16 @@
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
+#define MAX_CAMERA_BOOM_LENGTH 1450.0f
+#define MIN_CAMERA_BOOM_LENGTH 250.0f
 
 // Sets default values
 AMainCharacterBase::AMainCharacterBase()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	SetActorTickInterval(0.1f);
+
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CAMERA_BOOM"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->bUsePawnControlRotation = true;
@@ -56,17 +60,14 @@ void AMainCharacterBase::BeginPlay()
 	
 	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
-	if (IsValid(GetBuffManagerRef()))
-	{
-		GetBuffManagerRef()->BuffEmitterDeactivateDelegate.AddDynamic(this, &AMainCharacterBase::DeactivateBuffEffect);
-	}
+	InitDynamicMeshMaterial(NormalMaterial);
 }
 
 // Called every frame
 void AMainCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	UpdateWallThroughEffect();
 }
 
 // Called to bind functionality to input
@@ -77,6 +78,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	//Set up "movement" bindings.
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacterBase::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacterBase::MoveRight);
+	PlayerInputComponent->BindAxis("ZoomIn", this, &AMainCharacterBase::ZoomIn);
 	
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
@@ -122,6 +124,16 @@ void AMainCharacterBase::Roll()
 	PlayAnimMontage(RollAnimMontage, CharacterStat.CharacterMoveSpeed / 450.0f);
 }
 
+void AMainCharacterBase::ZoomIn(float Value)
+{
+	if (Value == 0.0f) return;
+	float newLength = CameraBoom->TargetArmLength;
+	newLength = newLength + Value * 25.0f;
+	newLength = newLength < MIN_CAMERA_BOOM_LENGTH ? MIN_CAMERA_BOOM_LENGTH : newLength;
+	newLength = newLength > MAX_CAMERA_BOOM_LENGTH ? MAX_CAMERA_BOOM_LENGTH : newLength;
+	CameraBoom->TargetArmLength = newLength;
+}
+
 void AMainCharacterBase::TryReload()
 {
 	Super::TryReload();
@@ -134,8 +146,14 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	if (damageAmount > 0.0f && DamageCauser->ActorHasTag("Enemy"))
 	{
 		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, GetActorLocation());
-	}
 
+		SetFacialDamageEffect(true);
+
+		GetWorld()->GetTimerManager().ClearTimer(FacialEffectResetTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(FacialEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			SetFacialDamageEffect(false);
+		}), 1.0f, false, 1.0f);
+	}
 	return damageAmount;
 }
 
@@ -229,6 +247,12 @@ bool AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, 
 		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
 	}
 	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
+
+	GetWorld()->GetTimerManager().ClearTimer(BuffEffectResetTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(BuffEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
+		DeactivateBuffEffect();
+	}), TotalTime, false);
+
 	return true;
 }
 
@@ -251,10 +275,47 @@ void AMainCharacterBase::DeactivateBuffEffect()
 	BuffNiagaraEmitter->Deactivate(); 
 }
 
+void AMainCharacterBase::UpdateWallThroughEffect()
+{
+	FHitResult hitResult;
+	const FVector& traceBeginPos = FollowingCamera->GetComponentLocation();
+	const FVector& traceEndPos = GetMesh()->GetComponentLocation();
+	
+	GetWorld()->LineTraceSingleByChannel(hitResult, traceBeginPos, traceEndPos, ECollisionChannel::ECC_Camera);
+
+	if (hitResult.bBlockingHit && IsValid(hitResult.GetActor()))
+	{
+		if(!hitResult.GetActor()->ActorHasTag("Player") && !bIsWallThroughEffectActivated)
+		{
+			InitDynamicMeshMaterial(WallThroughMaterial);
+			bIsWallThroughEffectActivated = true;
+		}
+		else if(hitResult.GetActor()->ActorHasTag("Player") && bIsWallThroughEffectActivated)
+		{
+			InitDynamicMeshMaterial(NormalMaterial);
+			bIsWallThroughEffectActivated = false;
+		}
+	}
+}
+
+void AMainCharacterBase::SetFacialDamageEffect(bool NewState)
+{
+	UMaterialInstanceDynamic* currMaterial = CurrentDynamicMaterial;
+	
+	if (currMaterial != nullptr && EmotionTextureList.Num() >= 3)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FacialEffect"));
+		currMaterial->SetTextureParameterValue(FName("BaseTexture"), EmotionTextureList[(uint8)(NewState ? EEmotionType::E_Angry : EEmotionType::E_Idle)]);
+		currMaterial->SetScalarParameterValue(FName("bIsDamaged"), (float)NewState);
+	}
+}
+
 void AMainCharacterBase::ClearAllTimerHandle()
 {
 	Super::ClearAllTimerHandle();
 
+	GetWorldTimerManager().ClearTimer(BuffEffectResetTimerHandle);
+	GetWorldTimerManager().ClearTimer(FacialEffectResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(RotationResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(RollTimerHandle); 
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);

@@ -63,8 +63,6 @@ bool ACharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AAct
 {
 	if (!IsValid(GetBuffManagerRef())) return false;
 
-	UE_LOG(LogTemp, Warning, TEXT("BUFF #1"));
-
 	bool result = !bIsDebuff ? GetBuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, Causer, TotalTime, Value)
 							: GetBuffManagerRef()->SetDebuffTimer((ECharacterDebuffType)BuffDebuffType, Causer, TotalTime, Value);
 	return result;
@@ -116,11 +114,11 @@ void ACharacterBase::ResetActionState()
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator
 								, AActor* DamageCauser)
 {
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
 	DamageAmount = DamageAmount - DamageAmount * CharacterStat.CharacterDefense;
 	if (DamageAmount <= 0.0f || !IsValid(DamageCauser)) return 0.0f;
 	if (CharacterStat.bIsInvincibility) return 0.0f;
-
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	CharacterState.CharacterCurrHP = CharacterState.CharacterCurrHP - DamageAmount;
 	CharacterState.CharacterCurrHP = FMath::Max(0.0f, CharacterState.CharacterCurrHP);
@@ -239,6 +237,16 @@ void ACharacterBase::ResetAtkIntervalTimer()
 {
 	CharacterState.bCanAttack = true;
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
+}
+
+void ACharacterBase::InitDynamicMeshMaterial(UMaterialInterface* NewMaterial)
+{
+	if (NewMaterial == nullptr) return;
+
+	for (int8 matIdx = 0; matIdx < GetMesh()->GetNumMaterials(); matIdx += 1)
+	{
+		CurrentDynamicMaterial = GetMesh()->CreateDynamicMaterialInstance(matIdx, NewMaterial);
+	}
 }
 
 bool ACharacterBase::EquipWeapon(AWeaponBase* TargetWeapon)

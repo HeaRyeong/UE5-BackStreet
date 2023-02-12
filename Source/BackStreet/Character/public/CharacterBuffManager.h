@@ -8,8 +8,6 @@
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateBuffEnd);
-
 UCLASS()
 class BACKSTREET_API ACharacterBuffManager : public AActor
 {
@@ -17,9 +15,6 @@ class BACKSTREET_API ACharacterBuffManager : public AActor
 public:
 	// Sets default values for this character's properties
 	ACharacterBuffManager();
-
-	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateBuffEnd BuffEmitterDeactivateDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -67,6 +62,9 @@ public:
 	UFUNCTION()
 		FTimerHandle& GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType);
 
+	UFUNCTION()
+		int16 GetBuffDebuffInfoListIndex(bool bIsDebuff, uint8 BuffDebuffType);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		ACharacterBuffManager* GetCharacterBuffManager() { return this; }
 
@@ -76,4 +74,7 @@ private:
 
 	UPROPERTY()
 		TArray<FTimerHandle> BuffDebuffTimerHandleList;
+
+	UPROPERTY()
+		TArray<float> BuffDebuffResetValueList;
 };

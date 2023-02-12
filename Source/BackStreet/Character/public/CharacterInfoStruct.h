@@ -4,6 +4,14 @@
 #include "CharacteInfoEnum.h"
 #include "CharacterInfoStruct.generated.h"
 
+UENUM(BlueprintType)
+enum class EEmotionType : uint8
+{
+	E_Idle				UMETA(DisplayName = "Idle"),
+	E_Angry				UMETA(DisplayName = "Angry"),
+	E_Death				UMETA(DisplayName = "Death")
+};
+
 USTRUCT(BlueprintType)
 struct FCharacterStatStruct : public FTableRowBase
 {
