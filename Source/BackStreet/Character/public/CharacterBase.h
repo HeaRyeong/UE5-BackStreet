@@ -57,7 +57,7 @@ public:
 		void ResetActionState();
 
 	//디버프 데미지를 입힘 (일회성)
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
 
 	//플레이어가 체력을 회복함 (일회성)

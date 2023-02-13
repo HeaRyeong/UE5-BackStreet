@@ -27,8 +27,8 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	TileRef = GamemodeRef->CurrentTile;
-
+	
+	SpawnDefaultController();
 	SetDefaultWeapon();
 	SetDefaultStat();
 	InitFloatingHpWidget();	
