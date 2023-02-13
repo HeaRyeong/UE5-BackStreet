@@ -30,35 +30,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-//---------- StageManager? -------------------------------------
-public:
-	UFUNCTION()
-		void StartGame();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void UpdateMiniMapUI();
-
-public:
-	UPROPERTY()
-		class AChapterManagerBase* ChapterManager;
-
-
-// Asset
-
-public:
-	UFUNCTION()
-		void CreateAssetManager();
-
-	UFUNCTION(BlueprintCallable)
-		AAssetManagerBase* GetAssetManager() { return AssetManager; }
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSubclassOf<class AAssetManagerBase> AssetManagerBP;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class AAssetManagerBase* AssetManager;
-
 
 // ----- Gameplay Manager -------------------
 public:

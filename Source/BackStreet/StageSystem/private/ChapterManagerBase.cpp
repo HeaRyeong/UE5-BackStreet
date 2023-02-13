@@ -102,18 +102,18 @@ void AChapterManagerBase::CreateMission()
 			Missions.AddUnique(target);
 			target->InitMission(stageRef[MissionTileidxList[0]], 3);
 			stageRef[MissionTileidxList[0]]->SetMission(target);
-		
+			
 		}
 		else
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Grid::CreateMaze()] MissionTildidx : %d"), MissionTileidxList[i]);
-			stageRef[MissionTileidxList[0]]->SetStageType(EStageCategoryInfo::E_Mission);
+			stageRef[MissionTileidxList[i]]->SetStageType(EStageCategoryInfo::E_Mission);
 			Missions.AddUnique(NewObject<UMissionBase>(this));
 			target = NewObject<UMissionBase>(this);
 			Missions.AddUnique(target);
 			int8 type = FMath::RandRange(1,2);
-			target->InitMission(stageRef[MissionTileidxList[0]], type);
-			stageRef[MissionTileidxList[0]]->SetMission(target);
+			target->InitMission(stageRef[MissionTileidxList[i]], type);
+			stageRef[MissionTileidxList[i]]->SetMission(target);
 		}
 	}
 }

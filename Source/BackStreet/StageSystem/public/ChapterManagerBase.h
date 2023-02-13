@@ -8,7 +8,7 @@
 // Chapter °¹¼ö
 
 #define ChapterNumber 2 
-#define MaxMission 4
+#define MaxMission 2
 
 UCLASS()
 class BACKSTREET_API AChapterManagerBase : public AActor
@@ -55,7 +55,7 @@ public:
 	UFUNCTION()
 		int8 GetChapterLV() { return ChapterLV; }
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		AStageManagerBase* GetStageManager() { return StageManager; }
 
 private:

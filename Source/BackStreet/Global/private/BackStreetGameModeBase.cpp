@@ -16,14 +16,12 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Character/EnemyCharacter/Data/D_EnemyStatDataTable.D_EnemyStatDataTable"));
 	if (DataTable.Succeeded())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyStatDataTable Succeed!"));
 		EnemyStatTable = DataTable.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> StageTypeDataTable(TEXT("/Game/Map/Stages/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
 	if (StageTypeDataTable.Succeeded())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DataTable Succeed!"));
 		StageTypeTable = StageTypeDataTable.Object;
 	}
 
@@ -37,39 +35,17 @@ void ABackStreetGameModeBase::BeginPlay()
 	//------ Ref 멤버 초기화  ---------------
 	PlayerCharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	//------ Game 시작 -----------
-	StartGame();
-}
-
-void ABackStreetGameModeBase::StartGame()
-{
-	FActorSpawnParameters spawnParams;
-	FRotator rotator;
-	FVector spawnLocation = FVector::ZeroVector;
-
-	if(AssetManager == nullptr)
-		CreateAssetManager();
-
-	ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
-	ChapterManager->InitChapterManager();
-	StartChapter();
-}
-
-
-void ABackStreetGameModeBase::CreateAssetManager()
-{
-	AssetManager = GetWorld()->SpawnActor<AAssetManagerBase>(AssetManagerBP, FVector::ZeroVector, FRotator::ZeroRotator);
-
 }
 
 
 void ABackStreetGameModeBase::StartChapter()
 {
 	FTimerHandle delegateBindDelayTimer;
-	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([&]()
-	{
-		StartChapterDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
-	}));
+	GetWorldTimerManager().SetTimer(delegateBindDelayTimer, FTimerDelegate::CreateLambda([&]()
+		{
+			StartChapterDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
+		}), 0.1f, false, 0.5f);
+
 }
 
 void ABackStreetGameModeBase::RewardStageClear(EStatUpCategoryInfo RewardType)

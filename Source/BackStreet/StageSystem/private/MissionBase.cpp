@@ -8,6 +8,7 @@
 #include "../public/ChapterManagerBase.h"
 #include "../public/TileBase.h"
 #include "../public/GridBase.h"
+#include "../public/ALevelScriptInGame.h"
 
 // Sets default values
 UMissionBase::UMissionBase()
@@ -19,7 +20,8 @@ UMissionBase::UMissionBase()
 
 void UMissionBase::InitMission(ATileBase* tile, int8 type)
 {
-	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	//GameModeRef = Cast<AALevelScriptInGame>(UGameplayStatics::GetGameMode(GetWorld()));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 	UE_LOG(LogTemp, Log, TEXT("Call InitMission "));
 	BelongTile = tile;
 	Type = type;
@@ -33,7 +35,7 @@ bool UMissionBase::ClearCheck()
 		if (ItemList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
-			GameModeRef->ChapterManager->RemoveMission(this);
+			InGameScriptRef->ChapterManager->RemoveMission(this);
 			return true;
 		}
 		else
@@ -43,7 +45,7 @@ bool UMissionBase::ClearCheck()
 		if (MonsterList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
-			GameModeRef->ChapterManager->RemoveMission(this);
+			InGameScriptRef->ChapterManager->RemoveMission(this);
 			return true;
 		}
 		else
@@ -53,7 +55,7 @@ bool UMissionBase::ClearCheck()
 		if (MonsterList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
-			GameModeRef->ChapterManager->RemoveMission(this);
+			InGameScriptRef->ChapterManager->RemoveMission(this);
 			return true;
 		}
 		else

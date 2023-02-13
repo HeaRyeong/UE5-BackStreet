@@ -42,6 +42,6 @@ public:
 		class ATileBase* BelongTile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class ABackStreetGameModeBase* GameModeRef;
+		class ALevelScriptInGame* InGameScriptRef;
 
 };

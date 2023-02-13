@@ -28,6 +28,7 @@ void AEnemyCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SpawnDefaultController();
 	SetDefaultWeapon();
 	SetDefaultStat();
 	InitFloatingHpWidget();	

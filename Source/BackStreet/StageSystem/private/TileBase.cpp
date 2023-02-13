@@ -14,6 +14,7 @@
 #include "../public/ChapterManagerBase.h"
 #include "TimerManager.h"
 #include "../public/GridBase.h"
+#include "../public/ALevelScriptInGame.h"
 #include "UObject/SoftObjectPath.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -35,7 +36,8 @@ void ATileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 	
 }
 
@@ -109,7 +111,7 @@ void ATileBase::SetStage()
 	}
 
 	BindDelegate();
-	GamemodeRef->StartChapter();
+	//GamemodeRef->StartChapter();
 	UE_LOG(LogTemp, Log, TEXT("finish spawn"));
 
 }
@@ -117,7 +119,7 @@ void ATileBase::SetStage()
 void ATileBase::SpawnMonster()
 {
 	uint16 type = FMath::RandRange(0, MaxStageType - 1);
-	FStageEnemyTypeStruct stageTypeInfo = GamemodeRef->GetStageTypeInfoWithRow(type);
+	FStageEnemyTypeStruct stageTypeInfo = GameModeRef->GetStageTypeInfoWithRow(type);
 	TArray<int32> enemyIDList;
 	int8 spawnNum = FMath::RandRange(stageTypeInfo.MinSpawn, stageTypeInfo.MaxSpawn);
 
@@ -168,7 +170,7 @@ void ATileBase::SpawnMonster()
 	{
 		int32 enemyIDIdx = FMath::RandRange(0, enemyIDList.Num() - 1);
 	
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(GamemodeRef->GetAssetManager()->GetEnemyWithID(enemyIDList[enemyIDIdx]), MonsterSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->GetEnemyWithID(enemyIDList[enemyIDIdx]), MonsterSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 		MonsterList.AddUnique(target);
 		target->EnemyID = enemyIDList[enemyIDIdx];
 		target->InitEnemyStat();
@@ -198,8 +200,8 @@ void ATileBase::SpawnItem()
 		// 2 == Weapon
 		// 3 == Projectile
 		uint8 type;
-		type = FMath::RandRange(0, GamemodeRef->GetAssetManager()->ItemAssets.Num() - 1);
-		AItemBase* target = GetWorld()->SpawnActor<AItemBase>(GamemodeRef->GetAssetManager()->ItemAssets[type], ItemSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
+		type = FMath::RandRange(0, InGameScriptRef->GetAssetManager()->ItemAssets.Num() - 1);
+		AItemBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->ItemAssets[type], ItemSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 		if (type == 6)
 		{
 			target->InitItem(EItemCategoryInfo::E_Weapon);
@@ -233,14 +235,14 @@ void ATileBase::SpawnMission()
 	if(Mission->Type == 1) // 아이템 습득
 	{
 
-		AItemBase* target = GetWorld()->SpawnActor<AItemBase>(GamemodeRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		AItemBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
 		target->InitItem(EItemCategoryInfo::E_Mission);
 		Mission->ItemList.Add(target);
 	
 	}
 	else if(Mission->Type == 2)// 몬스터 잡기
 	{
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(GamemodeRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
 		Mission->MonsterList.Add(target);
 		target->Tags.AddUnique("MissionMonster");
 		MonsterList.AddUnique(target);
@@ -249,7 +251,7 @@ void ATileBase::SpawnMission()
 	}
 	else // 보스
 	{
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(GamemodeRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
 		Mission->MonsterList.Add(target);
 		target->Tags.AddUnique("MissionMonster");
 		MonsterList.AddUnique(target);

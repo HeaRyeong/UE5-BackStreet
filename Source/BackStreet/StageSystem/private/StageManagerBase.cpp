@@ -8,6 +8,7 @@
 #include "../../Character/public/EnemyCharacterBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/MainCharacterBase.h"
+#include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
 
 
@@ -36,7 +37,9 @@ void AStageManagerBase::Tick(float DeltaTime)
 void AStageManagerBase::InitStageManager(AGridBase* Chapter)
 {
 	CharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	//GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+
 
 	for (ATileBase* tile : Chapter->StageArray)
 	{
@@ -105,6 +108,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 		UnLoadStage(toUnLoadStage);
 	
 	// UI 업데이트
+	InGameScriptRef->UpdateMiniMapUI();
 }
 
 void AStageManagerBase::LoadStage(ATileBase* targetStage)
@@ -123,7 +127,7 @@ void AStageManagerBase::LoadStage(ATileBase* targetStage)
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
-		FString name = FString::FromInt(GamemodeRef->ChapterManager->GetChapterLV());
+		FString name = FString::FromInt(InGameScriptRef->ChapterManager->GetChapterLV());
 		name += FString(TEXT("Stage"));
 		name += FString::FromInt(targetStage->YPos * 5 + targetStage->XPos);
 		targetStage->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), targetStage->LevelToLoad)->CreateInstance(name);
@@ -149,6 +153,7 @@ void AStageManagerBase::UnLoadStage(ATileBase* targetStage)
 	
 		for (AEnemyCharacterBase* Target : targetStage->MonsterList)
 		{
+			UE_LOG(LogTemp, Log, TEXT("Call SetMovementMode"));
 			Target->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
 		}
 		// Pause Timer
