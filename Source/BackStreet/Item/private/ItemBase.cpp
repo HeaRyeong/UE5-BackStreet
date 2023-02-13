@@ -4,7 +4,8 @@
 #include "../../StageSystem/public/MissionBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "../../StageSystem/public//ChapterManagerBase.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../Character/public/CharacterBase.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -39,7 +40,8 @@ void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
 	MyCharacter = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	//GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 }
 
 void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -76,7 +78,7 @@ void AItemBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		case EItemCategoryInfo::E_StatUp:
 			break;
 		case EItemCategoryInfo::E_Mission:
-			GameModeRef->ChapterManager->RemoveMissionItem(this);
+			InGameScriptRef->ChapterManager->RemoveMissionItem(this);
 			Destroy();
 			break;
 		default:

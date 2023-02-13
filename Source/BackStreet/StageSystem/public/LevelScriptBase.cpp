@@ -9,6 +9,7 @@
 #include "../../Global/public/AssetManagerBase.h"
 #include "../public/ChapterManagerBase.h"
 #include "../public/StageManagerBase.h"
+#include "../public/ALevelScriptInGame.h"
 
 ALevelScriptBase::ALevelScriptBase()
 {
@@ -25,11 +26,12 @@ void ALevelScriptBase::Tick(float DeltaTime)
 void ALevelScriptBase::BeginPlay()
 {
 	Super::BeginPlay();
-	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	UE_LOG(LogTemp, Log, TEXT("Call ALevelScriptBase BeginPlay!"));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 	
-	if (GamemodeRef != nullptr && GamemodeRef->ChapterManager != nullptr)
+	if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
 	{
-		ATileBase* belongTile = GamemodeRef->ChapterManager->GetStageManager()->GetCurrentStage();
+		ATileBase* belongTile = InGameScriptRef->ChapterManager->GetStageManager()->GetCurrentStage();
 			if (belongTile != nullptr)
 			{
 				if(!belongTile->bIsVisited)

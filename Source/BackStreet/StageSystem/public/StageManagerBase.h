@@ -34,10 +34,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void MoveStage(uint8 Dir);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		TArray<ATileBase*> GetStages() { return Stages; }
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		ATileBase* GetCurrentStage() { return CurrentTile; }
 
 private:
@@ -50,14 +50,14 @@ private:
 	UFUNCTION()
 		void UnLoadStage(class ATileBase* targetStage);
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		class ATileBase* GetStage(int32 XPosition, int32 YPosition);
 
 private:
 	UPROPERTY()
 		TArray<class ATileBase*> Stages;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		class ATileBase* CurrentTile;
 
 	// Ref
@@ -66,7 +66,7 @@ private:
 		class ACharacterBase* CharacterRef;
 
 	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
+		class ALevelScriptInGame* InGameScriptRef;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay|Stages")
