@@ -9,6 +9,7 @@
 #include "../../Item/public/ItemInfoStruct.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/ProjectileBase.h"
+#include "../../Item/public/ItemBase.h"
 //#include "../../Character/public/CharacterInfoStruct.h"
 #include "../public/ChapterManagerBase.h"
 #include "TimerManager.h"
@@ -64,13 +65,13 @@ void ATileBase::SelectMap()
 	switch (NextMap)
 	{
 	case 1:
-		LevelToLoad = FName(TEXT("Map1_JH"));
+		LevelToLoad = FName(TEXT("Main1"));
 		break;
 	case 2:
-		LevelToLoad = FName(TEXT("Map2_JH"));
+		LevelToLoad = FName(TEXT("Main2"));
 		break;
 	case 3:
-		LevelToLoad = FName(TEXT("Map3_JH"));
+		LevelToLoad = FName(TEXT("Main3"));
 		break;
 		//case 4:
 		//	NextLevelToLoad = FName(TEXT("Sub1Prefab"));
