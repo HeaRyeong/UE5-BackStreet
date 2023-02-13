@@ -3,6 +3,7 @@
 
 #include "../public/AIControllerBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../Character/public/EnemyCharacterBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Perception/AISenseConfig_Sight.h"

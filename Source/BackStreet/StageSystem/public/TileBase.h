@@ -21,7 +21,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
- // ===============초기화===============
+// ===============초기화===============
 public:
 	UFUNCTION(BlueprintCallable)
 		void InitTile(int XPosition, int YPosition);
@@ -130,7 +130,7 @@ public:
 	UPROPERTY()
 		int32 ClearTime;
 
-	// ---- 참조 -----
+// ---- 참조 -----
 public:
 	UPROPERTY()
 		class AGridBase* Chapter;

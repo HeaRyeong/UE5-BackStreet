@@ -41,54 +41,68 @@ void AWeaponInventoryBase::InitInventory()
 	}
 }
 
-void AWeaponInventoryBase::EquipWeapon(int32 InventoryIdx)
+void AWeaponInventoryBase::EquipWeapon(int32 InventoryIdx, bool bIsNewWeapon)
 {
 	if (!InventoryArray.IsValidIndex(InventoryIdx)) return;
 
 	AWeaponBase* newWeapon = SpawnWeaponActor(InventoryArray[InventoryIdx].WeaponID);
+
 	if (IsValid(newWeapon))
 	{
 		SetCurrentWeaponRef(newWeapon);
 		OwnerCharacterRef->EquipWeapon(GetCurrentWeaponRef());
 		SetCurrentIdx(InventoryIdx);
-		SyncCurrentWeaponInfo();
+
+		if (bIsNewWeapon) SyncCurrentWeaponInfo(false);
+		else SyncCurrentWeaponInfo(true);
 	}
 }
 
 bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 {
+	UE_LOG(LogTemp, Warning, TEXT("ADD #0"));
 	if (!IsValid(OwnerCharacterRef)) return false;
+
+	UE_LOG(LogTemp, Warning, TEXT("ADD #1"));
 	if (!WeaponClassInfoMap.Contains(NewWeaponID)) return false;
 
+	UE_LOG(LogTemp, Warning, TEXT("ADD #2"));
 	FWeaponStatStruct newWeaponStat = GamemodeRef->GetWeaponStatInfoWithID(NewWeaponID);
+	FWeaponStateStruct newWeaponState = FWeaponStateStruct();
+	newWeaponState.CurrentDurability = newWeaponStat.MaxDurability;
 
 	//먼저, 원거리 무기의 중복 여부를 판단. 중복된다면 Ammo를 추가
 	int32 duplicateIdx = CheckWeaponDuplicate(NewWeaponID);
 	if (newWeaponStat.bHasProjectile && duplicateIdx != -1)
 	{
 		InventoryArray[duplicateIdx].WeaponState.TotalAmmoCount += 25;
+		UE_LOG(LogTemp, Warning, TEXT("ADD #3"));
 		return false;
 	}
-	
 	//그렇지 않다면 무기 용량 체크를 진행하고 무기 추가를 진행
 	else if (newWeaponStat.WeaponWeight == 0 || newWeaponStat.WeaponWeight + CurrentCapacity <= MaxCapacity)
 	{
-		InventoryArray.Add({ NewWeaponID, newWeaponStat, FWeaponStateStruct() });
+		InventoryArray.Add({ NewWeaponID, newWeaponStat, newWeaponState });
 		if (GetCurrentWeaponCount() == 1) //기존 인벤토리가 비어있었다면? 바로 장착까지 해줌
 		{
-			EquipWeapon(InventoryArray.Num() - 1);
+			EquipWeapon(InventoryArray.Num() - 1, true);
 		}
 		CurrentCapacity += newWeaponStat.WeaponWeight;
 		SortInventory();
+		UE_LOG(LogTemp, Warning, TEXT("ADD #5"));
 
 		return true;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("ADD #6"));
 	return false;
 }
 
 void AWeaponInventoryBase::RemoveWeapon(int32 InventoryIdx)
 {
 	if (!InventoryArray.IsValidIndex(InventoryIdx)) return;
+
+	CurrentCapacity -= InventoryArray[GetCurrentIdx()].WeaponStat.WeaponWeight;
+	CurrentWeaponCount -= 1;
 
 	InventoryArray.RemoveAt(GetCurrentIdx());
 	if (GetCurrentWeaponCount() >= 1)
@@ -108,12 +122,13 @@ bool AWeaponInventoryBase::SwitchToNextWeapon()
 
 	RestoreCurrentWeapon(); //현재 무기를 Destroy하고, 정보만 List에 저장한다.
 	EquipWeapon(nextIdx);
+	SetCurrentIdx(nextIdx);
 	SortInventory();
 
 	return false;
 }
 
-void AWeaponInventoryBase::SyncCurrentWeaponInfo()
+void AWeaponInventoryBase::SyncCurrentWeaponInfo(bool bIsLoadInfo)
 {
 	if (!IsValid(OwnerCharacterRef)) return;
 	if (GetCurrentWeaponCount() == 0) return;
@@ -128,8 +143,16 @@ void AWeaponInventoryBase::SyncCurrentWeaponInfo()
 		UE_LOG(LogTemp, Warning, TEXT("SyncCurrentWeaponInfo : Weapon Not Found"));
 		return;
 	}
-	InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->WeaponStat;
-	InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->WeaponState;
+	if (bIsLoadInfo)
+	{
+		GetCurrentWeaponRef()->SetWeaponStat( InventoryArray[GetCurrentIdx()].WeaponStat );
+		GetCurrentWeaponRef()->SetWeaponState( InventoryArray[GetCurrentIdx()].WeaponState );
+	}
+	else
+	{
+		InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->GetWeaponStat();
+		InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->GetWeaponState();
+	}
 }
 
 AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
@@ -158,7 +181,7 @@ void AWeaponInventoryBase::RestoreCurrentWeapon()
 	if (GetCurrentWeaponCount() <= 1) return;
 	if (!IsValid(OwnerCharacterRef)) return;
 
-	SyncCurrentWeaponInfo();
+	SyncCurrentWeaponInfo(false);
 	GetCurrentWeaponRef()->Destroy();
 }
 
@@ -187,7 +210,7 @@ void AWeaponInventoryBase::SortInventory()
 				InventoryArray[selIdx] = InventoryArray[compIdx];
 				InventoryArray[compIdx] = tempInfo;
 
-				if (selWeight == GetCurrentIdx())
+				if (selIdx == GetCurrentIdx())
 				{
 					SetCurrentIdx(compIdx);
 				}

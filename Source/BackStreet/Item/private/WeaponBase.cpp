@@ -3,6 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "../../Character/public/CharacterBuffManager.h"
 #include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
@@ -20,9 +21,6 @@ AWeaponBase::AWeaponBase()
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WEAPON_MESH"));
 	WeaponMesh->SetupAttachment(DefaultSceneRoot);
-
-	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("SOUND"));
-
 }
 
 // Called when the game starts or when spawned
@@ -42,6 +40,7 @@ void AWeaponBase::InitWeapon()
 		GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
 	}
 	WeaponState.CurrentDurability = WeaponStat.MaxDurability;
+	UE_LOG(LogTemp, Warning, TEXT("Init) Current Durability : %d"), WeaponState.CurrentDurability);
 }
 
 void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState)
@@ -57,27 +56,26 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bHasProjectile)
 	{
 		TryFireProjectile();
+		
+		if (OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Reload)
+		{
+			//PlayEffectSound(AttackSound); 빈 방아쇠 소리?
+		}
+		else
+		{
+			PlayEffectSound(AttackSound);
+		}
 	}
 	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
 	if (WeaponStat.bCanMeleeAtk)
 	{
+		PlayEffectSound(AttackSound);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
-	// Sound
-	if (WieldSound != nullptr)
-	{
-		AudioComponent->SetSound(WieldSound);
-		AudioComponent->Play();
-		UE_LOG(LogTemp, Warning, TEXT("YES"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NONO"));
-	}
-
 	UpdateDurabilityState();
-	WeaponState.ComboCount = (WeaponState.ComboCount + 1);
+	UE_LOG(LogTemp, Warning, TEXT("ATK) Current Durability : %d"), WeaponState.CurrentDurability);
+	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
 
 void AWeaponBase::StopAttack()
@@ -89,6 +87,7 @@ void AWeaponBase::StopAttack()
 
 void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 {
+	if (NewStat.MaxDurability == 0) return;
 	WeaponStat = NewStat;
 }
 
@@ -97,6 +96,12 @@ void AWeaponBase::SetOwnerCharacter(ACharacterBase* NewOwnerCharacterRef)
 	if (!IsValid(NewOwnerCharacterRef)) return;
 	OwnerCharacterRef = NewOwnerCharacterRef;
 	MeleeLineTraceQueryParams.AddIgnoredActor(OwnerCharacterRef);
+}
+
+void AWeaponBase::PlayEffectSound(USoundCue* EffectSound)
+{
+	if (EffectSound == nullptr || !IsValid(OwnerCharacterRef) || !OwnerCharacterRef->ActorHasTag("Player")) return;
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), EffectSound, GetActorLocation());
 }
 
 void AWeaponBase::ClearAllTimerHandle()
@@ -118,8 +123,16 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 
 	SpawnRotation.Pitch = 0.0f;
 	SpawnRotation.Yaw += 90.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
-	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+
+	if (WeaponStat.WeaponType == EWeaponType::E_Shoot)
+	{
+		SpawnLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
+	}
+	else
+	{
+		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
+		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+	}
 
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
@@ -144,7 +157,7 @@ bool AWeaponBase::TryReload()
 	{
 		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - WeaponState.CurrentAmmoCount);
 	}
-
+	PlayEffectSound(ReloadSound);
 	WeaponState.CurrentAmmoCount += addAmmoCnt;
 	WeaponState.TotalAmmoCount -= addAmmoCnt;
 
@@ -172,6 +185,7 @@ void AWeaponBase::AddMagazine(int32 Count)
 
 bool AWeaponBase::TryFireProjectile()
 {
+	if (!IsValid(OwnerCharacterRef)) return false;
 	if (WeaponState.CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
 	{
 		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
@@ -187,7 +201,7 @@ bool AWeaponBase::TryFireProjectile()
 	//스폰한 발사체가 Valid 하다면 발사
 	if (IsValid(newProjectile))
 	{
-		if (!WeaponStat.bIsInfiniteAmmo)
+		if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
 		{
 			WeaponState.CurrentAmmoCount -= 1;
 		}
@@ -209,7 +223,7 @@ float AWeaponBase::GetAttackRange()
 
 void AWeaponBase::UpdateDurabilityState()
 {
-	if (OwnerCharacterRef->GetCharacterStat().bInfiniteDurability) return;
+	if (OwnerCharacterRef->GetCharacterStat().bInfinite) return;
 	if (--WeaponState.CurrentDurability == 0)
 	{
 		if (IsValid(DestroyEffectParticle))
@@ -259,15 +273,15 @@ void AWeaponBase::MeleeAttack()
 	if (bIsMeleeTraceSucceed)
 	{
 		// 사운드
-		if (HitSound->IsValidLowLevelFast())
+		if (HitImpactSound != nullptr)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(this, HitImpactSound, GetActorLocation());
 		}
 
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		Cast<ACharacterBase>(hitResult.GetActor())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
+		(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

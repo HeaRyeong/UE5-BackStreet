@@ -3,6 +3,7 @@
 
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
+#include "../../Character/public/CharacterBuffManager.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,10 +14,6 @@ AProjectileBase::AProjectileBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	//DefaultSceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SCENE_ROOT"));
-	//DefaultSceneRoot->SetupAttachment(RootComponent);
-	//SetRootComponent(DefaultSceneRoot);
 
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SPHERE_COLLISION"));
 	SphereCollision->SetupAttachment(RootComponent);
@@ -73,12 +70,20 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 	if (!ProjectileMovement->IsActive() || OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
 	if (OtherActor->ActorHasTag("Character"))
 	{
+		
+
 		//폭발하는 발사체라면?
 		if (ProjectileStat.bIsExplosive)
 		{
 			UGameplayStatics::ApplyRadialDamageWithFalloff(GetWorld(), ProjectileStat.ProjectileDamage, ProjectileStat.ProjectileDamage / 2.0f
 														, SweepResult.Location, 100.0f, 200.0f, 25.0f, nullptr, {}, OwnerCharacterRef, OwnerCharacterRef->Controller);
 			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Explosion, SweepResult.Location, 100.0f);
+			
+			if (ExplosionSound != nullptr)
+			{
+				const float soundVolume = OwnerCharacterRef->ActorHasTag("Player") ? 1.0f : 0.2f;
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplosionSound, GetActorLocation(), soundVolume);
+			}
 		}
 		else
 		{
@@ -86,10 +91,15 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 				SpawnInstigator, OwnerCharacterRef, nullptr);
 		}
 		
-		Cast<ACharacterBase>(OtherActor)->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+		(Cast<ACharacterBase>(OtherActor)->GetBuffManagerRef())->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
+	if (HitSound != nullptr && HitParticle != nullptr)
+	{
+		const float soundVolume = OwnerCharacterRef->ActorHasTag("Player") ? 1.0f : 0.2;
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitParticle, TargetTransform);
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation(), soundVolume);
+	}
 	Destroy();
 }
 

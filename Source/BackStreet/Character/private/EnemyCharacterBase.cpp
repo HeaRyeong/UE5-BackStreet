@@ -19,7 +19,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	FloatingHpBar->SetDrawSize({ 80.0f, 10.0f });
 
 	bUseControllerRotationYaw = false;
-	AutoPossessAI = EAutoPossessAI::Spawned;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	this->Tags.Add("Enemy");
 }
@@ -32,22 +32,33 @@ void AEnemyCharacterBase::BeginPlay()
 	SetDefaultWeapon();
 	SetDefaultStat();
 	InitFloatingHpWidget();	
+	InitEnemyStat();
+
+	InitDynamicMeshMaterial(GetMesh()->GetMaterial(0));
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
 {
-
 	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
+	CharacterState.CharacterCurrHP = CharacterStat.CharacterMaxHP;
+	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
+}
+
+bool AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+{
+	return Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	if (IsValid(DamageCauser) && DamageCauser->ActorHasTag("Player"))
-	{
-		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation());
-	}
+	if (!IsValid(DamageCauser) || !DamageCauser->ActorHasTag("Player") || damageAmount <= 0.0f) return 0.0f;
+
+	GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation()); 
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitImpactSound, GetActorLocation());
+	EnemyDamageDelegate.ExecuteIfBound(DamageCauser);
+
 	return damageAmount;
 }
 
@@ -84,8 +95,17 @@ void AEnemyCharacterBase::SetDefaultWeapon()
 
 void AEnemyCharacterBase::SetDefaultStat()
 {
-	CharacterStat.bInfiniteAmmo = true;
-	CharacterStat.bInfiniteDurability = true;
+	CharacterStat.bInfinite = true;
+	CharacterStat.bInfinite = true;
+}
+
+void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)
+{
+	if (CurrentDynamicMaterial == nullptr) return;
+
+	CurrentDynamicMaterial->SetScalarParameterValue(FName("EyeBrightness"), NewState ? 5.0f : 35.0f);
+	CurrentDynamicMaterial->SetVectorParameterValue(FName("EyeColor"), NewState ? FColor::Red : FColor::Yellow);
+	InitDynamicMeshMaterial(CurrentDynamicMaterial);
 }
 
 void AEnemyCharacterBase::Turn(float Angle)
@@ -108,14 +128,9 @@ void AEnemyCharacterBase::Turn(float Angle)
 	CharacterState.TurnDirection = 0;
 }
 
-bool AEnemyCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
+float AEnemyCharacterBase::PlayPreChaseAnimation()
 {
-	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
-	return result;
-}
+	if (PreChaseAnimMontage == nullptr) return 0.0f;
 
-void AEnemyCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
-{
-	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
-
+	return PlayAnimMontage(PreChaseAnimMontage);
 }

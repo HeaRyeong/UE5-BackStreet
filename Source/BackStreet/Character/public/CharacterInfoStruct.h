@@ -4,6 +4,14 @@
 #include "CharacteInfoEnum.h"
 #include "CharacterInfoStruct.generated.h"
 
+UENUM(BlueprintType)
+enum class EEmotionType : uint8
+{
+	E_Idle				UMETA(DisplayName = "Idle"),
+	E_Angry				UMETA(DisplayName = "Angry"),
+	E_Death				UMETA(DisplayName = "Death")
+};
+
 USTRUCT(BlueprintType)
 struct FCharacterStatStruct : public FTableRowBase
 {
@@ -13,11 +21,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bIsInvincibility = false;
 
+	//무한 내구도 / 무한 탄약 (Enemy 기본 스탯)
 	UPROPERTY(BlueprintReadOnly)
-		bool bInfiniteAmmo = false;
-
-	UPROPERTY(BlueprintReadOnly)
-		bool bInfiniteDurability = false; 
+		bool bInfinite = false;; 
 
 	//PlayerMaxHP는 1.0f
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0.5f, UIMax = 10.0f))

@@ -2,12 +2,13 @@
 
 
 #include "../public/BTStateManageServiceBase.h"
-#include "../../Character/public/CharacterBase.h"
+#include "../../Character/public/EnemyCharacterBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "AIController.h"
 #define INF 1e7f
+#define MAX_CHASE_DISTANCE 1250.0f
 
 UBTStateManageServiceBase::UBTStateManageServiceBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -25,7 +26,9 @@ void UBTStateManageServiceBase::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 
 	if (!IsValid(OwnerCharacterRef)) //최초 수행 : BB와 캐릭터 Ref를 초기화
 	{
-		OwnerCharacterRef = Cast<ACharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+		OwnerCharacterRef = Cast<AEnemyCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
+		OwnerCharacterRef->EnemyDamageDelegate.BindUFunction(this, FName("OnOwnerGetDamaged"));
+
 		BlackboardRef = OwnerComp.GetBlackboardComponent();
 		BlackboardRef->SetValueAsVector(FName("SpawnLocation"), OwnerCharacterRef->GetActorLocation());
 	}
@@ -51,13 +54,11 @@ void UBTStateManageServiceBase::UpdateAIState()
 	}
 	else if (CheckChaseState())
 	{
+		AIBehaviorState = EAIBehaviorType::E_Chase;
+
 		if (CheckAttackState())
 		{
 			AIBehaviorState = EAIBehaviorType::E_Attack;
-		}
-		else
-		{
-			AIBehaviorState = EAIBehaviorType::E_Chase;
 		}
 	}
 	else
@@ -76,7 +77,7 @@ bool UBTStateManageServiceBase::CheckPatrolState()
 bool UBTStateManageServiceBase::CheckReturnState()
 {
 	const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
-	if (AIBehaviorState == EAIBehaviorType::E_Return || GetDistanceTo(spawnLocation) >= 1000.0f) return true;
+	if (AIBehaviorState == EAIBehaviorType::E_Return || GetDistanceTo(spawnLocation) >= MAX_CHASE_DISTANCE) return true;
 	return false;
 }
 
@@ -87,6 +88,8 @@ bool UBTStateManageServiceBase::CheckChaseState()
 
 bool UBTStateManageServiceBase::CheckAttackState()
 {
+	if(!BlackboardRef->GetValueAsBool(FName("ReadyToAttack"))) return false;
+
 	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
 	AWeaponBase* weaponActorRef = OwnerCharacterRef->GetWeaponActorRef();
 	
@@ -98,4 +101,14 @@ bool UBTStateManageServiceBase::CheckAttackState()
 float UBTStateManageServiceBase::GetDistanceTo(const FVector& EndLocation)
 {
 	return UKismetMathLibrary::Vector_Distance(OwnerCharacterRef->GetActorLocation(), EndLocation);
+}
+
+void UBTStateManageServiceBase::OnOwnerGetDamaged(AActor* Causer)
+{
+	if (!IsValid(Causer) || !Causer->ActorHasTag("Player")) return;
+	if (AIBehaviorState == EAIBehaviorType::E_Stun) return;
+
+	AIBehaviorState = EAIBehaviorType::E_Chase;
+	BlackboardRef->SetValueAsObject("TargetCharacter", Causer);
+	BlackboardRef->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
 }

@@ -14,6 +14,15 @@ enum class ECameraShakeType : uint8
 	E_Explosion			UMETA(DisplayName = "Explosion")
 };
 
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	E_None				UMETA(DisplayName = "None"),
+	E_Melee				UMETA(DisplayName = "Melee"),
+	E_Throw				UMETA(DisplayName = "Throw"),
+	E_Shoot				UMETA(DisplayName = "Shoot")
+};
+
 USTRUCT(BlueprintType)
 struct FWeaponStatStruct : public FTableRowBase
 {
@@ -25,6 +34,9 @@ public:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		FName Description;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+		EWeaponType WeaponType;
 
 	//----- 공통 Stat -------
 	
@@ -54,7 +66,7 @@ public:
 
 	// 내구도 PROPERTY 추가
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bInfiniteDurability = false;
+		bool bInfinite = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int32 MaxDurability = 10;

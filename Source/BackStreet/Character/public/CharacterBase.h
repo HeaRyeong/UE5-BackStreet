@@ -4,8 +4,6 @@
 #include "GameFramework/Character.h"
 #include "CharacterBase.generated.h"
 
-#define InventoryMaxSize 6
-
 UCLASS()
 class BACKSTREET_API ACharacterBase : public ACharacter
 {
@@ -27,8 +25,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly)
 		UChildActorComponent* InventoryComponent; 
+
+	UPROPERTY(EditDefaultsOnly)
+		UChildActorComponent* BuffManagerComponent;
 
 // ------- Character Action 기본 ------- 
 public:
@@ -69,12 +70,35 @@ public:
 	UFUNCTION()
 		void InitCharacterState();
 
+	//캐릭터의 버프/디버프 정보를 업데이트
+	virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+
+	//디버프가 활성화 되어있는지 반환
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetDebuffIsActive(ECharacterDebuffType DebuffType);
+
+	//버프가 활성화 되어있는지 반환
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetBuffIsActive(ECharacterBuffType BuffType);
+
 	//캐릭터의 스탯을 업데이트
 	UFUNCTION(BlueprintCallable)
 		void UpdateCharacterStat(FCharacterStatStruct NewStat);
 
+	UFUNCTION(BlueprintCallable)
+		void UpdateCharacterState(FCharacterStateStruct NewState);
+
+	UFUNCTION(BlueprintCallable)
+		void UpdateWeaponStat(FWeaponStatStruct NewStat);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStatStruct GetCharacterStat() { return CharacterStat; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FCharacterStateStruct GetCharacterState() { return CharacterState; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		class ACharacterBuffManager* GetBuffManagerRef() { return BuffManagerRef; };
 
 // ------ 무기 관련 -------------------------------------------
 public:
@@ -102,46 +126,21 @@ public:
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
-// ------ 캐릭터 버프 / 디버프 ------------------------------------
-public:
-	//버프와 디버프를 건다
-	virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
-	
-	//버프 or 디버프 상태를 초기화한다
-	virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal);
-
-	//특정 Buff/Debuff의 타이머를 해제한다.
-	virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType);
-		
-	//모든 Buff/Debuff의 타이머를 해제
-	virtual void ClearAllBuffDebuffTimer(bool bIsDebuff);
-
+// ----- VFX -------------------
+protected:
 	UFUNCTION()
-		bool SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
+		void InitDynamicMeshMaterial(UMaterialInterface* NewMaterial);
 
-	UFUNCTION()
-		bool SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f);
-
-	//디버프가 활성화 되어있는지 반환
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		bool GetDebuffIsActive(ECharacterDebuffType DebuffType);
-
-	//버프가 활성화 되어있는지 반환
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		bool GetBuffIsActive(ECharacterBuffType BuffType);
-
-	//버프/디버프 남은 시간을 반환
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		float GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType);
-
-	//버프 / 디버프 타이머 핸들의 참조자를 반환
-	UFUNCTION()
-		FTimerHandle& GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType);
+	UPROPERTY()
+		class UMaterialInstanceDynamic* CurrentDynamicMaterial;
 
 // ----- 캐릭터 애니메이션 -------------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		TArray<UAnimMontage*> AttackAnimMontageArray;
+		TArray<class UAnimMontage*> AttackAnimMontageArray;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* ShootAnimMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
 		class UAnimMontage* HitAnimMontage;
@@ -170,6 +169,9 @@ protected:
 
 	UPROPERTY()
 		class AWeaponInventoryBase* InventoryRef;
+
+	UPROPERTY()
+		class ACharacterBuffManager* BuffManagerRef;
 
 // ----- 타이머 관련 ---------------------------------
 protected:

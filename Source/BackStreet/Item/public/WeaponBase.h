@@ -9,7 +9,6 @@
 
 DECLARE_DELEGATE(FDelegateWeaponDestroy);
 
-
 UCLASS()
 class BACKSTREET_API AWeaponBase : public AActor
 {
@@ -42,30 +41,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 		uint8 WeaponID;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
-		UParticleSystem* HitEffectParticle;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		UAudioComponent* AudioComponent;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		USoundCue* WieldSound;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		USoundCue* HitSound;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
-		UParticleSystem* DestroyEffectParticle;
-
-	//Weapon의 종합 Stat
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		FWeaponStatStruct WeaponStat;
-
-	//Weapon 상태 정보
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
-		FWeaponStateStruct WeaponState; 
-
-public:
 	//공격 처리
 	UFUNCTION(BlueprintCallable)
 		void Attack();
@@ -92,6 +67,28 @@ public:
 
 	UFUNCTION()
 		void UpdateDurabilityState();
+
+	UFUNCTION(BlueprintCallable)
+		FWeaponStatStruct GetWeaponStat() { return WeaponStat; }
+
+	UFUNCTION(BlueprintCallable)
+		FWeaponStateStruct GetWeaponState() { return WeaponState; }
+
+	UFUNCTION()
+		void SetWeaponStat(FWeaponStatStruct NewStat) { WeaponStat = NewStat; }
+
+	UFUNCTION()
+		void SetWeaponState(FWeaponStateStruct NewState) { WeaponState = NewState; }
+
+
+protected:
+	//Weapon의 종합 Stat
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+		FWeaponStatStruct WeaponStat;
+
+	//Weapon 상태 정보
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")
+		FWeaponStateStruct WeaponState;
 
 //------ Projectile 관련----------------------------
 public:
@@ -157,10 +154,29 @@ private:
 	//UPROPERTY()
 	FCollisionQueryParams MeleeLineTraceQueryParams;
 
-//-------- 그 외 -------------------------------
+//-------- 그 외 (Ref, VFX 등)-------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
 		void SetOwnerCharacter(class ACharacterBase* NewOwnerCharacterRef);
+
+protected:
+	UFUNCTION()
+		void PlayEffectSound(class USoundCue* EffectSound);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class UParticleSystem* HitEffectParticle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class UParticleSystem* DestroyEffectParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* HitImpactSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* AttackSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* ReloadSound;
 
 private:
 	//캐릭터 Ref

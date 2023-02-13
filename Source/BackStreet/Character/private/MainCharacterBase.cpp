@@ -3,20 +3,23 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/MainCharacterController.h"
+#include "../public/CharacterBuffManager.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/ItemBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
-
-#include "NiagaraComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
+#define MAX_CAMERA_BOOM_LENGTH 1450.0f
+#define MIN_CAMERA_BOOM_LENGTH 250.0f
 
 // Sets default values
 AMainCharacterBase::AMainCharacterBase()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	SetActorTickInterval(0.1f);
+
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CAMERA_BOOM"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->bUsePawnControlRotation = true;
@@ -57,13 +60,15 @@ void AMainCharacterBase::BeginPlay()
 	Super::BeginPlay();
 	
 	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	InitDynamicMeshMaterial(NormalMaterial);
 }
 
 // Called every frame
 void AMainCharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	UpdateWallThroughEffect();
 }
 
 // Called to bind functionality to input
@@ -74,12 +79,14 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	//Set up "movement" bindings.
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMainCharacterBase::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMainCharacterBase::MoveRight);
+	PlayerInputComponent->BindAxis("ZoomIn", this, &AMainCharacterBase::ZoomIn);
 	
 	PlayerInputComponent->BindAction("Roll", IE_Pressed, this, &AMainCharacterBase::Roll);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AMainCharacterBase::TryAttack);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
+	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryPickItem);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
 }
 
@@ -119,6 +126,39 @@ void AMainCharacterBase::Roll()
 	PlayAnimMontage(RollAnimMontage, CharacterStat.CharacterMoveSpeed / 450.0f);
 }
 
+void AMainCharacterBase::ZoomIn(float Value)
+{
+	if (Value == 0.0f) return;
+	float newLength = CameraBoom->TargetArmLength;
+	newLength = newLength + Value * 25.0f;
+	newLength = newLength < MIN_CAMERA_BOOM_LENGTH ? MIN_CAMERA_BOOM_LENGTH : newLength;
+	newLength = newLength > MAX_CAMERA_BOOM_LENGTH ? MAX_CAMERA_BOOM_LENGTH : newLength;
+	CameraBoom->TargetArmLength = newLength;
+}
+
+void AMainCharacterBase::TryPickItem()
+{
+	TArray<AActor*> nearItemList = GetNearItemList();
+	
+	UE_LOG(LogTemp, Warning, TEXT("PICK #1"));
+
+	if (nearItemList.Num())
+	{
+		AActor* targetItem = Cast<AItemBase>(nearItemList[0]);
+		
+		UE_LOG(LogTemp, Warning, TEXT("PICK #2"));
+
+		if (targetItem->ActorHasTag("Item"))
+		{
+			Cast<AItemBase>(targetItem)->OnPlayerBeginPickUp.ExecuteIfBound(this);
+		}
+		else if(targetItem->ActorHasTag("ItemBox"))
+		{
+			//Open Item Box Event
+		}
+	}
+}
+
 void AMainCharacterBase::TryReload()
 {
 	Super::TryReload();
@@ -131,8 +171,14 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 	if (damageAmount > 0.0f && DamageCauser->ActorHasTag("Enemy"))
 	{
 		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, GetActorLocation());
-	}
 
+		SetFacialDamageEffect(true);
+
+		GetWorld()->GetTimerManager().ClearTimer(FacialEffectResetTimerHandle);
+		GetWorld()->GetTimerManager().SetTimer(FacialEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			SetFacialDamageEffect(false);
+		}), 1.0f, false, 1.0f);
+	}
 	return damageAmount;
 }
 
@@ -197,6 +243,26 @@ void AMainCharacterBase::RotateToCursor()
 	}), 1.0f, false);
 }
 
+TArray<AActor*> AMainCharacterBase::GetNearItemList()
+{
+	TArray<AActor*> outItemList;
+	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f
+												   + GetMesh()->GetUpVector() * -45.0f;
+	
+	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
+	{
+		bool result = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius, { itemObjectType }
+											, AItemBase::StaticClass(), TArray<AActor*>(), outItemList);
+
+		if (result) break; 
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Pick #0 - Nothing"));
+		}
+	}
+	return outItemList;
+}
+
 void AMainCharacterBase::ResetRotationToMovement()
 {
 	if (CharacterState.CharacterActionState == ECharacterActionType::E_Roll) return;
@@ -216,69 +282,85 @@ void AMainCharacterBase::DropWeapon()
 	Super::DropWeapon();
 }
 
-bool AMainCharacterBase::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
+bool AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	bool result = Super::SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
+	if (!Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value)) return false;
 
-	if(result)
+	if (DebuffSound && BuffSound)
 	{
-		TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
-		
-		if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
-		{
-			BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
-			BuffNiagaraEmitter->Deactivate();
-			BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
-			BuffNiagaraEmitter->Activate();
-		}
-
-		// »ç¿îµå
-		if (bIsDebuff)
-		{
-			if (DeBuffSound->IsValidLowLevelFast())
-				UGameplayStatics::PlaySoundAtLocation(this, DeBuffSound, GetActorLocation());
-		
-		}
-		else
-		{	if (BuffSound->IsValidLowLevelFast())
-				UGameplayStatics::PlaySoundAtLocation(this, BuffSound, GetActorLocation());
-		}
-		
+		UGameplayStatics::PlaySoundAtLocation(this, bIsDebuff ? DebuffSound : BuffSound, GetActorLocation());
+		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
 	}
-	return result;
-}	
+	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 
-void AMainCharacterBase::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
-{
-	Super::ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, ResetVal);
+	GetWorld()->GetTimerManager().ClearTimer(BuffEffectResetTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(BuffEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
+		DeactivateBuffEffect();
+	}), TotalTime, false);
+
+	return true;
 }
 
-void AMainCharacterBase::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
+void AMainCharacterBase::ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType)
 {
-	if (bIsDebuff ? GetDebuffIsActive((ECharacterDebuffType)BuffDebuffType)
-		: GetBuffIsActive((ECharacterBuffType)BuffDebuffType))
+	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
+
+	if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
 	{
-		DeactivateBuffNiagara();
+		BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
+		BuffNiagaraEmitter->Deactivate();
+		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
+		BuffNiagaraEmitter->Activate();
 	}
-	Super::ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
-void AMainCharacterBase::ClearAllBuffDebuffTimer(bool bIsDebuff)
-{
-	Super::ClearAllBuffDebuffTimer(bIsDebuff);
-	DeactivateBuffNiagara();
-}
-
-void AMainCharacterBase::DeactivateBuffNiagara()
+void AMainCharacterBase::DeactivateBuffEffect()
 {
 	BuffNiagaraEmitter->SetAsset(nullptr, false);
-	BuffNiagaraEmitter->Deactivate();
+	BuffNiagaraEmitter->Deactivate(); 
+}
+
+void AMainCharacterBase::UpdateWallThroughEffect()
+{
+	FHitResult hitResult;
+	const FVector& traceBeginPos = FollowingCamera->GetComponentLocation();
+	const FVector& traceEndPos = GetMesh()->GetComponentLocation();
+	
+	GetWorld()->LineTraceSingleByChannel(hitResult, traceBeginPos, traceEndPos, ECollisionChannel::ECC_Camera);
+
+	if (hitResult.bBlockingHit && IsValid(hitResult.GetActor()))
+	{
+		if(!hitResult.GetActor()->ActorHasTag("Player") && !bIsWallThroughEffectActivated)
+		{
+			InitDynamicMeshMaterial(WallThroughMaterial);
+			bIsWallThroughEffectActivated = true;
+		}
+		else if(hitResult.GetActor()->ActorHasTag("Player") && bIsWallThroughEffectActivated)
+		{
+			InitDynamicMeshMaterial(NormalMaterial);
+			bIsWallThroughEffectActivated = false;
+		}
+	}
+}
+
+void AMainCharacterBase::SetFacialDamageEffect(bool NewState)
+{
+	UMaterialInstanceDynamic* currMaterial = CurrentDynamicMaterial;
+	
+	if (currMaterial != nullptr && EmotionTextureList.Num() >= 3)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FacialEffect"));
+		currMaterial->SetTextureParameterValue(FName("BaseTexture"), EmotionTextureList[(uint8)(NewState ? EEmotionType::E_Angry : EEmotionType::E_Idle)]);
+		currMaterial->SetScalarParameterValue(FName("bIsDamaged"), (float)NewState);
+	}
 }
 
 void AMainCharacterBase::ClearAllTimerHandle()
 {
 	Super::ClearAllTimerHandle();
 
+	GetWorldTimerManager().ClearTimer(BuffEffectResetTimerHandle);
+	GetWorldTimerManager().ClearTimer(FacialEffectResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(RotationResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(RollTimerHandle); 
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);

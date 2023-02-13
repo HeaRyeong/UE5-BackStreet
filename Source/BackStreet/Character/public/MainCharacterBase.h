@@ -26,7 +26,7 @@ protected:
 // ------- 컴포넌트 ----------
 public:
 	//플레이어 메인 카메라 붐
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		USpringArmComponent* CameraBoom;
 
 	//플레이어의 메인 카메라
@@ -45,11 +45,13 @@ public:
 		void Roll();
 
 	UFUNCTION()
-		virtual void TryReload() override;
+		void ZoomIn(float Value);
 
 	UFUNCTION()
-		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
-			, AController* EventInstigator, AActor* DamageCauser) override;
+		void TryPickItem();
+
+	UFUNCTION()
+		virtual void TryReload() override;
 
 	UFUNCTION(BlueprintCallable)
 		virtual void TryAttack() override;
@@ -63,10 +65,6 @@ public:
 	UFUNCTION()
 		virtual void Die() override;
 
-	//Rotation 조절 방식을 커서 위치로 한다
-	UFUNCTION()
-		void RotateToCursor();
-
 	//Rotation 조절 방식을 기본 방식인 Movement 방향으로 되돌린다
 	UFUNCTION(BlueprintCallable)
 		void ResetRotationToMovement();
@@ -77,26 +75,26 @@ public:
 	UFUNCTION()
 		virtual void DropWeapon() override;
 
+private:
+	UFUNCTION()
+		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
+			, AController* EventInstigator, AActor* DamageCauser) override;
+
+	//Rotation 조절 방식을 커서 위치로 한다
+	UFUNCTION()
+		void RotateToCursor();
+
+	UFUNCTION()
+		TArray<AActor*> GetNearItemList();
+
 // ------- 버프 / 디버프 ---------------
-public: 
+protected: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	bool SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime = 1.0f, float Variable = 0.0f) override;
-
-	//버프 or 디버프 상태를 초기화한다
-	UFUNCTION(BlueprintCallable)
-		virtual void ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal) override;
-
-	//특정 Debuff의 타이머를 해제한다.
-	UFUNCTION(BlueprintCallable)
-		virtual void ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType) override;
-
-	//모든 Buff/Debuff의 타이머를 해제
-	UFUNCTION(BlueprintCallable)
-		virtual void ClearAllBuffDebuffTimer(bool bIsDebuff) override;
+		virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 // -------- VFX -----------
-public:
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		class UNiagaraComponent* BuffNiagaraEmitter;
 
@@ -109,10 +107,34 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		TArray<class UNiagaraSystem*> DebuffNiagaraEffectList;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		class UMaterialInterface* NormalMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		class UMaterialInterface* WallThroughMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		TArray<class UTexture*> EmotionTextureList;
+
+private:
+	UPROPERTY()
+		bool bIsWallThroughEffectActivated = false;
+
 	UFUNCTION()
-		void DeactivateBuffNiagara();
+		void ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType);
+
+	UFUNCTION()
+		void DeactivateBuffEffect();
+
+	UFUNCTION()
+		void UpdateWallThroughEffect();
+
+	//캐릭터가 데미지를 입을 시, 빨간 Pulse 효과와 표정 텍스쳐 효과를 적용
+	UFUNCTION()
+		void SetFacialDamageEffect(bool NewState);
 
 // -------- Sound ----------------
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class UAudioComponent* AudioComponent;
 
@@ -126,7 +148,7 @@ public:
 		class USoundCue* BuffSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* DeBuffSound;
+		class USoundCue* DebuffSound;
 
 // ------- 그 외 -----------
 public:
@@ -149,4 +171,12 @@ private:
 	//구르기 딜레이 타이머
 	UPROPERTY()
 		FTimerHandle RollTimerHandle;
+
+	//버프 나이아가라 이펙트 리셋 타이머
+	UPROPERTY()
+		FTimerHandle BuffEffectResetTimerHandle;
+
+	//캐릭터 얼굴 효과 (머티리얼 값 변경) 리셋 타이머
+	UPROPERTY()
+		FTimerHandle FacialEffectResetTimerHandle;
 };
