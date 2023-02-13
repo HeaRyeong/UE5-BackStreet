@@ -5,7 +5,6 @@
 #include "EngineUtils.h"
 #include "Engine/LevelStreaming.h"
 #include "../../Character/public/EnemyCharacterBase.h"
-#include "../../Item/public/ItemBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemInfoStruct.h"
 #include "TimerManager.h"

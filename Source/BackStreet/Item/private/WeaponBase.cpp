@@ -40,6 +40,7 @@ void AWeaponBase::InitWeapon()
 		GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
 	}
 	WeaponState.CurrentDurability = WeaponStat.MaxDurability;
+	UE_LOG(LogTemp, Warning, TEXT("Init) Current Durability : %d"), WeaponState.CurrentDurability);
 }
 
 void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState)
@@ -73,6 +74,7 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
 	}
 	UpdateDurabilityState();
+	UE_LOG(LogTemp, Warning, TEXT("ATK) Current Durability : %d"), WeaponState.CurrentDurability);
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
 

@@ -6,29 +6,45 @@
 #include "GameFramework/Actor.h"
 #include "ItemBase.generated.h"
 
-#define MaxWeaponType 6
-#define MaxProjectileType 2
+#define MAX_WEAPON_TYPE 6
+#define MAX_PROJECTILE_TYPE 2
+
+DECLARE_DELEGATE_OneParam(FDelePickItem, AActor*);
 
 UCLASS()
 class BACKSTREET_API AItemBase : public AActor
 {
 	GENERATED_BODY()
-
-// ------ Global ---------------------------------------------
 public:
-	// Sets default values for this actor's properties
+	FDelePickItem OnPlayerBeginPickUp;
+
+// ------ Global, Component ---------------------------------------------
+public:
 	AItemBase();
-
-	UFUNCTION()
-		void OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	// Called every frame
-
-	virtual void Tick(float DeltaTime) override;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+public:
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
+		class USphereComponent* OverlapVolume;
+
+	UPROPERTY(EditDefaultsOnly)
+		class UStaticMeshComponent* MeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+		class UWidgetComponent* InfoWidgetComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+		class UNiagaraComponent* ParticleComponent;
+
+// ------ 기본 Info ---------------------------
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		EItemCategoryInfo ItemType = EItemCategoryInfo::E_None;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		uint8 ItemID;
 // ------ 아이템 기본 로직-------------------------------------
 public:
 	// 외부에서 Init하기위해 Call
@@ -36,39 +52,23 @@ public:
 		void InitItem(EItemCategoryInfo SetType);
 
 	UFUNCTION()
-		void SelectWeapon();
+		void OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp
+			, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-		void SelectProjectile();
-
-public:
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
-		class UBoxComponent* OverlapVolume;
-
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
-		class UNiagaraComponent* ItemParticleComponent;
+		void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
-		class UItemDataAssetInfo* DA;
+	//캐릭터가 Pick이벤트를 호출했다면
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnItemPicked(AActor* Causer);
 
+// ------ Asset ----------------------------------------------
+protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class USoundCue* SearchSound;
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		EItemCategoryInfo Type = EItemCategoryInfo::E_None;
 
 // ------ 참조 프로퍼티 ---------------------------------------------
 private:
 	UPROPERTY(VisibleDefaultsOnly)
-		class ATileBase* TileRef;
-
-	UPROPERTY(VisibleDefaultsOnly)
 		class ABackStreetGameModeBase* GameModeRef;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		class AAssetManagerBase* AssetManagerRef;
-
-	UPROPERTY(VisibleDefaultsOnly)
-		class ACharacterBase* MyCharacter;
 };

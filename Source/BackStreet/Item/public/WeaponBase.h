@@ -74,6 +74,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 		FWeaponStateStruct GetWeaponState() { return WeaponState; }
 
+	UFUNCTION()
+		void SetWeaponStat(FWeaponStatStruct NewStat) { WeaponStat = NewStat; }
+
+	UFUNCTION()
+		void SetWeaponState(FWeaponStateStruct NewState) { WeaponState = NewState; }
+
+
 protected:
 	//Weapon¿« ¡æ«’ Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")

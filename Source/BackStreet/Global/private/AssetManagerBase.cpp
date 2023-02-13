@@ -77,10 +77,10 @@ void AAssetManagerBase::SpawnBuffItem(EItemCategoryInfo Type, AActor* SpawnPoint
 		int32 BuffType = FMath::RandRange(0, 5);
 		if (BuffAssets[BuffType].IsValid())
 		{
-			UBlueprint* Gen = Cast<UBlueprint>(BuffAssets[BuffType].ResolveObject());
-			AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
+		//	UBlueprint* Gen = Cast<UBlueprint>(BuffAssets[BuffType].ResolveObject());
+		///	AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
 			// AItemBase 클래스 스폰하고 Init 하기
-			Target->InitItem(Type);
+			//Target->InitItem(Type);
 
 		}
 }
@@ -89,10 +89,10 @@ void AAssetManagerBase::SpawnWeaponItem(EItemCategoryInfo Type, AActor* SpawnPoi
 {
 	if (WeaponItemAssets[0].IsValid())
 	{
-		UBlueprint* Gen = Cast<UBlueprint>(WeaponItemAssets[0].ResolveObject());
-		AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
+	//	UBlueprint* Gen = Cast<UBlueprint>(WeaponItemAssets[0].ResolveObject());
+	//	AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
 		// AItemBase 클래스 스폰하고 Init 하기
-		Target->InitItem(Type);
+	//	Target->InitItem(Type);
 
 	}
 }
@@ -102,10 +102,10 @@ void AAssetManagerBase::SpawnProjectileItem(EItemCategoryInfo Type, AActor* Spaw
 {
 	if (ProjectileItemAssets[0].IsValid())
 	{
-		UBlueprint* Gen = Cast<UBlueprint>(ProjectileItemAssets[0].ResolveObject());
-		AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
+	//	UBlueprint* Gen = Cast<UBlueprint>(ProjectileItemAssets[0].ResolveObject());
+	//	AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
 		// AItemBase 클래스 스폰하고 Init 하기
-		Target->InitItem(Type);
+	//	Target->InitItem(Type);
 
 	}
 }
@@ -116,10 +116,10 @@ void AAssetManagerBase::SpawnMissionItem(EItemCategoryInfo Type, AActor* SpawnPo
 		
 		if (MissionAssets[0].IsValid())
 		{
-			UBlueprint* Gen = Cast<UBlueprint>(MissionAssets[0].ResolveObject());
-			AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
+		//	UBlueprint* Gen = Cast<UBlueprint>(MissionAssets[0].ResolveObject());
+		//	AItemBase* Target = GetWorld()->SpawnActor<AItemBase>(Gen->GeneratedClass, SpawnPoints->GetActorLocation(), FRotator::ZeroRotator);
 			// AItemBase 클래스 스폰하고 Init 하기
-			Target->InitItem(Type);
+		//	Target->InitItem(Type);
 
 		}
 	
@@ -300,7 +300,7 @@ void AAssetManagerBase::CheckWeaponLoad()
 }
 
 AWeaponBase* AAssetManagerBase::SpawnWeaponwithID(int32 ID)
-{
+{/*
 	UBlueprint* Gen;
 	AWeaponBase* Target;
 
@@ -348,8 +348,9 @@ AWeaponBase* AAssetManagerBase::SpawnWeaponwithID(int32 ID)
 		Target = GetWorld()->SpawnActor<AWeaponBase>(Gen->GeneratedClass, this->GetActorLocation(), FRotator::ZeroRotator);
 		//Target->ProjectilePath = WeaponAssets[1];
 	}
-
-	return Target;
+	
+	return Target;*/
+	return nullptr;
 }
 
 FStageEnemyTypeStruct AAssetManagerBase::ReturnStageEnemyTypeStruct(int32 StageType)

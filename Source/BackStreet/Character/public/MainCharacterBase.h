@@ -48,11 +48,10 @@ public:
 		void ZoomIn(float Value);
 
 	UFUNCTION()
-		virtual void TryReload() override;
+		void TryPickItem();
 
 	UFUNCTION()
-		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
-			, AController* EventInstigator, AActor* DamageCauser) override;
+		virtual void TryReload() override;
 
 	UFUNCTION(BlueprintCallable)
 		virtual void TryAttack() override;
@@ -66,10 +65,6 @@ public:
 	UFUNCTION()
 		virtual void Die() override;
 
-	//Rotation 조절 방식을 커서 위치로 한다
-	UFUNCTION()
-		void RotateToCursor();
-
 	//Rotation 조절 방식을 기본 방식인 Movement 방향으로 되돌린다
 	UFUNCTION(BlueprintCallable)
 		void ResetRotationToMovement();
@@ -79,6 +74,18 @@ public:
 
 	UFUNCTION()
 		virtual void DropWeapon() override;
+
+private:
+	UFUNCTION()
+		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
+			, AController* EventInstigator, AActor* DamageCauser) override;
+
+	//Rotation 조절 방식을 커서 위치로 한다
+	UFUNCTION()
+		void RotateToCursor();
+
+	UFUNCTION()
+		TArray<AActor*> GetNearItemList();
 
 // ------- 버프 / 디버프 ---------------
 protected: 

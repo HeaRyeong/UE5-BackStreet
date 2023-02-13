@@ -29,7 +29,7 @@ public:
 
 	//무기를 장착
 	UFUNCTION()
-		void EquipWeapon(int32 InventoryIdx);
+		void EquipWeapon(int32 InventoryIdx, bool bIsNewWeapon = false);
 
 	//무기 추가를 시도. 불가능하면 false를 반환
 	UFUNCTION()
@@ -45,7 +45,7 @@ public:
 
 	//현재 무기의 정보와 인벤토리 내 정보를 동기화
 	UFUNCTION(BlueprintCallable)
-		void SyncCurrentWeaponInfo();
+		void SyncCurrentWeaponInfo(bool bIsLoadInfo);
 
 protected:
 	UFUNCTION()
@@ -81,6 +81,9 @@ public:
 	//현재 무기 개수를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		int32 GetCurrentWeaponCount() {  return CurrentWeaponCount = InventoryArray.Num(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetCurrentCapacity() { return CurrentCapacity; }
 
 	UFUNCTION()
 		class AWeaponBase* GetCurrentWeaponRef();

@@ -5,6 +5,7 @@
 #include "../public/MainCharacterController.h"
 #include "../public/CharacterBuffManager.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/ItemBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
@@ -85,6 +86,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
+	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryPickItem);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
 }
 
@@ -132,6 +134,29 @@ void AMainCharacterBase::ZoomIn(float Value)
 	newLength = newLength < MIN_CAMERA_BOOM_LENGTH ? MIN_CAMERA_BOOM_LENGTH : newLength;
 	newLength = newLength > MAX_CAMERA_BOOM_LENGTH ? MAX_CAMERA_BOOM_LENGTH : newLength;
 	CameraBoom->TargetArmLength = newLength;
+}
+
+void AMainCharacterBase::TryPickItem()
+{
+	TArray<AActor*> nearItemList = GetNearItemList();
+	
+	UE_LOG(LogTemp, Warning, TEXT("PICK #1"));
+
+	if (nearItemList.Num())
+	{
+		AActor* targetItem = Cast<AItemBase>(nearItemList[0]);
+		
+		UE_LOG(LogTemp, Warning, TEXT("PICK #2"));
+
+		if (targetItem->ActorHasTag("Item"))
+		{
+			Cast<AItemBase>(targetItem)->OnPlayerBeginPickUp.ExecuteIfBound(this);
+		}
+		else if(targetItem->ActorHasTag("ItemBox"))
+		{
+			//Open Item Box Event
+		}
+	}
 }
 
 void AMainCharacterBase::TryReload()
@@ -216,6 +241,26 @@ void AMainCharacterBase::RotateToCursor()
 	GetWorld()->GetTimerManager().SetTimer(RotationResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
 		ResetRotationToMovement();
 	}), 1.0f, false);
+}
+
+TArray<AActor*> AMainCharacterBase::GetNearItemList()
+{
+	TArray<AActor*> outItemList;
+	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
+	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f
+												   + GetMesh()->GetUpVector() * -45.0f;
+	
+	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
+	{
+		bool result = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius, { itemObjectType }
+											, AItemBase::StaticClass(), TArray<AActor*>(), outItemList);
+
+		if (result) break; 
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Pick #0 - Nothing"));
+		}
+	}
+	return outItemList;
 }
 
 void AMainCharacterBase::ResetRotationToMovement()
