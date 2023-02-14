@@ -72,56 +72,6 @@ void AItemBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* O
 	ParticleComponent->Deactivate();
 }
 /*
-void AItemBase::OnItemPicked(AActor* Causer)
-{
-	if (!IsValid(Causer) || Causer->ActorHasTag("Player")) return;
-
-	FBuffItemInfoStruct Stat;
-	UE_LOG(LogTemp, Log, TEXT("Get Item %d"), ItemType);
-	
-	switch (ItemType)
-	{
-	case EItemCategoryInfo::E_None:
-		break;
-	case EItemCategoryInfo::E_Weapon:
-		UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
-		if (SearchSound->IsValidLowLevelFast())
-			UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
-		SelectWeapon();
-		Destroy();
-		break;
-	case EItemCategoryInfo::E_Bullet:
-		UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
-		if (SearchSound->IsValidLowLevelFast())
-			UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
-		SelectProjectile();
-		Destroy();
-		break;
-	case EItemCategoryInfo::E_Buff:
-		Stat = DA->BuffStat;
-		MyCharacter->AddNewBuffDebuff(false, (uint8)Stat.ItemType, this, Stat.Time, Stat.Time);
-		Destroy();
-		break;
-	case EItemCategoryInfo::E_DeBuff:
-		break;
-	case EItemCategoryInfo::E_StatUp:
-		break;
-		case EItemCategoryInfo::E_Mission:
-			InGameScriptRef->ChapterManager->RemoveMissionItem(this);
-			Destroy();
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-void AItemBase::InitItem(EItemCategoryInfo setType)
-{
-	Type = setType;
-
-}
-
 void AItemBase::SelectWeapon()
 {
 	int8 weaponType = FMath::RandRange(0, MaxWeaponType - 1);
