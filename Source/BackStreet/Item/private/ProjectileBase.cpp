@@ -15,18 +15,20 @@ AProjectileBase::AProjectileBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENE_ROOT"));
+
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SPHERE_COLLISION"));
 	SphereCollision->SetupAttachment(RootComponent);
 	SphereCollision->SetCollisionProfileName(TEXT("OverlapAll"));
-	SetRootComponent(SphereCollision);
 	
 	TargetingCollision = CreateDefaultSubobject<USphereComponent>(TEXT("TARGETING_COLLISION"));
-	TargetingCollision->SetupAttachment(SphereCollision);
+	TargetingCollision->SetupAttachment(RootComponent);
 	TargetingCollision->SetWorldScale3D(FVector(5.0f));
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PROJECTILE_MESH"));
-	Mesh->SetupAttachment(SphereCollision);
+	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetRelativeScale3D({ 0.5f, 0.5f, 0.5f });
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PROJECTILE_MOVEMENT"));
 	ProjectileMovement->InitialSpeed = ProjectileStat.ProjectileSpeed;
@@ -67,10 +69,10 @@ void AProjectileBase::UpdateProjectileStat(FProjectileStatStruct NewStat)
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!ProjectileMovement->IsActive() || OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
+	if (!ProjectileMovement->IsActive()) return;
 	if (OtherActor->ActorHasTag("Character"))
 	{
-		
+		if (OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
 
 		//폭발하는 발사체라면?
 		if (ProjectileStat.bIsExplosive)
@@ -93,6 +95,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		
 		(Cast<ACharacterBase>(OtherActor)->GetBuffManagerRef())->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
+
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	if (HitSound != nullptr && HitParticle != nullptr)
 	{
