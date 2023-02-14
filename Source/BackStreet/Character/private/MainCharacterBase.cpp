@@ -229,7 +229,7 @@ void AMainCharacterBase::RotateToCursor()
 	if (CharacterState.CharacterActionState != ECharacterActionType::E_Idle
 		&& CharacterState.CharacterActionState != ECharacterActionType::E_Attack) return;
 
-	FRotator newRotation = PlayerControllerRef->GetAimingRotation();
+	FRotator newRotation = PlayerControllerRef->	();
 	if (newRotation != FRotator())
 	{
 		newRotation.Pitch = newRotation.Roll = 0.0f;
@@ -246,9 +246,8 @@ void AMainCharacterBase::RotateToCursor()
 TArray<AActor*> AMainCharacterBase::GetNearItemList()
 {
 	TArray<AActor*> outItemList;
-	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic);
-	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f
-												   + GetMesh()->GetUpVector() * -45.0f;
+	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
+	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
 	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
 	{

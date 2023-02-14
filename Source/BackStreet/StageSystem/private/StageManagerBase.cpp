@@ -108,7 +108,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 		UnLoadStage(toUnLoadStage);
 	
 	// UI 업데이트
-	InGameScriptRef->UpdateMiniMapUI();
+//	InGameScriptRef->UpdateMiniMapUI();
 }
 
 void AStageManagerBase::LoadStage(ATileBase* targetStage)
