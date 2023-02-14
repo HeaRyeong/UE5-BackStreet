@@ -8,7 +8,7 @@
 
 #define MAX_BUFF_IDX 6
 #define MAX_DEBUFF_IDX 7
-#define HEAL_BUFF_TIMER_IDX 6
+#define HEAL_BUFF_TIMER_IDX 1
 #define DEBUFF_DAMAGE_TIMER_IDX 15
 #define MAX_BUFF_INFO_LIST_IDX 24
 
@@ -190,7 +190,6 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			break;
 		case ECharacterBuffType::E_Invincibility:
 			characterStat.bIsInvincibility = false;
-			ClearAllBuffDebuffTimer(true);
 			break;
 		case ECharacterBuffType::E_Infinite:
 			characterStat.bInfinite = false;

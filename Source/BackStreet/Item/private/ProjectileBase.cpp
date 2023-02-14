@@ -2,6 +2,7 @@
 
 
 #include "../public/ProjectileBase.h"
+#include "../public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/CharacterBuffManager.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -69,7 +70,9 @@ void AProjectileBase::UpdateProjectileStat(FProjectileStatStruct NewStat)
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!ProjectileMovement->IsActive()) return;
+	if (!ProjectileMovement->IsActive() || (IsValid(GetOwner()) && OtherActor == GetOwner())) return;
+	if (OtherActor->ActorHasTag("Item")) return;
+
 	if (OtherActor->ActorHasTag("Character"))
 	{
 		if (OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
@@ -95,6 +98,8 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		
 		(Cast<ACharacterBase>(OtherActor)->GetBuffManagerRef())->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *UKismetSystemLibrary::GetDisplayName(OtherActor));
 
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	if (HitSound != nullptr && HitParticle != nullptr)

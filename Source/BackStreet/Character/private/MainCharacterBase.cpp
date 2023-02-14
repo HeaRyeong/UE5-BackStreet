@@ -6,6 +6,7 @@
 #include "../public/CharacterBuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/ItemBase.h"
+#include "../../Item/public/ItemBoxBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
@@ -140,21 +141,23 @@ void AMainCharacterBase::TryPickItem()
 {
 	TArray<AActor*> nearItemList = GetNearItemList();
 	
-	UE_LOG(LogTemp, Warning, TEXT("PICK #1"));
+	UE_LOG(LogTemp, Warning, TEXT("Open #1"));
 
 	if (nearItemList.Num())
 	{
-		AActor* targetItem = Cast<AItemBase>(nearItemList[0]);
+		AActor* targetItem = nearItemList[0];
 		
-		UE_LOG(LogTemp, Warning, TEXT("PICK #2"));
+		UE_LOG(LogTemp, Warning, TEXT("Open #2"));
 
 		if (targetItem->ActorHasTag("Item"))
 		{
 			Cast<AItemBase>(targetItem)->OnPlayerBeginPickUp.ExecuteIfBound(this);
+			UE_LOG(LogTemp, Warning, TEXT("Pick #3"));
 		}
 		else if(targetItem->ActorHasTag("ItemBox"))
 		{
-			//Open Item Box Event
+			Cast<AItemBoxBase>(targetItem)->OnPlayerOpenBegin.ExecuteIfBound(this);
+			UE_LOG(LogTemp, Warning, TEXT("Open #2.5"));
 		}
 	}
 }
@@ -229,7 +232,7 @@ void AMainCharacterBase::RotateToCursor()
 	if (CharacterState.CharacterActionState != ECharacterActionType::E_Idle
 		&& CharacterState.CharacterActionState != ECharacterActionType::E_Attack) return;
 
-	FRotator newRotation = PlayerControllerRef->	();
+	FRotator newRotation = PlayerControllerRef->GetRotationToCursor();
 	if (newRotation != FRotator())
 	{
 		newRotation.Pitch = newRotation.Roll = 0.0f;
@@ -245,21 +248,31 @@ void AMainCharacterBase::RotateToCursor()
 
 TArray<AActor*> AMainCharacterBase::GetNearItemList()
 {
-	TArray<AActor*> outItemList;
+	TArray<AActor*> totalItemList;
+	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass()};
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
 	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
 	{
-		bool result = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius, { itemObjectType }
-											, AItemBase::StaticClass(), TArray<AActor*>(), outItemList);
+		TArray<AActor*> tempItemList; 
+		bool result = false;
+
+		for (auto& targetClass : targetClassList)
+		{
+			result = (result || UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius
+														, { itemObjectType }, targetClass, {}, tempItemList));
+
+			for (auto& actorRef : tempItemList)
+				totalItemList.Add(actorRef);
+		}
 
 		if (result) break; 
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("Pick #0 - Nothing"));
 		}
 	}
-	return outItemList;
+	return totalItemList;
 }
 
 void AMainCharacterBase::ResetRotationToMovement()

@@ -138,6 +138,7 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 
 	if (IsValid(newProjectile))
 	{
+		newProjectile->SetOwner(this);
 		newProjectile->InitProjectile(OwnerCharacterRef);
 		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //버프/디버프로 인해 강화/너프된 값을 반영
 		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
@@ -185,7 +186,7 @@ void AWeaponBase::AddMagazine(int32 Count)
 bool AWeaponBase::TryFireProjectile()
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
-	if (WeaponState.CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
+	if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite && WeaponState.CurrentAmmoCount == 0)
 	{
 		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
 		//타이머를 통해 일정 시간이 지난 후에 Reload를 시도.

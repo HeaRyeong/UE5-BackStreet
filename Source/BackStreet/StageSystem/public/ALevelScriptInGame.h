@@ -35,8 +35,8 @@ public:
 	UPROPERTY()
 		class AChapterManagerBase* ChapterManager;
 
-	UFUNCTION(BlueprintCallable)
-		class AChapterManagerBase* GetChapterManage() { return ChapterManager; }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		class AChapterManagerBase* GetChapterManager() { return ChapterManager; }
 
 public:
 	UFUNCTION()

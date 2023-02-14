@@ -42,6 +42,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
 		int32 DefaultWeaponID;
 
+	//적이 죽고 스폰할 아이템의 Type 리스트 (각 아이템은 Idx로 구별)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		TArray<EItemCategoryInfo> SpawnItemTypeList;
+
+	//적이 죽구 스폰할 아이템 ID 리스트 (각 아이템은 Idx로 구별)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		TArray<uint8> SpawnItemIDList;
+
+	//적이 죽고 스폰할 아이템의 스폰 확률 리스트  (0.0f ~ 1.0f),  (각 아이템은 Idx로 구별)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+		TArray<float> ItemSpawnProbabilityList;
+
 // ----- Action ---------------
 public:
 	UFUNCTION()
@@ -81,6 +93,9 @@ protected:
 
 	UFUNCTION()
 		void SetDefaultStat();
+
+	UFUNCTION()
+		void SpawnDeathItems();
 
 // ---- VFX ---------------------
 public:

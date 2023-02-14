@@ -67,14 +67,23 @@ bool UMissionBase::ClearCheck()
 	}
 }
 
-void UMissionBase::RemoveItem(class AItemBase* target)
+bool UMissionBase::TryAddMissionItem(AItemBase* target)
 {
-	ItemList.Remove(target);
-	ClearCheck();
+	if (ItemList.Num() >= MAX_MISSION_ITEM_COUNT) return false;
+	ItemList.Add(target);
+	return true;
 }
 
-void UMissionBase::RemoveMonster(class AEnemyCharacterBase* target)
+bool UMissionBase::TryRemoveMissionItem(class AItemBase* target)
 {
+	if (ItemList.Find(target) == INDEX_NONE) return false;
+	ItemList.Remove(target);
+	return ClearCheck();
+}
+
+bool UMissionBase::TryRemoveMonster(class AEnemyCharacterBase* target)
+{
+	if (MonsterList.Find(target) == INDEX_NONE) return false;
 	MonsterList.Remove(target);
-	ClearCheck();
+	return ClearCheck();
 }

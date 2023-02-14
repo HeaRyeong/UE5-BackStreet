@@ -15,12 +15,18 @@ UCLASS()
 class BACKSTREET_API AItemBase : public AActor
 {
 	GENERATED_BODY()
+
+// ------ DELEGATE, Static Member ---------------------------------------
 public:
 	FDelePickItem OnPlayerBeginPickUp;
+
+	UFUNCTION(BlueprintCallable)
+		static int32 GetTargetItemKey(int32 Type, uint8 ItemID) { return Type * 1000 + ItemID; }
 
 // ------ Global, Component ---------------------------------------------
 public:
 	AItemBase();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,6 +44,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 		class UNiagaraComponent* ParticleComponent;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		class UProjectileMovementComponent* ProjectileMovement;
+
 // ------ 기본 Info ---------------------------
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -49,7 +58,7 @@ protected:
 public:
 	// 외부에서 Init하기위해 Call
 	UFUNCTION()
-		void InitItem(EItemCategoryInfo SetType);
+		void InitItem(EItemCategoryInfo SetType, uint8 NewItemID = 0);
 
 	UFUNCTION()
 		void OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp
@@ -62,12 +71,24 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnItemPicked(AActor* Causer);
 
+// ------ Projectile 로직 ------------------------------------
+public:
+	UFUNCTION()
+		void SetLaunchDirection(FVector NewDirection);
+
+	UFUNCTION(BlueprintCallable)
+		void ActivateProjectileMovement();
+
 // ------ Asset ----------------------------------------------
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* SearchSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Sound")
+		class USoundCue* PickSound;
 
 // ------ 참조 프로퍼티 ---------------------------------------------
+protected:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		class ALevelScriptInGame* GetLevelScriptRef() { return InGameScriptRef; }
+
 private:
 	UPROPERTY(VisibleDefaultsOnly)
 		class ALevelScriptInGame* InGameScriptRef;

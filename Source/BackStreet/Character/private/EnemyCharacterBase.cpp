@@ -81,6 +81,7 @@ void AEnemyCharacterBase::Die()
 {
 	Super::Die();
 
+	SpawnDeathItems();
 	EnemyDeathDelegate.ExecuteIfBound(this);
 	Controller->Destroy();
 }
@@ -97,6 +98,23 @@ void AEnemyCharacterBase::SetDefaultStat()
 {
 	CharacterStat.bInfinite = true;
 	CharacterStat.bInfinite = true;
+}
+
+void AEnemyCharacterBase::SpawnDeathItems()
+{
+	for (int32 itemIdx = 0; itemIdx < SpawnItemIDList.Num(); itemIdx++)
+	{
+		if (!SpawnItemTypeList.IsValidIndex(itemIdx) || !ItemSpawnProbabilityList.IsValidIndex(itemIdx)) return;
+
+		const uint8 itemType = (uint8)SpawnItemTypeList[itemIdx];
+		const uint8 itemID = SpawnItemIDList[itemIdx];
+		const float spawnProbability = ItemSpawnProbabilityList[itemIdx];
+
+		if(FMath::RandRange(0.0f, 1.0f) <= spawnProbability)
+		{
+			GamemodeRef->SpawnItemToWorld(itemType, itemID, GetActorLocation() + FMath::VRand() * 10.0f);
+		}
+	}
 }
 
 void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)

@@ -38,7 +38,10 @@ public:
 public:
 	// 외부에서 Init하기위해 Call
 	UFUNCTION()
-		void InitItemBox();
+		void InitItemBox(bool _bIncludeMissionItem);
+
+	UFUNCTION()
+		void OnItemBoxOpened(AActor* Causer);
 
 	UFUNCTION()
 		void OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp
@@ -47,24 +50,42 @@ public:
 	UFUNCTION()
 		void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+private:
+	//최대 MaxSpawnCount 만큼의 아이템을 확률에 기반하여 스폰하여 List 형태로 반환
+	UFUNCTION()
+		TArray<class AItemBase*> SpawnItems(int32 MaxSpawnCount);
+
+	UFUNCTION()
+		void LaunchItem(class AItemBase* TargetItem);
+
 // ------ 기본 Property ---------------------------
+private:
+	UPROPERTY()
+		bool bIncludeMissionItem = false;
+
 protected:
 	//최대로 스폰할 아이템 개수
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings")
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings", meta = (UIMin = 1, UIMax = 10))
 		int32 MaxSpawnItemCount;
 
 	//최소로 스폰할 아이템 개수
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings")
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings", meta = (UIMin = 1, UIMax = 10))
 		int32 MinSpawnItemCount;
 
-	//스폰할 아이템 클래스의 리스트
+	//현재 아이템 박스가 스폰 가능한 아이템의 Category Type 리스트 : idx별로 아이템을 구분
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings")
-		TArray<TSubclassOf<class AItemBase>> SpawnItemClassList;
+		TArray<EItemCategoryInfo> SpawnItemTypeList;
 
-	//각 아이템의 등장 확률를 담은 리스트
+	//현재 아이템 박스가 스폰 가능한 아이템의 ID 리스트 : idx별로 아이템을 구분
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings")
+		TArray<int32> SpawnItemIDList;
+
+	//각 아이템의 등장 확률를 담은 리스트 (0 ~ 100)
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Settings")
 		TArray<float> ItemSpawnProbabilityList;
 
+	UFUNCTION()
+		bool GetMissionItemIsIncluded() { return bIncludeMissionItem; }
 
 // ----- Asset -----------------------------------
 protected:
@@ -76,4 +97,7 @@ protected:
 private:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
+
+	UPROPERTY()
+		class ALevelScriptInGame* InGameScriptRef;
 };
