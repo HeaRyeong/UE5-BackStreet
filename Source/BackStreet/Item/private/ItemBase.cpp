@@ -5,6 +5,8 @@
 #include "../../StageSystem/public/MissionBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/CharacterBuffManager.h"
@@ -43,6 +45,7 @@ void AItemBase::BeginPlay()
 
 	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());
 	OnPlayerBeginPickUp.BindUFunction(this, FName("OnItemPicked"));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 }
 
 void AItemBase::InitItem(EItemCategoryInfo SetType)
@@ -104,10 +107,64 @@ void AItemBase::OnItemPicked(AActor* Causer)
 	case EItemCategoryInfo::E_StatUp:
 		break;
 		case EItemCategoryInfo::E_Mission:
-			TileRef->MissionInfo->ItemList.Remove(this);
-			TileRef->MissionInfo->ClearCheck();
+			InGameScriptRef->ChapterManager->RemoveMissionItem(this);
 			Destroy();
 			break;
+		default:
+			break;
+		}
+	}
+}
+
+void AItemBase::InitItem(EItemCategoryInfo setType)
+{
+	Type = setType;
+
+}
+
+void AItemBase::SelectWeapon()
+{
+	int8 weaponType = FMath::RandRange(0, MaxWeaponType - 1);
+	int32 weaponID = 0;
+	switch (weaponType)
+	{
+	case 0:
+		weaponID = 100;
+		break;
+	case 1:
+		weaponID = 101;
+		break;
+	case 2:
+		weaponID = 102;
+		break;
+	case 3:
+		weaponID = 103;
+		break;
+	case 4:
+		weaponID = 151;
+		break;
+	case 5:
+		weaponID = 199;
+		break;
+	default:
+		break;
+	}
+	MyCharacter->PickWeapon(weaponID);
+}
+
+void AItemBase::SelectProjectile()
+{
+	int8 ProjectileType = FMath::RandRange(0, MaxProjectileType - 1);
+
+	int32 ProjectileID = 0;
+	switch (ProjectileType)
+	{
+	case 0:
+		ProjectileID = 200;
+		break;
+	case 1:
+		ProjectileID = 204;
+		break;
 	default:
 		break;
 	}

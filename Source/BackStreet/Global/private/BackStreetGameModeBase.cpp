@@ -3,6 +3,8 @@
 #include "../public/BackStreetGameModeBase.h"
 #include "../../StageSystem/public/GridBase.h"
 #include "../../StageSystem/public/TileBase.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/StageManagerBase.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
@@ -14,9 +16,15 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 	static ConstructorHelpers::FObjectFinder<UDataTable> DataTable(TEXT("/Game/Character/EnemyCharacter/Data/D_EnemyStatDataTable.D_EnemyStatDataTable"));
 	if (DataTable.Succeeded())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("EnemyStatDataTable Succeed!"));
 		EnemyStatTable = DataTable.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> StageTypeDataTable(TEXT("/Game/Map/Stages/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
+	if (StageTypeDataTable.Succeeded())
+	{
+		StageTypeTable = StageTypeDataTable.Object;
+	}
+
 }
 
 void ABackStreetGameModeBase::BeginPlay()
@@ -27,158 +35,70 @@ void ABackStreetGameModeBase::BeginPlay()
 	//------ Ref 멤버 초기화  ---------------
 	PlayerCharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	//------ Chapter 시작 -----------
-	StartChapter();
-}
-
-void ABackStreetGameModeBase::InitChapter()
-{
-	FActorSpawnParameters spawnParams;
-	FRotator rotator;
-	FVector spawnLocation = FVector::ZeroVector;
-
-	AssetStreamingHandle = StreamableManager.RequestAsyncLoad(AssetManagerBPPath, FStreamableDelegate::CreateUObject(this, &ABackStreetGameModeBase::CreateAssetManager));
-	RemainChapter = 2;
-	ChapterStatValue = 0;
-
-	Chapter = GetWorld()->SpawnActor<AGridBase>(AGridBase::StaticClass(), spawnLocation, rotator, spawnParams);
-	Chapter->CreateMaze(3, 3);
-
-	CurrentTile = Chapter->GetCurrentTile();
-	RemainChapter--;
-}
-
-void ABackStreetGameModeBase::NextStage(uint8 Dir)
-{
-	switch ((EDirection)Dir)
-	{
-	case EDirection::E_UP:
-		PreDir = (uint8)(EDirection::E_DOWN);
-		UE_LOG(LogTemp, Log, TEXT("[AtestGameMode::NextStage()] PreDir : DOWN"));
-		break;
-	case EDirection::E_DOWN:
-		PreDir = (uint8)(EDirection::E_UP);
-		UE_LOG(LogTemp, Log, TEXT("[AtestGameMode::NextStage()] PreDir : UP"));
-		break;
-	case EDirection::E_LEFT:
-		PreDir = (uint8)(EDirection::E_RIGHT);
-		UE_LOG(LogTemp, Log, TEXT("[AtestGameMode::NextStage()] PreDir : RIGHT"));
-		break;
-	case EDirection::E_RIGHT:
-		PreDir = (uint8)(EDirection::E_LEFT);
-		UE_LOG(LogTemp, Log, TEXT("[AtestGameMode::NextStage()] PreDir : LEFT"));
-		break;
-	default:
-		break;
-	}
-	MoveTile(Dir);
-	UpdateMiniMapUI();
-}
-
-void ABackStreetGameModeBase::MoveTile(uint8 NextDir)
-{
-	Chapter->MoveCurrentTile(NextDir);
-	CurrentTile = Chapter->GetCurrentTile();
-}
-
-void ABackStreetGameModeBase::ClearChapter()
-{
-	if (IsValid(Chapter))
-		Chapter->RemoveChapter();
-
-	if (RemainChapter == 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("GameClear"));
-
-	}
-	else
-	{
-		InitChapter();
-		ChapterStatValue += 0.1f;
-		CurrentTile->LoadLevel();
-	}
-}
-
-void ABackStreetGameModeBase::CreateAssetManager()
-{
-	if (AssetManagerBPPath.IsValid())
-	{
-		UBlueprint* Gen = Cast<UBlueprint>(AssetManagerBPPath.ResolveObject());
-		if (Gen != nullptr)
-		{
-			AssetDataManager = GetWorld()->SpawnActor<AAssetManagerBase>(Gen->GeneratedClass, FVector::ZeroVector, FRotator::ZeroRotator);
-		}
-	}
-}
-
-AAssetManagerBase* ABackStreetGameModeBase::GetAssetManager()
-{
-	return AssetDataManager;
 }
 
 
 void ABackStreetGameModeBase::StartChapter()
 {
-	InitChapter();
-
 	FTimerHandle delegateBindDelayTimer;
-	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateLambda([&]()
-	{
-		StartChapterDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
-	}));
+	GetWorldTimerManager().SetTimer(delegateBindDelayTimer, FTimerDelegate::CreateLambda([&]()
+		{
+			StartChapterDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
+		}), 0.1f, false, 0.5f);
+
 }
 
 void ABackStreetGameModeBase::RewardStageClear(EStatUpCategoryInfo RewardType)
 {
-	if (!IsValid(PlayerCharacterRef)) return;
+	//if (!IsValid(PlayerCharacterRef)) return;
 
-	FCharacterStatStruct NewStat = PlayerCharacterRef->GetCharacterStat();
-	float RewardValue;
+	//FCharacterStatStruct NewStat = PlayerCharacterRef->GetCharacterStat();
+	//float RewardValue;
 
-	if (CurrentTile->ClearTime < 1.0f) // A등급
-	{
-		RewardValue = ChapterStatValue + 0.3f;
-		UE_LOG(LogTemp, Log, TEXT("A Rank %f"), RewardValue);
-	}
-	else if (CurrentTile->ClearTime < 3.0f) // B등급
-	{
-		RewardValue = ChapterStatValue + 0.2f;
-		UE_LOG(LogTemp, Log, TEXT("B Rank %f"), RewardValue);
-	}
-	else // C등급
-	{
-		RewardValue = ChapterStatValue + 0.1f;
-		UE_LOG(LogTemp, Log, TEXT("C Rank %f"), RewardValue);
-	}
+	//if (CurrentTile->ClearTime < 1.0f) // A등급
+	//{
+	//	RewardValue = ChapterManager->GetChapterWeight() + 0.3f;
+	//	UE_LOG(LogTemp, Log, TEXT("A Rank %f"), RewardValue);
+	//}
+	//else if (CurrentTile->ClearTime < 3.0f) // B등급
+	//{
+	//	RewardValue = ChapterManager->GetChapterWeight() + 0.2f;
+	//	UE_LOG(LogTemp, Log, TEXT("B Rank %f"), RewardValue);
+	//}
+	//else // C등급
+	//{
+	//	RewardValue = ChapterManager->GetChapterWeight() + 0.1f;
+	//	UE_LOG(LogTemp, Log, TEXT("C Rank %f"), RewardValue);
+	//}
 
-	switch (RewardType)
-	{
-	case EStatUpCategoryInfo::E_None:
-		break;
-	case EStatUpCategoryInfo::E_MaxHp:
-		UE_LOG(LogTemp, Log, TEXT("MaxHp"));
-		NewStat.CharacterMaxHP += 0.1f + RewardValue;
-		break;
-	case EStatUpCategoryInfo::E_ATK:
-		UE_LOG(LogTemp, Log, TEXT("ATK"));
-		NewStat.CharacterAtkMultiplier += 0.1f + RewardValue;
-		break;
-	case EStatUpCategoryInfo::E_ATKSpeed:
-		UE_LOG(LogTemp, Log, TEXT("ATKSpeed"));
-		NewStat.CharacterAtkSpeed += 0.05f + (RewardValue * 0.1);
-		break;
-	case EStatUpCategoryInfo::E_MoveSpeed:
-		UE_LOG(LogTemp, Log, TEXT("MoveSpeed"));
-		NewStat.CharacterMoveSpeed += 20.0f + (RewardValue * 10);
-		break;
-	case EStatUpCategoryInfo::E_Defense:
-		UE_LOG(LogTemp, Log, TEXT("Defense"));
-		NewStat.CharacterDefense += 0.1f + RewardValue;
-		break;
-	default:
-		break;
-	}
-	UpdateCharacterStat(PlayerCharacterRef, NewStat);
+	//switch (RewardType)
+	//{
+	//case EStatUpCategoryInfo::E_None:
+	//	break;
+	//case EStatUpCategoryInfo::E_MaxHp:
+	//	UE_LOG(LogTemp, Log, TEXT("MaxHp"));
+	//	NewStat.CharacterMaxHP += 0.1f + RewardValue;
+	//	break;
+	//case EStatUpCategoryInfo::E_ATK:
+	//	UE_LOG(LogTemp, Log, TEXT("ATK"));
+	//	NewStat.CharacterAtkMultiplier += 0.1f + RewardValue;
+	//	break;
+	//case EStatUpCategoryInfo::E_ATKSpeed:
+	//	UE_LOG(LogTemp, Log, TEXT("ATKSpeed"));
+	//	NewStat.CharacterAtkSpeed += 0.05f + (RewardValue * 0.1);
+	//	break;
+	//case EStatUpCategoryInfo::E_MoveSpeed:
+	//	UE_LOG(LogTemp, Log, TEXT("MoveSpeed"));
+	//	NewStat.CharacterMoveSpeed += 20.0f + (RewardValue * 10);
+	//	break;
+	//case EStatUpCategoryInfo::E_Defense:
+	//	UE_LOG(LogTemp, Log, TEXT("Defense"));
+	//	NewStat.CharacterDefense += 0.1f + RewardValue;
+	//	break;
+	//default:
+	//	break;
+	//}
+	//UpdateCharacterStat(PlayerCharacterRef, NewStat);
 }
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)
@@ -257,3 +177,12 @@ FWeaponStatStruct ABackStreetGameModeBase::GetWeaponStatInfoWithID(const uint8 W
 	if (newStat == nullptr) return FWeaponStatStruct();
 	return *newStat;
 }
+
+FStageEnemyTypeStruct ABackStreetGameModeBase::GetStageTypeInfoWithRow(uint16 row)
+{
+	FString rowName = FString::FromInt(row);
+	FStageEnemyTypeStruct* newStat = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName), rowName);
+	if (newStat == nullptr) return FStageEnemyTypeStruct();
+	return *newStat;
+}
+
