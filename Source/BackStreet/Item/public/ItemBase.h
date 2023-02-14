@@ -70,5 +70,8 @@ protected:
 // ------ 참조 프로퍼티 ---------------------------------------------
 private:
 	UPROPERTY(VisibleDefaultsOnly)
-		class ABackStreetGameModeBase* GameModeRef;
+		class ALevelScriptInGame* InGameScriptRef;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		class ABackStreetGameModeBase* GamemodeRef;
 };

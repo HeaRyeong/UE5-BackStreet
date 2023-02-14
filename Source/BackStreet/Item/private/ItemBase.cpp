@@ -5,6 +5,8 @@
 #include "../../StageSystem/public/MissionBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/CharacterBuffManager.h"
@@ -43,6 +45,7 @@ void AItemBase::BeginPlay()
 
 	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());
 	OnPlayerBeginPickUp.BindUFunction(this, FName("OnItemPicked"));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 }
 
 void AItemBase::InitItem(EItemCategoryInfo SetType)
@@ -69,45 +72,49 @@ void AItemBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* O
 	ParticleComponent->Deactivate();
 }
 /*
-void AItemBase::OnItemPicked(AActor* Causer)
+void AItemBase::SelectWeapon()
 {
-	if (!IsValid(Causer) || Causer->ActorHasTag("Player")) return;
-
-	FBuffItemInfoStruct Stat;
-	UE_LOG(LogTemp, Log, TEXT("Get Item %d"), ItemType);
-	
-	switch (ItemType)
+	int8 weaponType = FMath::RandRange(0, MaxWeaponType - 1);
+	int32 weaponID = 0;
+	switch (weaponType)
 	{
-	case EItemCategoryInfo::E_None:
+	case 0:
+		weaponID = 100;
 		break;
-	case EItemCategoryInfo::E_Weapon:
-		UE_LOG(LogTemp, Log, TEXT("E_Weapon case"));
-		if (SearchSound->IsValidLowLevelFast())
-			UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
-		SelectWeapon();
-		Destroy();
+	case 1:
+		weaponID = 101;
 		break;
-	case EItemCategoryInfo::E_Bullet:
-		UE_LOG(LogTemp, Log, TEXT("E_BulletCase"));
-		if (SearchSound->IsValidLowLevelFast())
-			UGameplayStatics::PlaySoundAtLocation(this, SearchSound, GetActorLocation());
-		SelectProjectile();
-		Destroy();
+	case 2:
+		weaponID = 102;
 		break;
-	case EItemCategoryInfo::E_Buff:
-		Stat = DA->BuffStat;
-		MyCharacter->AddNewBuffDebuff(false, (uint8)Stat.ItemType, this, Stat.Time, Stat.Time);
-		Destroy();
+	case 3:
+		weaponID = 103;
 		break;
-	case EItemCategoryInfo::E_DeBuff:
+	case 4:
+		weaponID = 151;
 		break;
-	case EItemCategoryInfo::E_StatUp:
+	case 5:
+		weaponID = 199;
 		break;
-		case EItemCategoryInfo::E_Mission:
-			TileRef->MissionInfo->ItemList.Remove(this);
-			TileRef->MissionInfo->ClearCheck();
-			Destroy();
-			break;
+	default:
+		break;
+	}
+	MyCharacter->PickWeapon(weaponID);
+}
+
+void AItemBase::SelectProjectile()
+{
+	int8 ProjectileType = FMath::RandRange(0, MaxProjectileType - 1);
+
+	int32 ProjectileID = 0;
+	switch (ProjectileType)
+	{
+	case 0:
+		ProjectileID = 200;
+		break;
+	case 1:
+		ProjectileID = 204;
+		break;
 	default:
 		break;
 	}

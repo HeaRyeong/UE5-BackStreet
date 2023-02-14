@@ -7,6 +7,7 @@
 #include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
 #define MaxItemSpawn 3
+#define MaxStageType 5
 
 UCLASS()
 class BACKSTREET_API ATileBase :public AActor
@@ -26,23 +27,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void InitTile(int XPosition, int YPosition);
 
-	UFUNCTION(BlueprintCallable)
-		bool IsVisited();
-
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 		void SelectMap();
 
 	UFUNCTION(BlueprintCallable)
-		void InitMission(bool IsBoss);
+		bool IsVisited();
+
+	UFUNCTION()
+		void SetStageType(EStageCategoryInfo type) { StageType = type; }
+
+	UFUNCTION(BlueprintCallable)
+		EStageCategoryInfo GetStageType() { return StageType; }
 
 public:
-	// Grid에서 해당 타일의 좌표정보
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 XPos;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 YPos;
-	// Gate 존재 여부
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<bool> Gate; 
 
@@ -52,33 +55,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName LevelToLoad;
 
-
-// ============스테이지 전환============
-public:
-	UFUNCTION(BlueprintCallable)
-		void LoadLevel();
-	UFUNCTION(BlueprintCallable)
-		void UnLoadLevel();
-
-public:
-	// ULevelStreaming Instance Ref
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		ULevelStreaming* LevelRef;
+	
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<class AEnemyCharacterBase*> MonsterList;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIsClear;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIsSpawned;
-
-
-// ================ 몬스터 관련 ==================
 public:
-	UFUNCTION(BlueprintCallable)
-		void LoadMonster();
+	UFUNCTION()
+		void SetStage();
+
+	UFUNCTION()
+		void SetMission(class UMissionBase* target) { Mission = target; }
 
 	UFUNCTION(BlueprintCallable)
 		void MonsterDie(AEnemyCharacterBase* Target);
@@ -86,37 +72,36 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void BindDelegate();
 
+private:
+	UFUNCTION()
+		void SpawnMonster();
+
+	UFUNCTION()
+		void SpawnItem();
+
+	UFUNCTION()
+		void SpawnMission();
+
+
 public:
+	UPROPERTY()
+		bool bIsVisited;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MonsterSpawnPoints;
 
-
-// =============== 아이템 스폰 ====================
-public:
-	UFUNCTION(BlueprintCallable)
-		void LoadItem();
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> ItemSpawnPoints;
 
-
-// ==============  미션	=================
-public:
-	UFUNCTION(BlueprintCallable)
-		void LoadMissionAsset();
-
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MissionSpawnPoints;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UMissionBase* MissionInfo = nullptr;
+		TArray<class AEnemyCharacterBase*> MonsterList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIsMainMission;
+		class UMissionBase* Mission;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		bool bIsBossStage;
 
 public:
 	// 스테이지 보상 관련
@@ -127,21 +112,17 @@ public:
 public:
 	UPROPERTY()
 		FTimerHandle ClearTimerHandle;
+
 	UPROPERTY()
 		int32 ClearTime;
 
 // ---- 참조 -----
 public:
 	UPROPERTY()
-		class AGridBase* Chapter;
-
-	UPROPERTY()
 		class ACharacterBase* CharacterRef;
-	
 	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		 AAssetManagerBase* AssetDataManagerRef;
+		class ALevelScriptInGame* InGameScriptRef;
+	UPROPERTY()
+		class ABackStreetGameModeBase* GameModeRef;
 
 };

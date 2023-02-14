@@ -2,8 +2,13 @@
 
 
 #include "../public/MissionBase.h"
+#include "../../Character/public/EnemyCharacterBase.h"
+#include "../../Item/public/ItemBase.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
+#include "../public/ChapterManagerBase.h"
 #include "../public/TileBase.h"
 #include "../public/GridBase.h"
+#include "../public/ALevelScriptInGame.h"
 
 // Sets default values
 UMissionBase::UMissionBase()
@@ -13,13 +18,16 @@ UMissionBase::UMissionBase()
 }
 
 
-void UMissionBase::InitMission()
+void UMissionBase::InitMission(ATileBase* tile, int8 type)
 {
+	//GameModeRef = Cast<AALevelScriptInGame>(UGameplayStatics::GetGameMode(GetWorld()));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 	UE_LOG(LogTemp, Log, TEXT("Call InitMission "));
-	Type = FMath::RandRange(1, 3);
+	BelongTile = tile;
+	Type = type;
 }
 
-void UMissionBase::ClearCheck()
+bool UMissionBase::ClearCheck()
 {
 	switch (Type)
 	{
@@ -27,39 +35,46 @@ void UMissionBase::ClearCheck()
 		if (ItemList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
-			Tile->Chapter->Missions.Remove(this);
-			Tile->Chapter->CheckChapterClear();
+			InGameScriptRef->ChapterManager->RemoveMission(this);
+			return true;
 		}
 		else
-		{
-
-		}
+			return false;
 		break;
 	case 2:
 		if (MonsterList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
-			Tile->Chapter->Missions.Remove(this);
-			Tile->Chapter->CheckChapterClear();
+			InGameScriptRef->ChapterManager->RemoveMission(this);
+			return true;
 		}
 		else
-		{
-
-		}
+			return false;
 		break;
 	case 3:
 		if (MonsterList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
-			Tile->Chapter->Missions.Remove(this);
-			Tile->Chapter->CheckChapterClear();
+			InGameScriptRef->ChapterManager->RemoveMission(this);
+			return true;
 		}
 		else
-		{
-
-		}
+			return false;
 		break;
 	default:
+			return false;
 		break;
 	}
+}
+
+void UMissionBase::RemoveItem(class AItemBase* target)
+{
+	ItemList.Remove(target);
+	ClearCheck();
+}
+
+void UMissionBase::RemoveMonster(class AEnemyCharacterBase* target)
+{
+	MonsterList.Remove(target);
+	ClearCheck();
 }
