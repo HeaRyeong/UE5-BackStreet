@@ -48,7 +48,10 @@ public:
 		void ZoomIn(float Value);
 
 	UFUNCTION()
-		void TryPickItem();
+		void TryInvestigate();
+
+	UFUNCTION(BlueprintCallable)
+		void Investigate(AActor* TargetActor);
 
 	UFUNCTION()
 		virtual void TryReload() override;
@@ -75,7 +78,6 @@ public:
 	UFUNCTION()
 		virtual void DropWeapon() override;
 
-private:
 	UFUNCTION()
 		virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			, AController* EventInstigator, AActor* DamageCauser) override;
@@ -85,7 +87,7 @@ private:
 		void RotateToCursor();
 
 	UFUNCTION()
-		TArray<AActor*> GetNearItemList();
+		TArray<AActor*> GetNearInteractionActorList();
 
 // ------- 버프 / 디버프 ---------------
 protected: 
@@ -133,7 +135,7 @@ private:
 	UFUNCTION()
 		void SetFacialDamageEffect(bool NewState);
 
-// -------- Sound ----------------
+// -------- Asset ----------------
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class UAudioComponent* AudioComponent;
@@ -149,6 +151,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class USoundCue* DebuffSound;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
+		class UAnimMontage* InvestigateAnimation;
 
 // ------- 그 외 -----------
 public:

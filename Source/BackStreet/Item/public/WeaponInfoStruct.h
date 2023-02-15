@@ -88,6 +88,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int32 MaxAmmoPerMagazine; 
 
+	//소지할 수 있는 최대 발사체 개수 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 MaxTotalAmmo = 200;
+
 	//장전 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float LoadingDelayTime;

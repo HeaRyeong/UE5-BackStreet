@@ -32,16 +32,19 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
-		class USphereComponent* OverlapVolume;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		class USphereComponent* RootCollisionVolume;
 
 	UPROPERTY(EditDefaultsOnly)
 		class UStaticMeshComponent* MeshComponent;
 
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
+		class USphereComponent* ItemTriggerVolume;
+
 	UPROPERTY(EditDefaultsOnly)
 		class UWidgetComponent* InfoWidgetComponent;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		class UNiagaraComponent* ParticleComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -59,6 +62,10 @@ public:
 	// 외부에서 Init하기위해 Call
 	UFUNCTION()
 		void InitItem(EItemCategoryInfo SetType, uint8 NewItemID = 0);
+
+	//아이템 초기 효과를 출력하고 활성화 시킨다.
+	UFUNCTION(BlueprintImplementableEvent)
+		void ActivateItem();
 
 	UFUNCTION()
 		void OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp

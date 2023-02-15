@@ -21,12 +21,11 @@ AItemBase::AItemBase()
 	this->Tags.Add(FName("Item"));
 
 	PrimaryActorTick.bCanEverTick = true;
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENEROOT"));
+	RootComponent = RootCollisionVolume = CreateDefaultSubobject<USphereComponent>(TEXT("SPHERE_COLLISION_ROOT"));
+	RootCollisionVolume->SetCollisionProfileName("Item", true);
 
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ITEM_MESH"));
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionProfileName("Item", false);
-	//MeshComponent->SetSimulatePhysics(true);
 
 	InfoWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("ITEM_INFO_WIDGET"));
 	InfoWidgetComponent->SetupAttachment(MeshComponent);
@@ -35,11 +34,13 @@ AItemBase::AItemBase()
 
 	ParticleComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ITEM_NIAGARA_COMPONENT"));
 	ParticleComponent->SetupAttachment(MeshComponent);
+	ParticleComponent->bAutoActivate = false;
 
-	OverlapVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
-	OverlapVolume->SetupAttachment(MeshComponent);
-	OverlapVolume->SetRelativeScale3D(FVector(5.0f));
-	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OnOverlapBegins);
+	ItemTriggerVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
+	ItemTriggerVolume->SetupAttachment(RootComponent);
+	ItemTriggerVolume->SetRelativeScale3D(FVector(5.0f));
+	ItemTriggerVolume->SetCollisionProfileName("ItemTrigger", true);
+	ItemTriggerVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OnOverlapBegins);
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PROJECTILE_MOVEMENT"));
 	ProjectileMovement->InitialSpeed = DEFAULT_ITEM_LAUNCH_SPEED;
@@ -76,8 +77,7 @@ void AItemBase::InitItem(EItemCategoryInfo SetType, uint8 NewItemID)
 void AItemBase::OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
-
-	ParticleComponent->Activate();
+	
 	//UI Activate
 }
 
@@ -85,7 +85,6 @@ void AItemBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* O
 {
 	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
 
-	ParticleComponent->Deactivate();
 	//UI Deactivate
 }
 

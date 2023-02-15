@@ -115,7 +115,7 @@ public:
 	//무기를 Drop한다. (월드에서 아예 사라진다.)
 	virtual void DropWeapon();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		class AWeaponInventoryBase* GetInventoryRef();
 
 	//무기 Ref를 반환

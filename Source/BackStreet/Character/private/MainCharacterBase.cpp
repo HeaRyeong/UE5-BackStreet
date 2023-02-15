@@ -87,7 +87,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
-	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryPickItem);
+	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryInvestigate);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
 }
 
@@ -137,28 +137,28 @@ void AMainCharacterBase::ZoomIn(float Value)
 	CameraBoom->TargetArmLength = newLength;
 }
 
-void AMainCharacterBase::TryPickItem()
+void AMainCharacterBase::TryInvestigate()
 {
-	TArray<AActor*> nearItemList = GetNearItemList();
+	TArray<AActor*> nearActorList = GetNearInteractionActorList();
 	
-	UE_LOG(LogTemp, Warning, TEXT("Open #1"));
-
-	if (nearItemList.Num())
+	if (nearActorList.Num())
 	{
-		AActor* targetItem = nearItemList[0];
-		
-		UE_LOG(LogTemp, Warning, TEXT("Open #2"));
+		PlayAnimMontage(InvestigateAnimation);
+		Investigate(nearActorList[0]);
+	}
+}
 
-		if (targetItem->ActorHasTag("Item"))
-		{
-			Cast<AItemBase>(targetItem)->OnPlayerBeginPickUp.ExecuteIfBound(this);
-			UE_LOG(LogTemp, Warning, TEXT("Pick #3"));
-		}
-		else if(targetItem->ActorHasTag("ItemBox"))
-		{
-			Cast<AItemBoxBase>(targetItem)->OnPlayerOpenBegin.ExecuteIfBound(this);
-			UE_LOG(LogTemp, Warning, TEXT("Open #2.5"));
-		}
+void AMainCharacterBase::Investigate(AActor* TargetActor)
+{
+	if (!IsValid(TargetActor)) return;
+
+	if (TargetActor->ActorHasTag("Item"))
+	{
+		Cast<AItemBase>(TargetActor)->OnPlayerBeginPickUp.ExecuteIfBound(this);
+	}
+	else if (TargetActor->ActorHasTag("ItemBox"))
+	{
+		Cast<AItemBoxBase>(TargetActor)->OnPlayerOpenBegin.ExecuteIfBound(this);
 	}
 }
 
@@ -246,7 +246,7 @@ void AMainCharacterBase::RotateToCursor()
 	}), 1.0f, false);
 }
 
-TArray<AActor*> AMainCharacterBase::GetNearItemList()
+TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 {
 	TArray<AActor*> totalItemList;
 	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass()};
@@ -255,21 +255,14 @@ TArray<AActor*> AMainCharacterBase::GetNearItemList()
 	
 	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
 	{
-		TArray<AActor*> tempItemList; 
 		bool result = false;
 
 		for (auto& targetClass : targetClassList)
 		{
 			result = (result || UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius
-														, { itemObjectType }, targetClass, {}, tempItemList));
+														, { itemObjectType }, targetClass, {}, totalItemList));
 
-			for (auto& actorRef : tempItemList)
-				totalItemList.Add(actorRef);
-		}
-
-		if (result) break; 
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Pick #0 - Nothing"));
+			if (totalItemList.Num() > 0) return totalItemList; //찾는 즉시 반환
 		}
 	}
 	return totalItemList;

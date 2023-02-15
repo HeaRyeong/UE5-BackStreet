@@ -155,6 +155,33 @@ void AWeaponInventoryBase::SyncCurrentWeaponInfo(bool bIsLoadInfo)
 	}
 }
 
+bool AWeaponInventoryBase::GetWeaponIsContained(int32 WeaponID)
+{
+	for (auto& weaponInfoRef : InventoryArray)
+	{
+		if (weaponInfoRef.WeaponID == WeaponID) return true;
+	}
+	return false;
+}
+
+
+
+bool AWeaponInventoryBase::TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount)
+{
+	const int32 targetInventoryIdx = GetWeaponInventoryIdx(WeaponID);
+	if (targetInventoryIdx == -1) return false;
+	if (!InventoryArray[targetInventoryIdx].WeaponStat.bHasProjectile) return false;
+
+	FInventoryItemInfoStruct& itemInfoRef = InventoryArray[targetInventoryIdx];
+
+	itemInfoRef.WeaponState.TotalAmmoCount += AmmoCount;
+	itemInfoRef.WeaponState.TotalAmmoCount %= itemInfoRef.WeaponStat.MaxTotalAmmo;
+	
+	if (CurrentIdx == targetInventoryIdx) SyncCurrentWeaponInfo(true);
+
+	return true;
+}
+
 AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
 {
 	if (!WeaponClassInfoMap.Contains(WeaponID)) return nullptr;
@@ -217,6 +244,16 @@ void AWeaponInventoryBase::SortInventory()
 			}
 		}
 	}
+}
+
+int32 AWeaponInventoryBase::GetWeaponInventoryIdx(int32 WeaponID)
+{
+	for (int32 inventoryIdx = 0; inventoryIdx < InventoryArray.Num(); inventoryIdx++)
+	{
+		FInventoryItemInfoStruct &weaponInfo = InventoryArray[inventoryIdx];
+		if (weaponInfo.WeaponID == WeaponID) return inventoryIdx;
+	}
+	return -1;
 }
 
 void AWeaponInventoryBase::RemoveCurrentWeapon()

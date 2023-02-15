@@ -47,6 +47,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SyncCurrentWeaponInfo(bool bIsLoadInfo);
 
+	//해당 Weapon이 인벤토리에 포함이 되어있는지 반환
+	UFUNCTION(BlueprintCallable)
+		bool GetWeaponIsContained(int32 WeaponID);
+	
+	UFUNCTION(BlueprintCallable)
+		bool TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount);
+
 protected:
 	UFUNCTION()
 		class AWeaponBase* SpawnWeaponActor(int32 WeaponID);
@@ -62,6 +69,10 @@ protected:
 	//인벤토리를 Weight를 기준으로 오름차순 정렬
 	UFUNCTION()
 		void SortInventory();
+
+	//해당 Weapon이 인벤토리에 포함이 되어있는지 반환
+	UFUNCTION()
+		int32 GetWeaponInventoryIdx(int32 WeaponID);
 
 	//무기를 인벤토리로부터 제거
 	UFUNCTION()
@@ -108,13 +119,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (UIMin = 1, UIMax = 10))
 		int32 MaxWeaponCount = 6;
 
-private:
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Class")
-		TArray<TSubclassOf<class AWeaponBase> > WeaponClassList;
-
+	//Weapon ID 배열, BP에서 지정하고 Idx로 구분
 	UPROPERTY(EditAnywhere, Category = "Gameplay|Class")
 		TArray<int32> WeaponIDList;
 
+	//Weapon Class 배열, BP에서 지정하고 Idx로 구분
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Class")
+		TArray<TSubclassOf<class AWeaponBase> > WeaponClassList;
+
+
+private:
 	UPROPERTY()
 		TArray<FInventoryItemInfoStruct> InventoryArray;
 
