@@ -36,13 +36,13 @@ struct FInventoryItemInfoStruct
 public:
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		int32 WeaponID;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FWeaponStatStruct WeaponStat; 
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FWeaponStateStruct WeaponState;
 };
 

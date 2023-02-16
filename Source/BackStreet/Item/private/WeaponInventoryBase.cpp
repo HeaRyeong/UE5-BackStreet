@@ -89,11 +89,10 @@ bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 		}
 		CurrentCapacity += newWeaponStat.WeaponWeight;
 		SortInventory();
-		UE_LOG(LogTemp, Warning, TEXT("ADD #5"));
+		OnInventoryIsUpdated.Broadcast(InventoryArray);
 
 		return true;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("ADD #6"));
 	return false;
 }
 
@@ -110,6 +109,7 @@ void AWeaponInventoryBase::RemoveWeapon(int32 InventoryIdx)
 		SetCurrentIdx(0);
 		EquipWeapon(0);
 		SortInventory();
+		OnInventoryIsUpdated.Broadcast(InventoryArray);
 	}
 }
 
@@ -224,7 +224,7 @@ void AWeaponInventoryBase::SortInventory()
 
 	//Inventory의 최대 Len이 10이기 때문에
 	//O(n^2)이어도 상수 시간에 근접한 결과를 냄
-	for (int32 selIdx = 0; selIdx < GetCurrentWeaponCount()-1; selIdx++)
+	for (int32 selIdx = 0; selIdx < GetCurrentWeaponCount() - 1; selIdx++)
 	{
 		FInventoryItemInfoStruct tempInfo = FInventoryItemInfoStruct();
 		for (int32 compIdx = selIdx + 1; compIdx < GetCurrentWeaponCount(); compIdx++)

@@ -6,10 +6,16 @@
 #include "GameFramework/Actor.h"
 #include "WeaponInventoryBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeleInventoryUpdate, const TArray<FInventoryItemInfoStruct>&	, newInventoryInfo);
+
 UCLASS()
 class BACKSTREET_API AWeaponInventoryBase : public AActor
 {
 	GENERATED_BODY()
+//------ Delegate ---------------------------------
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDeleInventoryUpdate OnInventoryIsUpdated;
 
 //------ Global ------------------------------------
 public:

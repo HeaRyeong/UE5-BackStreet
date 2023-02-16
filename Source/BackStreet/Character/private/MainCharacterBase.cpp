@@ -145,6 +145,7 @@ void AMainCharacterBase::TryInvestigate()
 	{
 		PlayAnimMontage(InvestigateAnimation);
 		Investigate(nearActorList[0]);
+		ResetActionState();
 	}
 }
 
