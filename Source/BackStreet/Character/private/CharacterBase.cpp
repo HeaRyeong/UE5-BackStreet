@@ -97,14 +97,15 @@ void ACharacterBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 	GetWeaponActorRef()->UpdateWeaponStat(NewStat);
 }
 
-void ACharacterBase::ResetActionState()
+void ACharacterBase::ResetActionState(bool bForceReset)
 {
-	if (CharacterState.CharacterActionState == ECharacterActionType::E_Stun
-		|| CharacterState.CharacterActionState == ECharacterActionType::E_Die
-		|| CharacterState.CharacterActionState == ECharacterActionType::E_Reload) return;
+	if (CharacterState.CharacterActionState == ECharacterActionType::E_Die) return;
+	if(!bForceReset && (CharacterState.CharacterActionState == ECharacterActionType::E_Stun
+		|| CharacterState.CharacterActionState == ECharacterActionType::E_Reload)) return;
 
-	StopAttack();
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+	StopAttack();
+
 	if (!GetWorldTimerManager().IsTimerActive(AtkIntervalHandle))
 	{
 		CharacterState.bCanAttack = true;

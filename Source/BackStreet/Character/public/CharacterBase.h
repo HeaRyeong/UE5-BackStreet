@@ -54,7 +54,7 @@ public:
 
 	//플레이어의 ActionState를 Idle로 전환한다.
 	UFUNCTION(BlueprintCallable)
-		void ResetActionState();
+		void ResetActionState(bool bForceReset = false);
 
 	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION(BlueprintCallable)

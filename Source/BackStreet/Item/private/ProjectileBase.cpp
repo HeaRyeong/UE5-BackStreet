@@ -96,7 +96,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 				SpawnInstigator, OwnerCharacterRef, nullptr);
 		}
 		
-		(Cast<ACharacterBase>(OtherActor)->GetBuffManagerRef())->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+		Cast<ACharacterBase>(OtherActor)->AddNewBuffDebuff(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *UKismetSystemLibrary::GetDisplayName(OtherActor));

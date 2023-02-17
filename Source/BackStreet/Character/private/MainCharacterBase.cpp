@@ -5,6 +5,7 @@
 #include "../public/MainCharacterController.h"
 #include "../public/CharacterBuffManager.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "../../Item/public/ItemBoxBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -174,8 +175,6 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 	if (damageAmount > 0.0f && DamageCauser->ActorHasTag("Enemy"))
 	{
-		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, GetActorLocation());
-
 		SetFacialDamageEffect(true);
 
 		GetWorld()->GetTimerManager().ClearTimer(FacialEffectResetTimerHandle);
@@ -198,8 +197,7 @@ void AMainCharacterBase::TryAttack()
 
 	//Pressed 상태를 0.2s 뒤에 체크해서 계속 눌려있다면 Attack 반복
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
-	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this
-						, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
+	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
 }
 
 void AMainCharacterBase::Attack()
@@ -355,7 +353,6 @@ void AMainCharacterBase::SetFacialDamageEffect(bool NewState)
 	
 	if (currMaterial != nullptr && EmotionTextureList.Num() >= 3)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FacialEffect"));
 		currMaterial->SetTextureParameterValue(FName("BaseTexture"), EmotionTextureList[(uint8)(NewState ? EEmotionType::E_Angry : EEmotionType::E_Idle)]);
 		currMaterial->SetScalarParameterValue(FName("bIsDamaged"), (float)NewState);
 	}

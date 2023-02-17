@@ -153,6 +153,7 @@ void AWeaponInventoryBase::SyncCurrentWeaponInfo(bool bIsLoadInfo)
 		InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->GetWeaponStat();
 		InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->GetWeaponState();
 	}
+	OnInventoryItemIsUpdated.Broadcast(GetCurrentIdx(), true, InventoryArray[GetCurrentIdx()]);
 }
 
 bool AWeaponInventoryBase::GetWeaponIsContained(int32 WeaponID)
@@ -163,8 +164,6 @@ bool AWeaponInventoryBase::GetWeaponIsContained(int32 WeaponID)
 	}
 	return false;
 }
-
-
 
 bool AWeaponInventoryBase::TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount)
 {
@@ -178,6 +177,7 @@ bool AWeaponInventoryBase::TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount)
 	itemInfoRef.WeaponState.TotalAmmoCount %= itemInfoRef.WeaponStat.MaxTotalAmmo;
 	
 	if (CurrentIdx == targetInventoryIdx) SyncCurrentWeaponInfo(true);
+	else OnInventoryItemIsUpdated.Broadcast(targetInventoryIdx, false, InventoryArray[targetInventoryIdx]);
 
 	return true;
 }

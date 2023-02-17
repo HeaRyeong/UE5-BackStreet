@@ -6,7 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "WeaponInventoryBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeleInventoryUpdate, const TArray<FInventoryItemInfoStruct>&	, newInventoryInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeleInventoryUpdate, const TArray<FInventoryItemInfoStruct>&, newInventoryInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDeleInventoryInfoUpdate, int32, inventoryIdx, bool, bIsCurrentWeapon, const FInventoryItemInfoStruct&, newInventoryInfo);
 
 UCLASS()
 class BACKSTREET_API AWeaponInventoryBase : public AActor
@@ -14,8 +15,13 @@ class BACKSTREET_API AWeaponInventoryBase : public AActor
 	GENERATED_BODY()
 //------ Delegate ---------------------------------
 public:
+	//인벤토리가 업데이트 되었을 때 (추가, 정렬, 제거 등)
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDeleInventoryUpdate OnInventoryIsUpdated;
+
+	//인벤토리 내 원소가 업데이트 되었을 때
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDeleInventoryInfoUpdate OnInventoryItemIsUpdated;
 
 //------ Global ------------------------------------
 public:

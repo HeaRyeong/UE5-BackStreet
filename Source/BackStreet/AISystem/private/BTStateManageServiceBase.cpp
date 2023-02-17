@@ -41,6 +41,13 @@ void UBTStateManageServiceBase::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 
 void UBTStateManageServiceBase::UpdateAIState()
 {
+	if (OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Die
+		|| OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Stun)
+	{
+		AIBehaviorState = EAIBehaviorType::E_Stun;
+		return;
+	}
+
 	if (CheckReturnState())
 	{
 		if (CheckPatrolState())
@@ -107,6 +114,11 @@ void UBTStateManageServiceBase::OnOwnerGetDamaged(AActor* Causer)
 {
 	if (!IsValid(Causer) || !Causer->ActorHasTag("Player")) return;
 	if (AIBehaviorState == EAIBehaviorType::E_Stun) return;
+
+	if (AIBehaviorState == EAIBehaviorType::E_Return)
+	{
+		BlackboardRef->SetValueAsVector("SpawnLocation", OwnerCharacterRef->GetActorLocation());
+	}
 
 	AIBehaviorState = EAIBehaviorType::E_Chase;
 	BlackboardRef->SetValueAsObject("TargetCharacter", Causer);
