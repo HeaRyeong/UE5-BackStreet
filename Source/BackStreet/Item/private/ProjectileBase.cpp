@@ -92,14 +92,12 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		}
 		else
 		{
-			UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-				SpawnInstigator, OwnerCharacterRef, nullptr);
+			const float totalDamage = ProjectileStat.ProjectileDamage * OwnerCharacterRef->GetCharacterStat().CharacterAtkMultiplier;
+			UGameplayStatics::ApplyDamage(OtherActor, totalDamage,SpawnInstigator, OwnerCharacterRef, nullptr);
+			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, SweepResult.Location, 100.0f);
 		}
-		
 		Cast<ACharacterBase>(OtherActor)->AddNewBuffDebuff(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
-
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *UKismetSystemLibrary::GetDisplayName(OtherActor));
 
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
 	if (HitSound != nullptr && HitParticle != nullptr)

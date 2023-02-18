@@ -33,7 +33,7 @@ public:
 	UPROPERTY(VisibleDefaultsOnly)
 		USphereComponent* TargetingCollision;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

@@ -69,10 +69,12 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		PlayEffectSound(AttackSound);
+		GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 2.0f, false, 1.0f);
 	}
 	UpdateDurabilityState();
+
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
 

@@ -58,7 +58,6 @@ void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 		//	ClearAllTimerHandle();
 		//	Destroy();
 		//}), 1.0f, false, 0.75f);
-				
 	}
 }
 

@@ -9,6 +9,7 @@
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/WidgetComponent.h"
 #include "../../StageSystem/public/TileBase.h"
+#define TURN_TIME_OUT_SEC 0.5f
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
@@ -126,7 +127,7 @@ void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)
 
 void AEnemyCharacterBase::Turn(float Angle)
 {
-	if (FMath::Abs(Angle) == 0.0f)
+	if (FMath::Abs(Angle) <= 0.1f)
 	{
 		CharacterState.TurnDirection = 0;
 		return;
@@ -139,7 +140,10 @@ void AEnemyCharacterBase::Turn(float Angle)
 	if (GetVelocity().Length() == 0.0f)
 	{
 		CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
-		return;
+		GetWorldTimerManager().ClearTimer(TurnTimeOutTimerHandle);
+		GetWorldTimerManager().SetTimer(TurnTimeOutTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			CharacterState.TurnDirection = 0;
+		}), 1.0f, false, TURN_TIME_OUT_SEC);
 	}
 	CharacterState.TurnDirection = 0;
 }

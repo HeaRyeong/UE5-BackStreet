@@ -8,7 +8,7 @@
 
 #define MAX_BUFF_IDX 6
 #define MAX_DEBUFF_IDX 7
-#define HEAL_BUFF_TIMER_IDX 1
+#define HEAL_BUFF_TIMER_IDX 16
 #define DEBUFF_DAMAGE_TIMER_IDX 15
 #define MAX_BUFF_INFO_LIST_IDX 24
 
@@ -33,7 +33,7 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 
-	FTimerDelegate timerDelegate;
+	FTimerDelegate timerDelegate, healTimerDelegate, dotDamageDelegate;
 	FTimerHandle& timerHandle = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
@@ -59,9 +59,9 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 		//----데미지 디버프-------------------
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
-			timerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeDebuffDamage"), Variable, BuffDebuffType, Causer);
-			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX], timerDelegate, 1.0f, true);
-			return true;
+			dotDamageDelegate.BindUFunction(OwnerCharacterRef, FName("TakeDebuffDamage"), Variable, BuffDebuffType, Causer);
+			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX], dotDamageDelegate, 1.0f, true);
+			break;
 		//----스탯 조정 디버프-------------------
 		case ECharacterDebuffType::E_Stun:
 			OwnerCharacterRef->StopAttack();
@@ -103,9 +103,9 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 		//----힐 버프-------------------
 		case ECharacterBuffType::E_Healing:
 			Variable -= 1.0f;
-			timerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), Variable, true, BuffDebuffType);
-			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX], timerDelegate, 1.0f, true);
-			return true;
+			healTimerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), Variable, true, BuffDebuffType);
+			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX], healTimerDelegate, 1.0f, true);
+			break;
 		//----스탯 조정 버프-------------------
 		case ECharacterBuffType::E_AttackUp:
 			characterStat.CharacterAtkMultiplier *= Variable;
