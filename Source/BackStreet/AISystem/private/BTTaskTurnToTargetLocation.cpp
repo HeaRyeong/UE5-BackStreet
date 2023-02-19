@@ -80,13 +80,6 @@ float UBTTaskTurnToTargetLocation::CalculateTurnAngle(const FVector& OwnerLocati
 
     float rotateAngle = 0.0f;
     const bool bHasRangedWeapon = BlackboardComponentRef->GetValueAsBool(FName("HasRangedWeapon"));
-   
-    /*DrawDebugLine(GetWorld(), OwnerLocation, OwnerLocation + OwnerForwardVector * 100.0f, FColor::Yellow, false, 5.0f, 1.0f, 20.0f);
-    DrawDebugLine(GetWorld(), OwnerLocation, OwnerLocation + directionToTarget * 100.0f, FColor::Red, false, 5.0f, 1.0f, 20.0f);
-    LogMessage(FString("pawn location : "), pawnLocation2D);
-    LogMessage(FString("target location : "), targetLocation2D);
-    LogMessage(FString("> pawn forward : "), pawnForwardVector2D);
-    LogMessage(FString("> to target direction : "), directionToTarget2D);*/
 
     float errorTolerance = bHasRangedWeapon ? RANGED_WEAPON_ERROR_TOLERANCE : MELEE_WEAPON_ERROR_TOLERANCE;
    

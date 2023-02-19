@@ -11,7 +11,8 @@ enum class ECameraShakeType : uint8
 	E_None				UMETA(DisplayName = "None"),
 	E_Hit				UMETA(DisplayName = "Hit"),
 	E_Attack			UMETA(DisplayName = "Attack"),
-	E_Explosion			UMETA(DisplayName = "Explosion")
+	E_Explosion			UMETA(DisplayName = "Explosion"),
+	E_Boss				UMETA(DisplayName = "Boss")
 };
 
 UENUM(BlueprintType)
@@ -87,6 +88,10 @@ public:
 	//한 탄창에 최대 발사체 수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int32 MaxAmmoPerMagazine; 
+
+	//소지할 수 있는 최대 발사체 개수 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 MaxTotalAmmo = 200;
 
 	//장전 시간
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

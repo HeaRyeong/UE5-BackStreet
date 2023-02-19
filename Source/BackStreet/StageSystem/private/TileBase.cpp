@@ -82,6 +82,7 @@ void ATileBase::SelectMap()
 		//case 6:
 		//	NextLevelToLoad = FName(TEXT("Sub3Prefab"));
 		//	break;
+
 	}
 
 }
@@ -234,10 +235,10 @@ void ATileBase::SpawnMission()
 
 	if(Mission->Type == 1) // 아이템 습득
 	{
-
-		AItemBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
-		target->InitItem(EItemCategoryInfo::E_Mission);
-		Mission->ItemList.Add(target);
+		//AItemBoxBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+	//	AItemBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+	//	target->InitItem(EItemCategoryInfo::E_Mission);
+	//	Mission->ItemList.Add(target);
 	
 	}
 	else if(Mission->Type == 2)// 몬스터 잡기
@@ -268,7 +269,7 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* target)
 
 	if (target->ActorHasTag("MissionMonster"))
 	{
-		Mission->RemoveMonster(target);
+		Mission->TryRemoveMonster(target);
 	}
 
 	MonsterList.Remove(target);

@@ -10,6 +10,9 @@
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/CharacterBuffManager.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+
+#define DEFAULT_ITEM_LAUNCH_SPEED 500.0f
 
 // Sets default values
 AItemBase::AItemBase()
@@ -18,11 +21,11 @@ AItemBase::AItemBase()
 	this->Tags.Add(FName("Item"));
 
 	PrimaryActorTick.bCanEverTick = true;
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENEROOT"));
-	
+	RootComponent = RootCollisionVolume = CreateDefaultSubobject<USphereComponent>(TEXT("SPHERE_COLLISION_ROOT"));
+	RootCollisionVolume->SetCollisionProfileName("Item", true);
+
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ITEM_MESH"));
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	InfoWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("ITEM_INFO_WIDGET"));
 	InfoWidgetComponent->SetupAttachment(MeshComponent);
@@ -30,12 +33,19 @@ AItemBase::AItemBase()
 	InfoWidgetComponent->SetWorldRotation(FRotator(0.0f, 180.0f, 0.0f));
 
 	ParticleComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ITEM_NIAGARA_COMPONENT"));
-	ParticleComponent->SetupAttachment(RootComponent);
+	ParticleComponent->SetupAttachment(MeshComponent);
+	ParticleComponent->bAutoActivate = false;
 
-	OverlapVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
-	OverlapVolume->SetupAttachment(RootComponent);
-	OverlapVolume->SetRelativeScale3D(FVector(5.0f));
-	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OnOverlapBegins);
+	ItemTriggerVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
+	ItemTriggerVolume->SetupAttachment(RootComponent);
+	ItemTriggerVolume->SetRelativeScale3D(FVector(5.0f));
+	ItemTriggerVolume->SetCollisionProfileName("ItemTrigger", true);
+	ItemTriggerVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AItemBase::OnOverlapBegins);
+
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("PROJECTILE_MOVEMENT"));
+	ProjectileMovement->InitialSpeed = DEFAULT_ITEM_LAUNCH_SPEED;
+	ProjectileMovement->MaxSpeed = DEFAULT_ITEM_LAUNCH_SPEED;
+	ProjectileMovement->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -48,74 +58,42 @@ void AItemBase::BeginPlay()
 	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 }
 
-void AItemBase::InitItem(EItemCategoryInfo SetType)
+void AItemBase::InitItem(EItemCategoryInfo SetType, uint8 NewItemID)
 {
 	ItemType = SetType;
+	ItemID = NewItemID;
 
-	if (SetType == EItemCategoryInfo::E_Mission)
+	if (ItemType == EItemCategoryInfo::E_Mission)
 	{
-		//GamemodeRef->GetCurrentTileRef()->MissionInfo->ItemList.AddUnique(this);
+		bool result = InGameScriptRef->ChapterManager->TryAddMissionItem(this);
+
+		if (!result)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("최대 미션 아이템 개수를 초과했습니다."));
+		}
 	}
 }
 
 void AItemBase::OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
-
-	ParticleComponent->Activate();
+	
+	//UI Activate
 }
 
 void AItemBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
 
-	ParticleComponent->Deactivate();
-}
-/*
-void AItemBase::SelectWeapon()
-{
-	int8 weaponType = FMath::RandRange(0, MaxWeaponType - 1);
-	int32 weaponID = 0;
-	switch (weaponType)
-	{
-	case 0:
-		weaponID = 100;
-		break;
-	case 1:
-		weaponID = 101;
-		break;
-	case 2:
-		weaponID = 102;
-		break;
-	case 3:
-		weaponID = 103;
-		break;
-	case 4:
-		weaponID = 151;
-		break;
-	case 5:
-		weaponID = 199;
-		break;
-	default:
-		break;
-	}
-	MyCharacter->PickWeapon(weaponID);
+	//UI Deactivate
 }
 
-void AItemBase::SelectProjectile()
+void AItemBase::SetLaunchDirection(FVector NewDirection)
 {
-	int8 ProjectileType = FMath::RandRange(0, MaxProjectileType - 1);
+	ProjectileMovement->Velocity = NewDirection;
+}
 
-	int32 ProjectileID = 0;
-	switch (ProjectileType)
-	{
-	case 0:
-		ProjectileID = 200;
-		break;
-	case 1:
-		ProjectileID = 204;
-		break;
-	default:
-		break;
-	}
-}*/
+void AItemBase::ActivateProjectileMovement()
+{
+	ProjectileMovement->Activate();
+}

@@ -23,7 +23,8 @@ enum class EStatUpCategoryInfo : uint8
 {
 	E_None					UMETA(DisplayName = "None"),
 	E_MaxHp					UMETA(DisplayName = "MaxHp"),
-	E_ATK					UMETA(DisplayName = "ATKUp"),
+	E_
+	UMETA(DisplayName = "ATKUp"),
 	E_ATKSpeed				UMETA(DisplayName = "ATKSpeed"),
 	E_MoveSpeed				UMETA(DisplayName = "MoveSpeed"),
 	E_Defense				UMETA(DisplayName = "Defense"),
@@ -36,13 +37,13 @@ struct FInventoryItemInfoStruct
 public:
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		int32 WeaponID;
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FWeaponStatStruct WeaponStat; 
 
-	UPROPERTY(VisibleDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FWeaponStateStruct WeaponState;
 };
 

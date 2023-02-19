@@ -41,6 +41,13 @@ void UBTStateManageServiceBase::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 
 void UBTStateManageServiceBase::UpdateAIState()
 {
+	if (OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Die
+		|| OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Stun)
+	{
+		AIBehaviorState = EAIBehaviorType::E_Stun;
+		return;
+	}
+
 	if (CheckReturnState())
 	{
 		if (CheckPatrolState())
@@ -89,6 +96,7 @@ bool UBTStateManageServiceBase::CheckChaseState()
 bool UBTStateManageServiceBase::CheckAttackState()
 {
 	if(!BlackboardRef->GetValueAsBool(FName("ReadyToAttack"))) return false;
+	if (!BlackboardRef->GetValueAsBool(FName("PreChaseAnimFlag"))) return false;
 
 	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
 	AWeaponBase* weaponActorRef = OwnerCharacterRef->GetWeaponActorRef();
@@ -107,6 +115,11 @@ void UBTStateManageServiceBase::OnOwnerGetDamaged(AActor* Causer)
 {
 	if (!IsValid(Causer) || !Causer->ActorHasTag("Player")) return;
 	if (AIBehaviorState == EAIBehaviorType::E_Stun) return;
+
+	if (AIBehaviorState == EAIBehaviorType::E_Return)
+	{
+		BlackboardRef->SetValueAsVector("SpawnLocation", OwnerCharacterRef->GetActorLocation());
+	}
 
 	AIBehaviorState = EAIBehaviorType::E_Chase;
 	BlackboardRef->SetValueAsObject("TargetCharacter", Causer);

@@ -7,6 +7,7 @@
 #include "../../StageSystem/public/StageManagerBase.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/ItemBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../public/AssetManagerBase.h"
@@ -105,8 +106,32 @@ void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType,
 {
 	if (CameraShakeEffectList.Num() < (uint8)EffectType) return;
 
-	Location = Location + FVector(-700.0f, 0.0f, 1212.0f); //캐릭터의 Camera의 위치에 맞게 변환
+	Location = Location + (PlayerCharacterRef->FollowingCamera->GetComponentLocation() - PlayerCharacterRef->GetActorLocation());
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius);
+}
+
+AItemBase* ABackStreetGameModeBase::SpawnItemToWorld(uint8 ItemType, uint8 ItemID, FVector SpawnLocation)
+{
+	if (!IsValid(GetWorld())) return nullptr;
+	
+	int32 targetKey = AItemBase::GetTargetItemKey(ItemType, ItemID);
+	if (!ItemClassMap.Contains(targetKey)) return nullptr;
+
+	TSubclassOf<AItemBase> targetClass = *ItemClassMap.Find(AItemBase::GetTargetItemKey(ItemType, ItemID));
+	FActorSpawnParameters actorSpawnParameters;
+	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	if (targetClass != nullptr)
+	{
+		AItemBase* newItem = Cast<AItemBase>(GetWorld()->SpawnActor(targetClass, &SpawnLocation, nullptr, actorSpawnParameters));
+
+		if (IsValid(newItem))
+		{
+			newItem->InitItem((EItemCategoryInfo)ItemType, ItemID);
+		}
+		return newItem;
+	}
+	return nullptr;
 }
 
 void ABackStreetGameModeBase::UpdateCharacterStat(ACharacterBase* TargetCharacter, FCharacterStatStruct NewStat)

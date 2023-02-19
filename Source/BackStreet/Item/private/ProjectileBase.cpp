@@ -2,6 +2,7 @@
 
 
 #include "../public/ProjectileBase.h"
+#include "../public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/CharacterBuffManager.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -69,7 +70,9 @@ void AProjectileBase::UpdateProjectileStat(FProjectileStatStruct NewStat)
 void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex
 	, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!ProjectileMovement->IsActive()) return;
+	if (!ProjectileMovement->IsActive() || (IsValid(GetOwner()) && OtherActor == GetOwner())) return;
+	if (OtherActor->ActorHasTag("Item")) return;
+
 	if (OtherActor->ActorHasTag("Character"))
 	{
 		if (OtherActor == OwnerCharacterRef || OtherActor->ActorHasTag(OwnerCharacterRef->Tags[1])) return;
@@ -89,11 +92,11 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 		}
 		else
 		{
-			UGameplayStatics::ApplyDamage(OtherActor, ProjectileStat.ProjectileDamage,
-				SpawnInstigator, OwnerCharacterRef, nullptr);
+			const float totalDamage = ProjectileStat.ProjectileDamage * OwnerCharacterRef->GetCharacterStat().CharacterAtkMultiplier;
+			UGameplayStatics::ApplyDamage(OtherActor, totalDamage,SpawnInstigator, OwnerCharacterRef, nullptr);
+			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, SweepResult.Location, 100.0f);
 		}
-		
-		(Cast<ACharacterBase>(OtherActor)->GetBuffManagerRef())->SetDebuffTimer(ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
+		Cast<ACharacterBase>(OtherActor)->AddNewBuffDebuff(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, 1.0f, 0.02f);
 	}
 
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
