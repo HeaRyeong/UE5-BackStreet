@@ -15,7 +15,13 @@ class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateSingleParam StartChapterDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSingleParam FinishChapterDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateSingleParam ClearResourceDelegate;
 	
 public:
 	ABackStreetGameModeBase();
@@ -35,13 +41,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void RewardStageClear(EStatUpCategoryInfo RewardType);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
+
+	UFUNCTION()
+		AItemBase* SpawnItemToWorld(uint8 ItemType, uint8 ItemID, FVector SpawnLocation);
 
 	UFUNCTION()
 		void UpdateCharacterStat(class ACharacterBase* TargetCharacter, FCharacterStatStruct NewStat);
 
-	//UREFLECTION은 함수 오버로딩 미지원
 	UFUNCTION()
 		void UpdateCharacterStatWithID(class ACharacterBase* TargetCharacter, const uint32 CharacterID);
 
@@ -60,6 +68,7 @@ public:
 	UFUNCTION()
 		FStageEnemyTypeStruct GetStageTypeInfoWithRow(uint16 rowName);
 
+// ------ Data Table -----------------------------
 protected:
 	//적의 스탯 테이블
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
@@ -76,14 +85,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Data")
 		UDataTable* StageTypeTable;
 
+// ----- Class Info ------------------------------------ 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
 		TArray<TSubclassOf<UCameraShakeBase> > CameraShakeEffectList;
+	
+	//EItemCategoryInfo의 값이 Idx
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Item")
+		TMap<int32, TSubclassOf<class AItemBase> > ItemClassMap;
 
-	UPROPERTY(BlueprintReadWrite)
-		bool bIsGamePaused = false;
-
-//------ Ref 멤버 ---------------
+//------ 그 외 프로퍼티 ---------------
 private:
 	UPROPERTY()
 		class AMainCharacterBase* PlayerCharacterRef;
+
+protected: 
+	//게임 일시정지 여부
+	UPROPERTY(BlueprintReadWrite)
+		bool bIsGamePaused = false;
 };

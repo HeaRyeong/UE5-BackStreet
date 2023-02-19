@@ -4,6 +4,7 @@
 #include "../../Global/public/BackStreet.h"
 #include "MissionBase.generated.h"
 
+
 UCLASS()
 class BACKSTREET_API UMissionBase : public UObject
 {
@@ -21,10 +22,13 @@ public:
 		bool ClearCheck();
 
 	UFUNCTION()
-		void RemoveItem(class AItemBase* target);
+		bool TryAddMissionItem(class AItemBase* target);
 
 	UFUNCTION()
-		void RemoveMonster(class AEnemyCharacterBase* target);
+		bool TryRemoveMissionItem(class AItemBase* target);
+
+	UFUNCTION()
+		bool TryRemoveMonster(class AEnemyCharacterBase* target);
 	
 public:
 	// 1 or 2 or 3, 1 == Item 습득 미션, 2 == 몬스터 잡기 미션 , 3 == 보스
@@ -34,7 +38,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<class AItemBase*> ItemList;
 	
 public:

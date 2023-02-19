@@ -5,7 +5,9 @@
 #include "../public/MainCharacterController.h"
 #include "../public/CharacterBuffManager.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/ItemBase.h"
+#include "../../Item/public/ItemBoxBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
@@ -86,7 +88,7 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AMainCharacterBase::TryReload);
 
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
-	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryPickItem);
+	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryInvestigate);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
 }
 
@@ -136,26 +138,29 @@ void AMainCharacterBase::ZoomIn(float Value)
 	CameraBoom->TargetArmLength = newLength;
 }
 
-void AMainCharacterBase::TryPickItem()
+void AMainCharacterBase::TryInvestigate()
 {
-	TArray<AActor*> nearItemList = GetNearItemList();
+	TArray<AActor*> nearActorList = GetNearInteractionActorList();
 	
-	UE_LOG(LogTemp, Warning, TEXT("PICK #1"));
-
-	if (nearItemList.Num())
+	if (nearActorList.Num())
 	{
-		AActor* targetItem = Cast<AItemBase>(nearItemList[0]);
-		
-		UE_LOG(LogTemp, Warning, TEXT("PICK #2"));
+		PlayAnimMontage(InvestigateAnimation);
+		Investigate(nearActorList[0]);
+		ResetActionState();
+	}
+}
 
-		if (targetItem->ActorHasTag("Item"))
-		{
-			Cast<AItemBase>(targetItem)->OnPlayerBeginPickUp.ExecuteIfBound(this);
-		}
-		else if(targetItem->ActorHasTag("ItemBox"))
-		{
-			//Open Item Box Event
-		}
+void AMainCharacterBase::Investigate(AActor* TargetActor)
+{
+	if (!IsValid(TargetActor)) return;
+
+	if (TargetActor->ActorHasTag("Item"))
+	{
+		Cast<AItemBase>(TargetActor)->OnPlayerBeginPickUp.ExecuteIfBound(this);
+	}
+	else if (TargetActor->ActorHasTag("ItemBox"))
+	{
+		Cast<AItemBoxBase>(TargetActor)->OnPlayerOpenBegin.Broadcast(this);
 	}
 }
 
@@ -170,8 +175,6 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 	if (damageAmount > 0.0f && DamageCauser->ActorHasTag("Enemy"))
 	{
-		GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, GetActorLocation());
-
 		SetFacialDamageEffect(true);
 
 		GetWorld()->GetTimerManager().ClearTimer(FacialEffectResetTimerHandle);
@@ -194,8 +197,7 @@ void AMainCharacterBase::TryAttack()
 
 	//Pressed 상태를 0.2s 뒤에 체크해서 계속 눌려있다면 Attack 반복
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
-	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this
-						, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
+	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
 }
 
 void AMainCharacterBase::Attack()
@@ -243,23 +245,26 @@ void AMainCharacterBase::RotateToCursor()
 	}), 1.0f, false);
 }
 
-TArray<AActor*> AMainCharacterBase::GetNearItemList()
+TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 {
-	TArray<AActor*> outItemList;
+	TArray<AActor*> totalItemList;
+	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass()};
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
 	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
 	{
-		bool result = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius, { itemObjectType }
-											, AItemBase::StaticClass(), TArray<AActor*>(), outItemList);
+		bool result = false;
 
-		if (result) break; 
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Pick #0 - Nothing"));
+		for (auto& targetClass : targetClassList)
+		{
+			result = (result || UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius
+														, { itemObjectType }, targetClass, {}, totalItemList));
+
+			if (totalItemList.Num() > 0) return totalItemList; //찾는 즉시 반환
 		}
 	}
-	return outItemList;
+	return totalItemList;
 }
 
 void AMainCharacterBase::ResetRotationToMovement()
@@ -348,7 +353,6 @@ void AMainCharacterBase::SetFacialDamageEffect(bool NewState)
 	
 	if (currMaterial != nullptr && EmotionTextureList.Num() >= 3)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FacialEffect"));
 		currMaterial->SetTextureParameterValue(FName("BaseTexture"), EmotionTextureList[(uint8)(NewState ? EEmotionType::E_Angry : EEmotionType::E_Idle)]);
 		currMaterial->SetScalarParameterValue(FName("bIsDamaged"), (float)NewState);
 	}

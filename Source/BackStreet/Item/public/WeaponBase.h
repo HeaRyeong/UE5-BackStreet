@@ -68,10 +68,10 @@ public:
 	UFUNCTION()
 		void UpdateDurabilityState();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FWeaponStatStruct GetWeaponStat() { return WeaponStat; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FWeaponStateStruct GetWeaponState() { return WeaponState; }
 
 	UFUNCTION()

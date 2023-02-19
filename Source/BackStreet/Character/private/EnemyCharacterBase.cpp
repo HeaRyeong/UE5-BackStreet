@@ -9,6 +9,7 @@
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/WidgetComponent.h"
 #include "../../StageSystem/public/TileBase.h"
+#define TURN_TIME_OUT_SEC 0.5f
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
@@ -54,8 +55,6 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (!IsValid(DamageCauser) || !DamageCauser->ActorHasTag("Player") || damageAmount <= 0.0f) return 0.0f;
-
-	GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Attack, DamageCauser->GetActorLocation()); 
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitImpactSound, GetActorLocation());
 	EnemyDamageDelegate.ExecuteIfBound(DamageCauser);
 
@@ -81,6 +80,7 @@ void AEnemyCharacterBase::Die()
 {
 	Super::Die();
 
+	SpawnDeathItems();
 	EnemyDeathDelegate.ExecuteIfBound(this);
 	Controller->Destroy();
 }
@@ -99,6 +99,23 @@ void AEnemyCharacterBase::SetDefaultStat()
 	CharacterStat.bInfinite = true;
 }
 
+void AEnemyCharacterBase::SpawnDeathItems()
+{
+	for (int32 itemIdx = 0; itemIdx < SpawnItemIDList.Num(); itemIdx++)
+	{
+		if (!SpawnItemTypeList.IsValidIndex(itemIdx) || !ItemSpawnProbabilityList.IsValidIndex(itemIdx)) return;
+
+		const uint8 itemType = (uint8)SpawnItemTypeList[itemIdx];
+		const uint8 itemID = SpawnItemIDList[itemIdx];
+		const float spawnProbability = ItemSpawnProbabilityList[itemIdx];
+
+		if(FMath::RandRange(0.0f, 1.0f) <= spawnProbability)
+		{
+			GamemodeRef->SpawnItemToWorld(itemType, itemID, GetActorLocation() + FMath::VRand() * 10.0f);
+		}
+	}
+}
+
 void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)
 {
 	if (CurrentDynamicMaterial == nullptr) return;
@@ -110,7 +127,7 @@ void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)
 
 void AEnemyCharacterBase::Turn(float Angle)
 {
-	if (FMath::Abs(Angle) == 0.0f)
+	if (FMath::Abs(Angle) <= 0.1f)
 	{
 		CharacterState.TurnDirection = 0;
 		return;
@@ -123,7 +140,10 @@ void AEnemyCharacterBase::Turn(float Angle)
 	if (GetVelocity().Length() == 0.0f)
 	{
 		CharacterState.TurnDirection = (FMath::Sign(Angle) == 1 ? 2 : 1);
-		return;
+		GetWorldTimerManager().ClearTimer(TurnTimeOutTimerHandle);
+		GetWorldTimerManager().SetTimer(TurnTimeOutTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			CharacterState.TurnDirection = 0;
+		}), 1.0f, false, TURN_TIME_OUT_SEC);
 	}
 	CharacterState.TurnDirection = 0;
 }

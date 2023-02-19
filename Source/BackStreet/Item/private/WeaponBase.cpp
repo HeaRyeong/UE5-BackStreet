@@ -40,7 +40,6 @@ void AWeaponBase::InitWeapon()
 		GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
 	}
 	WeaponState.CurrentDurability = WeaponStat.MaxDurability;
-	UE_LOG(LogTemp, Warning, TEXT("Init) Current Durability : %d"), WeaponState.CurrentDurability);
 }
 
 void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponStateStruct OldWeaponState)
@@ -70,11 +69,12 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		PlayEffectSound(AttackSound);
+		GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.5f, false, 1.0f);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 2.0f, false, 1.0f);
 	}
 	UpdateDurabilityState();
-	UE_LOG(LogTemp, Warning, TEXT("ATK) Current Durability : %d"), WeaponState.CurrentDurability);
+
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
 
@@ -138,6 +138,7 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 
 	if (IsValid(newProjectile))
 	{
+		newProjectile->SetOwner(this);
 		newProjectile->InitProjectile(OwnerCharacterRef);
 		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //버프/디버프로 인해 강화/너프된 값을 반영
 		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
@@ -185,7 +186,7 @@ void AWeaponBase::AddMagazine(int32 Count)
 bool AWeaponBase::TryFireProjectile()
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
-	if (WeaponState.CurrentAmmoCount == 0 && !WeaponStat.bIsInfiniteAmmo)
+	if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite && WeaponState.CurrentAmmoCount == 0)
 	{
 		//StopAttack의 ResetActionState로 인해 실행이 되지 않는 현상 방지를 위해
 		//타이머를 통해 일정 시간이 지난 후에 Reload를 시도.
@@ -288,6 +289,7 @@ void AWeaponBase::MeleeAttack()
 			FTransform emitterSpawnTransform(FQuat(0.0f), hitResult.Location, FVector(1.5f));
 			MeleeLineTraceQueryParams.AddIgnoredActor(hitResult.GetActor());
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
+			GamemodeRef->PlayCameraShakeEffect(OwnerCharacterRef->ActorHasTag("Player")? ECameraShakeType::E_Attack : ECameraShakeType::E_Hit, hitResult.Location);
 		}
 	}
 }

@@ -6,7 +6,7 @@
 #include "../public/StageInfoStruct.h"
 #include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
-#define MaxItemSpawn 3
+#define MAX_ITEM_SPAWN 3
 #define MaxStageType 5
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
@@ -16,6 +16,14 @@ UCLASS()
 class BACKSTREET_API ATileBase :public AActor
 {
 	GENERATED_BODY()
+
+//------ Delegate -----------------------
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam StartTileDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam FinishTileDelegate;
 
 public:
 	ATileBase();
@@ -75,10 +83,10 @@ public:
 		void MonsterDie(AEnemyCharacterBase* Target);
 
 	UFUNCTION(BlueprintCallable)
-		void OnAI();
+		void ActivateAI();
 
 	UFUNCTION(BlueprintCallable)
-		void OffAI();
+		void DeactivateAI();
 
 
 private:
@@ -121,12 +129,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class UMissionBase* Mission;
-
-	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateNoParam StartChapterDelegate;
-
-	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateNoParam ClearResourceDelegate;
 
 
 public:

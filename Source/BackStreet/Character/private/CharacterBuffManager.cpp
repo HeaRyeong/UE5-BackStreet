@@ -8,7 +8,7 @@
 
 #define MAX_BUFF_IDX 6
 #define MAX_DEBUFF_IDX 7
-#define HEAL_BUFF_TIMER_IDX 6
+#define HEAL_BUFF_TIMER_IDX 16
 #define DEBUFF_DAMAGE_TIMER_IDX 15
 #define MAX_BUFF_INFO_LIST_IDX 24
 
@@ -33,7 +33,7 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 
-	FTimerDelegate timerDelegate;
+	FTimerDelegate timerDelegate, healTimerDelegate, dotDamageDelegate;
 	FTimerHandle& timerHandle = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
@@ -56,17 +56,19 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 
 		switch ((ECharacterDebuffType)BuffDebuffType)
 		{
-			//----데미지 디버프-------------------
+		//----데미지 디버프-------------------
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
-			timerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeDebuffDamage"), Variable, BuffDebuffType, Causer);
-			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX], timerDelegate, 1.0f, true);
+			dotDamageDelegate.BindUFunction(OwnerCharacterRef, FName("TakeDebuffDamage"), Variable, BuffDebuffType, Causer);
+			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX], dotDamageDelegate, 1.0f, true);
 			break;
-			//----스탯 조정 디버프-------------------
+		//----스탯 조정 디버프-------------------
 		case ECharacterDebuffType::E_Stun:
 			OwnerCharacterRef->StopAttack();
 			characterState.CharacterActionState = ECharacterActionType::E_Stun;
 			OwnerCharacterRef->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+			UE_LOG(LogTemp, Warning, TEXT("STUN ACTIVATED"));
+
 			break;
 		case ECharacterDebuffType::E_Slow:
 			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed *= Variable;
@@ -81,11 +83,11 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 		}
 		BuffDebuffResetValueList[GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType)] = Variable;
 
-		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
-		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 0.1f, false, TotalTime);
-
 		OwnerCharacterRef->UpdateCharacterStat(characterStat);
 		OwnerCharacterRef->UpdateCharacterState(characterState);
+
+		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
+		GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 0.1f, false, TotalTime);
 
 		return true;
 	}
@@ -98,13 +100,13 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 
 		switch ((ECharacterBuffType)BuffDebuffType)
 		{
-			//----힐 버프-------------------
+		//----힐 버프-------------------
 		case ECharacterBuffType::E_Healing:
 			Variable -= 1.0f;
-			timerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), Variable, true, BuffDebuffType);
-			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX], timerDelegate, 1.0f, true);
+			healTimerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), Variable, true, BuffDebuffType);
+			GetWorldTimerManager().SetTimer(BuffDebuffTimerHandleList[HEAL_BUFF_TIMER_IDX], healTimerDelegate, 1.0f, true);
 			break;
-			//----스탯 조정 버프-------------------
+		//----스탯 조정 버프-------------------
 		case ECharacterBuffType::E_AttackUp:
 			characterStat.CharacterAtkMultiplier *= Variable;
 			break;
@@ -158,7 +160,9 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			characterStat.CharacterAtkSpeed /= ResetVal;
 			break;
 		case ECharacterDebuffType::E_Stun:
-			OwnerCharacterRef->ResetActionState();
+			UE_LOG(LogTemp, Warning, TEXT("TRY STUN DEACTIVATED"));
+			characterState.CharacterActionState = ECharacterActionType::E_Idle;
+			OwnerCharacterRef->ResetActionState(true);
 			OwnerCharacterRef->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 			break;
 		case ECharacterDebuffType::E_AttackDown:
@@ -190,7 +194,6 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			break;
 		case ECharacterBuffType::E_Invincibility:
 			characterStat.bIsInvincibility = false;
-			ClearAllBuffDebuffTimer(true);
 			break;
 		case ECharacterBuffType::E_Infinite:
 			characterStat.bInfinite = false;

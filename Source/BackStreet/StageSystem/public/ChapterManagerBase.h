@@ -7,8 +7,9 @@
 #include "ChapterManagerBase.generated.h"
 // Chapter °¹¼ö
 
-#define ChapterNumber 2 
-#define MaxMission 2
+#define MAX_CHAPTER_COUNT 2 
+#define MAX_MISSION_COUNT 2
+#define MAX_MISSION_ITEM_COUNT 10
 
 UCLASS()
 class BACKSTREET_API AChapterManagerBase : public AActor
@@ -32,7 +33,7 @@ public:
 		void InitChapterManager();
 
 	UFUNCTION()
-		bool IsGameClear() { return (ChapterLV > ChapterNumber) ? true : false; }
+		bool IsGameClear() { return (ChapterLV > MAX_CHAPTER_COUNT) ? true : false; }
 
 	UFUNCTION()
 		bool IsChapterClear() { return Missions.IsEmpty(); }
@@ -41,7 +42,10 @@ public:
 	//	void ClearChapter();
 
 	UFUNCTION()
-		void RemoveMissionItem(class AItemBase* target);
+		bool TryAddMissionItem(AItemBase* target);
+
+	UFUNCTION(BlueprintCallable)
+		bool TryRemoveMissionItem(class AItemBase* target);
 
 	UFUNCTION()
 		void RemoveMission(class UMissionBase* target);

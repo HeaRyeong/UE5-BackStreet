@@ -67,7 +67,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	if (CurrentTile != nullptr)
 	{
 		UnloadTile = CurrentTile;
-		UnloadTile->OffAI();
+		UnloadTile->DeactivateAI();
 	}
 
 	MoveDir = (EDirection)Dir;
@@ -77,32 +77,32 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	case EDirection::E_UP:
 		CurrentTile = GetStage(CurrentTile->XPos + 1, CurrentTile->YPos);
 		LoadStage();
-		CurrentTile->OnAI();
+		CurrentTile->ActivateAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
 		CurrentTile = GetStage(CurrentTile->XPos - 1, CurrentTile->YPos);
 		LoadStage();
-		CurrentTile->OnAI();
+		CurrentTile->ActivateAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
 		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos - 1);
 		LoadStage();
-		CurrentTile->OnAI();
+		CurrentTile->ActivateAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
 		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos + 1);
 		LoadStage();
-		CurrentTile->OnAI();
+		CurrentTile->ActivateAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
 		CurrentTile = Stages[0];
 		LoadStage();
-		CurrentTile->OnAI();
+		CurrentTile->ActivateAI();
 		break;
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
@@ -126,8 +126,8 @@ void AStageManagerBase::LoadStage()
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
 		CurrentTile->LevelRef->SetShouldBeLoaded(true);
 		CurrentTile->LevelRef->SetShouldBeVisible(true);
-		MyScriptDelegate.BindUFunction(this, "CompleteLoad");
-		CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
+		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
+		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
 		//CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
 		// Timer
 		//GetWorldTimerManager().UnPauseTimer(ClearTimerHandle);
@@ -142,8 +142,8 @@ void AStageManagerBase::LoadStage()
 		name += FString::FromInt(CurrentTile->YPos * GridSize + CurrentTile->XPos);
 		CurrentTile->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), CurrentTile->LevelToLoad)->CreateInstance(name);
 		CurrentTile->LevelRef->LevelTransform.SetLocation(CurrentTile->GetActorLocation());
-		MyScriptDelegate.BindUFunction(this, "CompleteLoad");
-		CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
+		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
+		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
 		CurrentTile->LevelRef->SetShouldBeLoaded(true);
 		CurrentTile->LevelRef->SetShouldBeVisible(true);
 	
@@ -156,8 +156,6 @@ void AStageManagerBase::LoadStage()
 
 void AStageManagerBase::UnLoadStage()
 {
-	
-
 	if (UnloadTile != nullptr)
 	{
 		if (UnloadTile->LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
@@ -165,8 +163,8 @@ void AStageManagerBase::UnLoadStage()
 			UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
 			UnloadTile->LevelRef->SetShouldBeLoaded(false);
 			UnloadTile->LevelRef->SetShouldBeVisible(false);
-			UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
-			CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
+			//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
+			//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
 		
 			// Pause Timer
 			//GetWorldTimerManager().PauseTimer(ClearTimerHandle);
@@ -176,7 +174,6 @@ void AStageManagerBase::UnLoadStage()
 			UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
 	
 		}
-	
 	}
 	else
 	{

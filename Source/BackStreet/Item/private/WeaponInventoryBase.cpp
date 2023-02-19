@@ -89,11 +89,10 @@ bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 		}
 		CurrentCapacity += newWeaponStat.WeaponWeight;
 		SortInventory();
-		UE_LOG(LogTemp, Warning, TEXT("ADD #5"));
+		OnInventoryIsUpdated.Broadcast(InventoryArray);
 
 		return true;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("ADD #6"));
 	return false;
 }
 
@@ -110,6 +109,7 @@ void AWeaponInventoryBase::RemoveWeapon(int32 InventoryIdx)
 		SetCurrentIdx(0);
 		EquipWeapon(0);
 		SortInventory();
+		OnInventoryIsUpdated.Broadcast(InventoryArray);
 	}
 }
 
@@ -153,6 +153,33 @@ void AWeaponInventoryBase::SyncCurrentWeaponInfo(bool bIsLoadInfo)
 		InventoryArray[GetCurrentIdx()].WeaponStat = GetCurrentWeaponRef()->GetWeaponStat();
 		InventoryArray[GetCurrentIdx()].WeaponState = GetCurrentWeaponRef()->GetWeaponState();
 	}
+	OnInventoryItemIsUpdated.Broadcast(GetCurrentIdx(), true, InventoryArray[GetCurrentIdx()]);
+}
+
+bool AWeaponInventoryBase::GetWeaponIsContained(int32 WeaponID)
+{
+	for (auto& weaponInfoRef : InventoryArray)
+	{
+		if (weaponInfoRef.WeaponID == WeaponID) return true;
+	}
+	return false;
+}
+
+bool AWeaponInventoryBase::TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount)
+{
+	const int32 targetInventoryIdx = GetWeaponInventoryIdx(WeaponID);
+	if (targetInventoryIdx == -1) return false;
+	if (!InventoryArray[targetInventoryIdx].WeaponStat.bHasProjectile) return false;
+
+	FInventoryItemInfoStruct& itemInfoRef = InventoryArray[targetInventoryIdx];
+
+	itemInfoRef.WeaponState.TotalAmmoCount += AmmoCount;
+	itemInfoRef.WeaponState.TotalAmmoCount %= itemInfoRef.WeaponStat.MaxTotalAmmo;
+	
+	if (CurrentIdx == targetInventoryIdx) SyncCurrentWeaponInfo(true);
+	else OnInventoryItemIsUpdated.Broadcast(targetInventoryIdx, false, InventoryArray[targetInventoryIdx]);
+
+	return true;
 }
 
 AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
@@ -197,7 +224,7 @@ void AWeaponInventoryBase::SortInventory()
 
 	//Inventory의 최대 Len이 10이기 때문에
 	//O(n^2)이어도 상수 시간에 근접한 결과를 냄
-	for (int32 selIdx = 0; selIdx < GetCurrentWeaponCount()-1; selIdx++)
+	for (int32 selIdx = 0; selIdx < GetCurrentWeaponCount() - 1; selIdx++)
 	{
 		FInventoryItemInfoStruct tempInfo = FInventoryItemInfoStruct();
 		for (int32 compIdx = selIdx + 1; compIdx < GetCurrentWeaponCount(); compIdx++)
@@ -217,6 +244,16 @@ void AWeaponInventoryBase::SortInventory()
 			}
 		}
 	}
+}
+
+int32 AWeaponInventoryBase::GetWeaponInventoryIdx(int32 WeaponID)
+{
+	for (int32 inventoryIdx = 0; inventoryIdx < InventoryArray.Num(); inventoryIdx++)
+	{
+		FInventoryItemInfoStruct &weaponInfo = InventoryArray[inventoryIdx];
+		if (weaponInfo.WeaponID == WeaponID) return inventoryIdx;
+	}
+	return -1;
 }
 
 void AWeaponInventoryBase::RemoveCurrentWeapon()

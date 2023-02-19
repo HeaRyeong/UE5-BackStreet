@@ -40,9 +40,26 @@ void AChapterManagerBase::InitChapterManager()
 	CreateChapter();
 }
 
-void AChapterManagerBase::RemoveMissionItem(AItemBase* target)
+bool AChapterManagerBase::TryAddMissionItem(AItemBase* target)
 {
-	GetStageManager()->GetCurrentStage()->Mission->RemoveItem(target);
+	if (!IsValid(GetStageManager())) return false;
+
+	if (IsValid(GetStageManager()->GetCurrentStage()))
+	{
+		return GetStageManager()->GetCurrentStage()->Mission->TryAddMissionItem(target);
+	}
+	return false;
+}
+
+bool AChapterManagerBase::TryRemoveMissionItem(AItemBase* target)
+{
+	if (!IsValid(GetStageManager())) return false;
+
+	if (IsValid(GetStageManager()->GetCurrentStage()))
+	{
+		return GetStageManager()->GetCurrentStage()->Mission->TryRemoveMissionItem(target);
+	}
+	return false;
 }
 
 
@@ -92,10 +109,10 @@ void AChapterManagerBase::CreateMission()
 	}
 
 
-	for (int32 i = 0; i < MaxMission; i++)
+	for (int32 i = 0; i < MAX_MISSION_COUNT; i++)
 	{
 		UMissionBase* target;
-		if (i == 0)
+		if (i == 0) //보스 미션 초기화
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Grid::CreateMaze()] BossMissionTildidx : %d"), MissionTileidxList[i]);
 			stageRef[MissionTileidxList[0]]->SetStageType(EStageCategoryInfo::E_Boss);
