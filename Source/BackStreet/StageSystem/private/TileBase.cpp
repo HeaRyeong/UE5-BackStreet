@@ -61,8 +61,8 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 
 void ATileBase::SelectMap()
 {
-	int NextMap = FMath::RandRange(1, 3);
-	//NextMap = 4;
+	int NextMap = FMath::RandRange(4, 6);
+	//NextMap = 6;
 	// 메인, 서브, 보스에 따라 또 갈리기
 	switch (NextMap)
 	{
@@ -78,12 +78,12 @@ void ATileBase::SelectMap()
 	case 4:
 		LevelToLoad = FName(TEXT("TypeA"));
 		break;
-		//case 4:
-		//	NextLevelToLoad = FName(TEXT("Sub1Prefab"));
-		//	break;
-		//case 5:
-		//	NextLevelToLoad = FName(TEXT("Sub2Prefab"));
-		//	break;
+	case 5:
+		LevelToLoad = FName(TEXT("TypeB"));
+			break;
+	case 6:
+		LevelToLoad = FName(TEXT("TypeC"));
+		break;
 		//case 6:
 		//	NextLevelToLoad = FName(TEXT("Sub3Prefab"));
 		//	break;
@@ -175,7 +175,9 @@ void ATileBase::SpawnMonster()
 	{
 		int32 enemyIDIdx = FMath::RandRange(0, enemyIDList.Num() - 1);
 	
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->GetEnemyWithID(enemyIDList[enemyIDIdx]), MonsterSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
+		FActorSpawnParameters actorSpawnParameters;
+		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->GetEnemyWithID(enemyIDList[enemyIDIdx]), MonsterSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
 		MonsterList.Add(target);
 		target->EnemyID = enemyIDList[enemyIDIdx];
 		target->InitEnemyStat();
@@ -225,13 +227,19 @@ void ATileBase::SpawnMission()
 
 	if(Mission->Type == 1) // 아이템 습득
 	{
-		AItemBoxBase* target = GetWorld()->SpawnActor<AItemBoxBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		FActorSpawnParameters actorSpawnParameters;
+		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	
+		AItemBoxBase* target = GetWorld()->SpawnActor<AItemBoxBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation()
+																	, FRotator::ZeroRotator, actorSpawnParameters);
 		target->InitItemBox(true);
 		target->OnMissionItemSpawned.BindUFunction(Mission, FName("TryAddMissionItem"));
 	}
 	else if(Mission->Type == 2)// 몬스터 잡기
 	{
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		FActorSpawnParameters actorSpawnParameters;
+		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
 		Mission->MonsterList.Add(target);
 		target->Tags.AddUnique("MissionMonster");
 		MonsterList.AddUnique(target);
@@ -240,7 +248,9 @@ void ATileBase::SpawnMission()
 	}
 	else // 보스
 	{
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		FActorSpawnParameters actorSpawnParameters;
+		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
 		Mission->MonsterList.Add(target);
 		target->Tags.AddUnique("MissionMonster");
 		MonsterList.AddUnique(target);
