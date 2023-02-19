@@ -33,43 +33,48 @@ void AGateBase::Tick(float DeltaTime)
 void AGateBase::BeginPlay()
 {
 	Super::BeginPlay();
-	//GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	InGameScriptRef =  Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+
 }
 
 void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
-	if (OtherActor->ActorHasTag("Player"))
-	{
-		if (IsValid(TravelSequencePlayer))
-		{
-			TravelSequencePlayer->Play();
-		}
+	//if (OtherActor->ActorHasTag("Player"))
+	//{
+	//	if (IsValid(TravelSequencePlayer))
+	//	{
+	//		TravelSequencePlayer->Play();
+	//	}
 
-		UpdateNewTile();
+	//	UpdateNewTile();
 
-		////새 타일을 CrossFade 도중에 업데이트 한다.
-		//GetWorldTimerManager().SetTimer(TravelSequenceDelayHandle, this, &AGateBase::UpdateNewTile, 1.0f, false, 0.5f);
+	//	////새 타일을 CrossFade 도중에 업데이트 한다.
+	//	//GetWorldTimerManager().SetTimer(TravelSequenceDelayHandle, this, &AGateBase::UpdateNewTile, 1.0f, false, 0.5f);
 
-		////CrossFade가 끝나면 Gate를 반환한다.
-		//GetWorldTimerManager().SetTimer(ResourceReturnTimerHandle, FTimerDelegate::CreateLambda([&]() {
-		//	GamemodeRef->ChapterManager->GetStageManager()->UnLoadStage();
-		//	ClearAllTimerHandle();
-		//	Destroy();
-		//}), 1.0f, false, 0.75f);
-	}
+	//	////CrossFade가 끝나면 Gate를 반환한다.
+	//	//GetWorldTimerManager().SetTimer(ResourceReturnTimerHandle, FTimerDelegate::CreateLambda([&]() {
+	//	//	GamemodeRef->ChapterManager->GetStageManager()->UnLoadStage();
+	//	//	ClearAllTimerHandle();
+	//	//	Destroy();
+	//	//}), 1.0f, false, 0.75f);
+	//			
+	//}
 }
 
 void AGateBase::InitGate()
 {
-	if (!bIsInit)
-	{
-		InitTileTravelSequence();
+	
 		CheckHaveToActive();
-		bIsInit = true;
-	}
+	
+	
 }
+
+void AGateBase::EnterGate()
+{
+	UpdateNewTile();
+}
+
 
 void AGateBase::UpdateNewTile()
 {
@@ -112,21 +117,6 @@ void AGateBase::UpdateNewTile()
 		UE_LOG(LogTemp, Log, TEXT("Left Gate"));
 	}
 	
-}
-
-
-void AGateBase::InitTileTravelSequence()
-{
-	if (!IsValid(TileTravelEffectSequence)) return;
-	ALevelSequenceActor* outActor = nullptr;
-	TravelSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), TileTravelEffectSequence
-		, FMovieSceneSequencePlaybackSettings(), outActor);
-}
-
-void AGateBase::ClearAllTimerHandle()
-{
-	GetWorldTimerManager().ClearTimer(TravelSequenceDelayHandle);
-	GetWorldTimerManager().ClearTimer(ResourceReturnTimerHandle);
 }
 
 void AGateBase::CheckHaveToActive()

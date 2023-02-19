@@ -66,6 +66,7 @@ bool AChapterManagerBase::TryRemoveMissionItem(AItemBase* target)
 void AChapterManagerBase::RemoveMission(UMissionBase* target)
 {
 	Missions.Remove(target);
+	
 }
 
 void AChapterManagerBase::CreateChapter()
@@ -125,11 +126,10 @@ void AChapterManagerBase::CreateMission()
 		{
 			UE_LOG(LogTemp, Log, TEXT("[Grid::CreateMaze()] MissionTildidx : %d"), MissionTileidxList[i]);
 			stageRef[MissionTileidxList[i]]->SetStageType(EStageCategoryInfo::E_Mission);
-			Missions.AddUnique(NewObject<UMissionBase>(this));
 			target = NewObject<UMissionBase>(this);
 			Missions.AddUnique(target);
 			int8 type = FMath::RandRange(1,2);
-			target->InitMission(stageRef[MissionTileidxList[i]], type);
+			target->InitMission(stageRef[MissionTileidxList[i]], 2);
 			stageRef[MissionTileidxList[i]]->SetMission(target);
 		}
 	}

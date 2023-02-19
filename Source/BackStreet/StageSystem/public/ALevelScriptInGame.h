@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "../../Global/public/BackStreet.h"
 #include "Engine/LevelScriptActor.h"
 #include "ALevelScriptInGame.generated.h"
 

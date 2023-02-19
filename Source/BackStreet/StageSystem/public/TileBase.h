@@ -9,6 +9,9 @@
 #define MaxItemSpawn 3
 #define MaxStageType 5
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
+
+
 UCLASS()
 class BACKSTREET_API ATileBase :public AActor
 {
@@ -40,24 +43,26 @@ public:
 		EStageCategoryInfo GetStageType() { return StageType; }
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		int32 XPos;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		int32 YPos;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<bool> Gate; 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		EStageCategoryInfo StageType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		FName LevelToLoad;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		ULevelStreaming* LevelRef;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class ALevelScriptBase* ScriptRef;
 
 public:
 	UFUNCTION()
@@ -70,7 +75,11 @@ public:
 		void MonsterDie(AEnemyCharacterBase* Target);
 
 	UFUNCTION(BlueprintCallable)
-		void BindDelegate();
+		void OnAI();
+
+	UFUNCTION(BlueprintCallable)
+		void OffAI();
+
 
 private:
 	UFUNCTION()
@@ -82,25 +91,42 @@ private:
 	UFUNCTION()
 		void SpawnMission();
 
+	UFUNCTION(BlueprintCallable)
+		void BindDelegate();
+
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+		TArray<class AEnemyCharacterBase*> GetMonsterList() { return MonsterList; };
 
 public:
 	UPROPERTY()
 		bool bIsVisited;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MonsterSpawnPoints;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<AActor*> ItemSpawnPoints;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MissionSpawnPoints;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		TArray<AActor*> CharacterSpawnPoint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class UMissionBase* Mission;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam StartChapterDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam ClearResourceDelegate;
 
 
 public:
@@ -110,10 +136,10 @@ public:
 	UFUNCTION()
 		void SetReward();
 public:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		FTimerHandle ClearTimerHandle;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		int32 ClearTime;
 
 // ---- ÂüÁ¶ -----

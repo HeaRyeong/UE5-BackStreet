@@ -32,10 +32,10 @@ public:
 	
 public:
 	// 1 or 2 or 3, 1 == Item 습득 미션, 2 == 몬스터 잡기 미션 , 3 == 보스
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		int8 Type;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
 
 protected:
@@ -43,10 +43,10 @@ protected:
 		TArray<class AItemBase*> ItemList;
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class ATileBase* BelongTile;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class ALevelScriptInGame* InGameScriptRef;
 
 };

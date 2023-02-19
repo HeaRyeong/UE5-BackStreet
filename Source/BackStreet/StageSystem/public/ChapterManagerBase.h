@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
 #include "ChapterManagerBase.generated.h"
 // Chapter °¹¼ö
@@ -73,20 +73,20 @@ private:
 		void CleanChapterManager();
 
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		class AGridBase* CurrentChapter;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		int8 ChapterLV;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		float StatWeight;
 
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		class AStageManagerBase* StageManager;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		TArray<class UMissionBase*> Missions;
 
 };
