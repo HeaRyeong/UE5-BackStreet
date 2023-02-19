@@ -40,16 +40,16 @@ FRotator AMainCharacterController::GetRotationToCursor()
 	DeprojectMousePositionToWorld(traceStartLocation, mouseDirection);
 
 	//마우스 커서 위치에서 바닥으로의 INF만큼의 위치가 Trace의 마지막 지점
-	traceEndLocation = traceStartLocation + mouseDirection * 10000.0f;
+	traceEndLocation = traceStartLocation + mouseDirection * 250000.0f;
 
 	//카메라에서 커서의 바닥 위치까지 LineTrace를 진행 -> 실제 커서의 월드 상호작용 위치가 hitResult.Location에 담김
 	GetWorld()->LineTraceSingleByChannel(hitResult, traceStartLocation, traceEndLocation
-		, ECollisionChannel::ECC_Visibility);
+		, ECollisionChannel::ECC_Camera);
 
 	//hit에 성공했다면
 	if (hitResult.bBlockingHit)
 	{
-		retRotation = UKismetMathLibrary::FindLookAtRotation(PlayerRef->GetMesh()->GetComponentLocation(), hitResult.Location);
+		retRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(), hitResult.Location);
 		retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw + 270.0f);
 		return retRotation;
 	}

@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "./ALevelScriptInGame.h"
-#include "./ChapterManagerBase.h"
+#include "../public/ALevelScriptInGame.h"
+#include "../public/ChapterManagerBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Global/public/AssetManagerBase.h"
 
@@ -23,9 +23,9 @@ void ALevelScriptInGame::Tick(float DeltaTime)
 void ALevelScriptInGame::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	//SetGameModeRef()
 	//StartGame();
-
 }
 
 
@@ -40,7 +40,7 @@ void ALevelScriptInGame::StartGame()
 
 	ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	ChapterManager->InitChapterManager();
-	GameModeRef->StartChapter();
+	//GameModeRef->StartChapter();
 }
 
 void ALevelScriptInGame::SetGameModeRef()

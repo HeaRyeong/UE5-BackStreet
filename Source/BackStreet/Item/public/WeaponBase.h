@@ -80,7 +80,6 @@ public:
 	UFUNCTION()
 		void SetWeaponState(FWeaponStateStruct NewState) { WeaponState = NewState; }
 
-
 protected:
 	//Weapon¿« ¡æ«’ Stat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Stat")

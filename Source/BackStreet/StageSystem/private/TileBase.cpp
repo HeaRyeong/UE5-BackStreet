@@ -9,11 +9,14 @@
 #include "../../Item/public/ItemInfoStruct.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/ProjectileBase.h"
+#include "../../Item/public/ItemBase.h"
 //#include "../../Character/public/CharacterInfoStruct.h"
 #include "../public/ChapterManagerBase.h"
 #include "TimerManager.h"
+#include "../../AISystem/public/AIControllerBase.h"
 #include "../public/GridBase.h"
 #include "../public/ALevelScriptInGame.h"
+#include "../public/LevelScriptBase.h"
 #include "UObject/SoftObjectPath.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -60,17 +63,21 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 void ATileBase::SelectMap()
 {
 	int NextMap = FMath::RandRange(1, 3);
+	//NextMap = 4;
 	// 메인, 서브, 보스에 따라 또 갈리기
 	switch (NextMap)
 	{
 	case 1:
-		LevelToLoad = FName(TEXT("Map1_JH"));
+		LevelToLoad = FName(TEXT("Main1"));
 		break;
 	case 2:
-		LevelToLoad = FName(TEXT("Map2_JH"));
+		LevelToLoad = FName(TEXT("Main2"));
 		break;
 	case 3:
-		LevelToLoad = FName(TEXT("Map3_JH"));
+		LevelToLoad = FName(TEXT("Main3"));
+		break;
+	case 4:
+		LevelToLoad = FName(TEXT("TypeA"));
 		break;
 		//case 4:
 		//	NextLevelToLoad = FName(TEXT("Sub1Prefab"));
@@ -110,7 +117,6 @@ void ATileBase::SetStage()
 	}
 
 	BindDelegate();
-	//GamemodeRef->StartChapter();
 	UE_LOG(LogTemp, Log, TEXT("finish spawn"));
 
 }
@@ -170,7 +176,7 @@ void ATileBase::SpawnMonster()
 		int32 enemyIDIdx = FMath::RandRange(0, enemyIDList.Num() - 1);
 	
 		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->GetEnemyWithID(enemyIDList[enemyIDIdx]), MonsterSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
-		MonsterList.AddUnique(target);
+		MonsterList.Add(target);
 		target->EnemyID = enemyIDList[enemyIDIdx];
 		target->InitEnemyStat();
 
@@ -286,8 +292,35 @@ void ATileBase::BindDelegate()
 {
 	for (AEnemyCharacterBase* enemy : MonsterList)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Binding Func"));
+		FString name = enemy->GetController()->GetName();
+		//UE_LOG(LogTemp, Log, TEXT("Controller %s"), *name);
+		ClearResourceDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::DeactivateAI);
+		StartChapterDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::ActivateAI);
 		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));
+	}
+}
+
+void ATileBase::OnAI()
+{
+	if (StartChapterDelegate.IsBound())
+	{
+		StartChapterDelegate.Broadcast();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Please Check Binding"));
+	}
+}
+
+void ATileBase::OffAI()
+{
+	if (ClearResourceDelegate.IsBound())
+	{
+		ClearResourceDelegate.Broadcast();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Please Check Binding"));
 	}
 }
 

@@ -60,10 +60,10 @@ void AGridBase::RecursiveBacktracking()
 
 ATileBase* AGridBase::GetRandomNeighbourTile(ATileBase* Tile)
 {
-	ATileBase* upTile = GetTile(Tile->XPos, Tile->YPos + 1);
-	ATileBase* downTile = GetTile(Tile->XPos, Tile->YPos - 1);
-	ATileBase* leftTile = GetTile(Tile->XPos - 1, Tile->YPos);
-	ATileBase* rightTile = GetTile(Tile->XPos + 1, Tile->YPos);
+	ATileBase* upTile = GetTile(Tile->XPos + 1, Tile->YPos);
+	ATileBase* downTile = GetTile(Tile->XPos - 1, Tile->YPos);
+	ATileBase* leftTile = GetTile(Tile->XPos, Tile->YPos - 1);
+	ATileBase* rightTile = GetTile(Tile->XPos, Tile->YPos + 1);
 
 	TArray<ATileBase*> neighbourTiles;
 	if (upTile != nullptr && !upTile->IsVisited()) neighbourTiles.Add(upTile);
@@ -82,23 +82,23 @@ void AGridBase::VisitTile(ATileBase* CurrentTilePara, ATileBase* NextTilePara)
 {
 	if (CurrentTilePara->XPos < NextTilePara->XPos)
 	{
-		CurrentTilePara->Gate[(uint8)(EDirection::E_RIGHT)] = true;
-		NextTilePara->Gate[(uint8)(EDirection::E_LEFT)] = true;
-	}
-	if (CurrentTilePara->XPos > NextTilePara->XPos)
-	{
-		CurrentTilePara->Gate[(uint8)(EDirection::E_LEFT)] = true;
-		NextTilePara->Gate[(uint8)(EDirection::E_RIGHT)] = true;
-	}
-	if (CurrentTilePara->YPos < NextTilePara->YPos)
-	{
 		CurrentTilePara->Gate[(uint8)(EDirection::E_UP)] = true;
 		NextTilePara->Gate[(uint8)(EDirection::E_DOWN)] = true;
 	}
-	if (CurrentTilePara->YPos > NextTilePara->YPos)
+	if (CurrentTilePara->XPos > NextTilePara->XPos)
 	{
 		CurrentTilePara->Gate[(uint8)(EDirection::E_DOWN)] = true;
 		NextTilePara->Gate[(uint8)(EDirection::E_UP)] = true;
+	}
+	if (CurrentTilePara->YPos < NextTilePara->YPos)
+	{
+		CurrentTilePara->Gate[(uint8)(EDirection::E_RIGHT)] = true;
+		NextTilePara->Gate[(uint8)(EDirection::E_LEFT)] = true;
+	}
+	if (CurrentTilePara->YPos > NextTilePara->YPos)
+	{
+		CurrentTilePara->Gate[(uint8)(EDirection::E_LEFT)] = true;
+		NextTilePara->Gate[(uint8)(EDirection::E_RIGHT)] = true;
 	}
 
 	Tracks.Add(NextTilePara);

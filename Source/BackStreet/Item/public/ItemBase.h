@@ -73,5 +73,5 @@ private:
 		class ALevelScriptInGame* InGameScriptRef;
 
 	UPROPERTY(VisibleDefaultsOnly)
-		class ABackStreetGameModeBase* GameModeRef;
+		class ABackStreetGameModeBase* GamemodeRef;
 };

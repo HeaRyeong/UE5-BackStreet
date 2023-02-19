@@ -48,6 +48,7 @@ void AStageManagerBase::InitStageManager(AGridBase* Chapter)
 
 	CurrentTile = nullptr;
 	SetMissionStages();
+	//InitTileTravelSequence();
 }
 
 void AStageManagerBase::CleanManager()
@@ -63,107 +64,140 @@ void AStageManagerBase::SetMissionStages()
 
 void AStageManagerBase::MoveStage(uint8 Dir)
 {
-	ATileBase* toUnLoadStage = nullptr;
-
 	if (CurrentTile != nullptr)
-		toUnLoadStage = CurrentTile;
+	{
+		UnloadTile = CurrentTile;
+		UnloadTile->OffAI();
+	}
+
+	MoveDir = (EDirection)Dir;
 
 	switch ((EDirection)Dir)
 	{
 	case EDirection::E_UP:
-		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos + 1);
-		LoadStage(CurrentTile);
+		CurrentTile = GetStage(CurrentTile->XPos + 1, CurrentTile->YPos);
+		LoadStage();
+		CurrentTile->OnAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
-		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos - 1);
-		LoadStage(CurrentTile);
+		CurrentTile = GetStage(CurrentTile->XPos - 1, CurrentTile->YPos);
+		LoadStage();
+		CurrentTile->OnAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
-		CurrentTile = GetStage(CurrentTile->XPos - 1, CurrentTile->YPos);
-		LoadStage(CurrentTile);
+		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos - 1);
+		LoadStage();
+		CurrentTile->OnAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
-		CurrentTile = GetStage(CurrentTile->XPos + 1, CurrentTile->YPos);
-		LoadStage(CurrentTile);
+		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos + 1);
+		LoadStage();
+		CurrentTile->OnAI();
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
 		CurrentTile = Stages[0];
-		LoadStage(CurrentTile);
+		LoadStage();
+		CurrentTile->OnAI();
 		break;
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
-		LoadStage(CurrentTile);
 		break;
 	default:
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
 		break;
 	}
 	
-	if (toUnLoadStage != nullptr)
-		UnLoadStage(toUnLoadStage);
-	
+
 	// UI 업데이트
 	InGameScriptRef->UpdateMiniMapUI();
 }
 
-void AStageManagerBase::LoadStage(ATileBase* targetStage)
+void AStageManagerBase::LoadStage()
 {
-	if (targetStage->LevelRef != nullptr) 
+	FScriptDelegate MyScriptDelegate;
+
+	if (CurrentTile->LevelRef != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
-		targetStage->LevelRef->SetShouldBeLoaded(true);
-		targetStage->LevelRef->SetShouldBeVisible(true);
-
-		CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
+		CurrentTile->LevelRef->SetShouldBeLoaded(true);
+		CurrentTile->LevelRef->SetShouldBeVisible(true);
+		MyScriptDelegate.BindUFunction(this, "CompleteLoad");
+		CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
+		//CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
 		// Timer
 		//GetWorldTimerManager().UnPauseTimer(ClearTimerHandle);
 
 	}
 	else
 	{
+		
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
 		FString name = FString::FromInt(InGameScriptRef->ChapterManager->GetChapterLV());
 		name += FString(TEXT("Stage"));
-		name += FString::FromInt(targetStage->YPos * 5 + targetStage->XPos);
-		targetStage->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), targetStage->LevelToLoad)->CreateInstance(name);
-		targetStage->LevelRef->LevelTransform.SetLocation(targetStage->GetActorLocation());
-
-		targetStage->LevelRef->SetShouldBeLoaded(true);
-		targetStage->LevelRef->SetShouldBeVisible(true);
+		name += FString::FromInt(CurrentTile->YPos * GridSize + CurrentTile->XPos);
+		CurrentTile->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), CurrentTile->LevelToLoad)->CreateInstance(name);
+		CurrentTile->LevelRef->LevelTransform.SetLocation(CurrentTile->GetActorLocation());
+		MyScriptDelegate.BindUFunction(this, "CompleteLoad");
+		CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
+		CurrentTile->LevelRef->SetShouldBeLoaded(true);
+		CurrentTile->LevelRef->SetShouldBeVisible(true);
 	
-		CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
+		//CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
 		// Clear Timer 설정
 		//GetWorldTimerManager().SetTimer(ClearTimerHandle, this, &ATileBase::SetReward, 60.0f, true);
 
 	}
 }
 
-void AStageManagerBase::UnLoadStage(ATileBase* targetStage)
+void AStageManagerBase::UnLoadStage()
 {
-	if (targetStage->LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
-	{
-		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
-		targetStage->LevelRef->SetShouldBeLoaded(false);
-		targetStage->LevelRef->SetShouldBeVisible(false);
 	
-		for (AEnemyCharacterBase* Target : targetStage->MonsterList)
+
+	if (UnloadTile != nullptr)
+	{
+		if (UnloadTile->LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
 		{
-			UE_LOG(LogTemp, Log, TEXT("Call SetMovementMode"));
-			Target->GetCharacterMovement()->SetMovementMode(MOVE_Flying);
+			UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
+			UnloadTile->LevelRef->SetShouldBeLoaded(false);
+			UnloadTile->LevelRef->SetShouldBeVisible(false);
+			UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
+			CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
+		
+			// Pause Timer
+			//GetWorldTimerManager().PauseTimer(ClearTimerHandle);
 		}
-		// Pause Timer
-		//GetWorldTimerManager().PauseTimer(ClearTimerHandle);
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
+	
+		}
+	
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
-
+		//CompleteUnLoad();
 	}
+
+}
+
+void AStageManagerBase::CompleteLoad()
+{
+	UE_LOG(LogTemp, Log, TEXT("Delegate Call CompleteLoad"));
+}
+
+void AStageManagerBase::CompleteUnLoad()
+{/*
+	UE_LOG(LogTemp, Log, TEXT("Delegate Call CompleteUnLoad"));
+	ALevelScriptBase* script = Cast<ALevelScriptBase>(CurrentTile->LevelRef->GetLoadedLevel()->GetLevelScriptActor());
+	
+	script->InitLevel(CurrentTile);
+	script->SetGate();
+	script->TeleportCharacter();*/
 }
 
 ATileBase* AStageManagerBase::GetStage(int32 XPosition, int32 YPosition)
@@ -174,6 +208,9 @@ ATileBase* AStageManagerBase::GetStage(int32 XPosition, int32 YPosition)
 	{
 		return (Stages[(YPosition * size) + XPosition]);
 	}
-
-	return nullptr;
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Out of Range X:%d Y:%d"), XPosition,YPosition);
+		return nullptr;
+	}
 }

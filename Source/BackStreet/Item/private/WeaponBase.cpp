@@ -118,11 +118,8 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
-
-	SpawnRotation.Pitch = 0.0f;
-	SpawnRotation.Yaw += 90.0f;
+	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
 
 	if (WeaponStat.WeaponType == EWeaponType::E_Shoot)
 	{
@@ -133,6 +130,8 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
 		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
 	}
+	SpawnRotation.Pitch = SpawnRotation.Roll = 0.0f;
+	SpawnRotation.Yaw += 90.0f;
 
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
 	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
@@ -223,7 +222,7 @@ float AWeaponBase::GetAttackRange()
 
 void AWeaponBase::UpdateDurabilityState()
 {
-	if (OwnerCharacterRef->GetCharacterStat().bInfinite) return;
+	if (OwnerCharacterRef->GetCharacterStat().bInfinite || WeaponStat.bInfinite) return;
 	if (--WeaponState.CurrentDurability == 0)
 	{
 		if (IsValid(DestroyEffectParticle))
