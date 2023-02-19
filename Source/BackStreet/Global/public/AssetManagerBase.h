@@ -21,19 +21,42 @@ public:
 		TSubclassOf<AEnemyCharacterBase> GetEnemyWithID(int32 EnemyID);
 
 	UFUNCTION()
+		ULevelSequence* GetTileTravelEffectSequence() { return TileTravelEffectSequence; }
+
+	UFUNCTION()
+		ULevelSequence* GetFadeOutEffectSequence() { return FadeOutEffectSequence; }
+
+	UFUNCTION()
+		ULevelSequence* GetFadeInEffectSequence() { return FadeInEffectSequence; }
+
+	UFUNCTION()
 		FName GetRandomMap();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AEnemyCharacterBase>> EnemyAssets;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AItemBase>> ItemAssets;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AWeaponBase>> WeaponAssets;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AProjectileBase>> ProjectileAssets;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AItemBase>> MissionAssets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class ULevelSequence* TileTravelEffectSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class ULevelSequence* FadeOutEffectSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay|VFX")
+		class ULevelSequence* FadeInEffectSequence;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FName> MapNames;
 

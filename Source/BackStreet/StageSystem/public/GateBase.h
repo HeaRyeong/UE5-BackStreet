@@ -34,6 +34,10 @@ public:
 
 	UFUNCTION()
 		void InitGate();
+
+	UFUNCTION(BlueprintCallable)
+		void EnterGate();
+
 public:
 	//새 타일을 로드 / 기존 타일을 언로드 한다.
 	UFUNCTION()
@@ -42,35 +46,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void CheckHaveToActive();
 
-public:
-	UPROPERTY()
-		bool bIsInit = false;
 
-private:
-
-//----------- 레벨 시퀀스 관련 ----------
-public:
-	//타일간 이동 시 출력할 레벨 시퀀스
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay|VFX")
-		class ULevelSequence* TileTravelEffectSequence;
-
-	UFUNCTION()
-		void InitTileTravelSequence();
-
-private:
-	UPROPERTY()
-		class ULevelSequencePlayer* TravelSequencePlayer;
-	
-//------- 타이머 관련 ---------------------
-private:
-	UFUNCTION()
-		void ClearAllTimerHandle();
-
-	UPROPERTY()
-		FTimerHandle TravelSequenceDelayHandle;
-
-	UPROPERTY()
-		FTimerHandle ResourceReturnTimerHandle;
 
 //-------- 그 외-----------------------
 private:

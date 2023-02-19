@@ -2,10 +2,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
+#include "UObject/WeakObjectPtr.h"
 #include "StageManagerBase.generated.h"
-#define GridSize 3;
+#define GridSize 3
+
 
 UCLASS()
 class BACKSTREET_API AStageManagerBase : public AActor
@@ -34,31 +36,59 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void MoveStage(uint8 Dir);
 
+	UFUNCTION()
+		void UnLoadStage();
+
 	UFUNCTION(BlueprintCallable)
 		TArray<ATileBase*> GetStages() { return Stages; }
 
 	UFUNCTION(BlueprintCallable)
 		ATileBase* GetCurrentStage() { return CurrentTile; }
 
+	UFUNCTION(BlueprintCallable)
+		ATileBase* GetUnloadStage() { return UnloadTile; }
+
+	UFUNCTION(BlueprintCallable)
+		EDirection GetMoveDir() { return MoveDir; }
+
 private:
 	UFUNCTION()
 		void SetMissionStages();
 
 	UFUNCTION()
-		void LoadStage(class ATileBase* targetStage);
-
-	UFUNCTION()
-		void UnLoadStage(class ATileBase* targetStage);
+		void LoadStage();
 	
 	UFUNCTION(BlueprintCallable)
 		class ATileBase* GetStage(int32 XPosition, int32 YPosition);
 
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		TArray<class ATileBase*> Stages;
 
 	UPROPERTY(VisibleAnywhere)
 		class ATileBase* CurrentTile;
+
+	UPROPERTY(VisibleAnywhere)
+		class ATileBase* UnloadTile;
+	
+	UPROPERTY(VisibleAnywhere)
+		EDirection MoveDir;
+
+	//
+public:
+	UFUNCTION()
+		void CompleteLoad();
+
+	UFUNCTION()
+		void CompleteUnLoad();
+
+public:
+
+		FScriptDelegate UnloadDelegate;
+//public:
+//	UPROPERTY(VisibleAnywhere)
+//		FScriptDelegate MyScriptDelegate;
+
 
 	// Ref
 private:

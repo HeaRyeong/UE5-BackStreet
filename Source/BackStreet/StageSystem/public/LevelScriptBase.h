@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "../../Global/public/BackStreet.h"
 #include "Engine/LevelScriptActor.h"
 #include "LevelScriptBase.generated.h"
 
@@ -22,16 +22,49 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+
+
 public:
 	UFUNCTION()
 		void InitLevel(class ATileBase* target);
 
-private:
+	UFUNCTION()
+		void TeleportCharacter();
+public:
 	UFUNCTION()
 		void SetGate();
 
 	UFUNCTION()
 		void SetSpawnPoints(class ATileBase* target);
+
+
+
+private:
+	UPROPERTY(VisibleAnywhere)
+		class ATileBase* BelongTileRef;
+
+	// Sequence
+
+public:
+	UFUNCTION()
+		void PlayLoadSequencePlayer();
+
+private:
+	UFUNCTION()
+		void InitLevelSequence();
+
+	UFUNCTION()
+		void ClearAllTimerHandle();
+
+private:
+	UPROPERTY(VisibleAnywhere)
+		class ULevelSequencePlayer* LoadSequencePlayer;
+
+	UPROPERTY(VisibleAnywhere)
+		FTimerHandle TravelSequenceDelayHandle;
+
+	UPROPERTY(VisibleAnywhere)
+		FTimerHandle ResourceReturnTimerHandle;
 
 private:
 	UPROPERTY()

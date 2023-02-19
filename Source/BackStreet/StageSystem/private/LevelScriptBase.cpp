@@ -9,6 +9,7 @@
 #include "../../Global/public/AssetManagerBase.h"
 #include "../public/ChapterManagerBase.h"
 #include "../public/StageManagerBase.h"
+#include "Engine/LevelStreaming.h"
 #include "../public/ALevelScriptInGame.h"
 
 ALevelScriptBase::ALevelScriptBase()
@@ -28,26 +29,152 @@ void ALevelScriptBase::BeginPlay()
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("Call ALevelScriptBase BeginPlay!"));
 	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+
+
+	InitLevelSequence();
 	
-	if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
-	{
-		ATileBase* belongTile = InGameScriptRef->ChapterManager->GetStageManager()->GetCurrentStage();
-			if (belongTile != nullptr)
+	PlayLoadSequencePlayer();
+	
+
+	GetWorldTimerManager().SetTimer(ResourceReturnTimerHandle, FTimerDelegate::CreateLambda([&]() {
+		UE_LOG(LogTemp, Log, TEXT("Call Timer"));
+		InGameScriptRef->ChapterManager->GetStageManager()->UnLoadStage();
+
+		if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
+		{
+			BelongTileRef = InGameScriptRef->ChapterManager->GetStageManager()->GetCurrentStage();
+			if (BelongTileRef != nullptr)
 			{
-				if(!belongTile->bIsVisited)
-						InitLevel(belongTile);
+				BelongTileRef->ScriptRef = this;
+				if (!(BelongTileRef->bIsVisited))
+					InitLevel(BelongTileRef);
 			}
+		}
+		SetGate();
+		TeleportCharacter();
+		ClearAllTimerHandle();
+		}), 1.0f, false, 0.75f);
+
+
+
+	/*if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
+	{
+		BelongTileRef = InGameScriptRef->ChapterManager->GetStageManager()->GetCurrentStage();
+		if (BelongTileRef != nullptr)
+		{
+			BelongTileRef->ScriptRef = this;
+			if (!(BelongTileRef->bIsVisited))
+				InitLevel(BelongTileRef);
+		}
 	}
-	
+	SetGate();
+	TeleportCharacter();*/
 }
 
 void ALevelScriptBase::InitLevel(ATileBase* target)
 {
 	UE_LOG(LogTemp, Log, TEXT("InitLevel!"));
-	SetGate();
+	BelongTileRef = target;
 	SetSpawnPoints(target);
 	target->SetStage();
 	target->bIsVisited = true;
+}
+
+void ALevelScriptBase::TeleportCharacter()
+{
+	TArray<AActor*> gates;
+	FName telegate;
+
+	switch (InGameScriptRef->ChapterManager->GetStageManager()->GetMoveDir())
+	{
+	case EDirection::E_UP:
+		telegate = FName(TEXT("DOWN"));
+		break;
+	case EDirection::E_DOWN:
+		telegate = FName(TEXT("UP"));
+		break;
+	case EDirection::E_LEFT:
+		telegate = FName(TEXT("RIGHT"));
+		break;
+	case EDirection::E_RIGHT:
+		telegate = FName(TEXT("LEFT"));
+		break;
+	case EDirection::E_Start:
+		telegate = FName(TEXT("ChapterGate"));
+		break;
+	case EDirection::E_Chapter:
+		telegate = FName(TEXT("ChapterGate"));
+		break;
+	}
+
+	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGateBase::StaticClass(), gates);
+	ULevelStreaming* levelRef = BelongTileRef->LevelRef;
+	ULevel* level = levelRef->GetLoadedLevel();
+	for (AActor* actor : level->Actors)
+	{
+		if (actor != nullptr)
+		{
+			if (actor->ActorHasTag(FName(TEXT("Gate"))))
+			{
+				gates.Add(Cast<AGateBase>(actor));
+			}
+		}
+
+	}
+	if (gates.IsEmpty())
+	{
+		UE_LOG(LogTemp, Log, TEXT("gate is empty!"));
+	}
+
+	if (telegate == FName(TEXT("ChapterGate")))
+	{
+		if (BelongTileRef->CharacterSpawnPoint[0] != nullptr)
+		{
+			ACharacterBase* CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			CharacterRef->SetActorLocation(BelongTileRef->CharacterSpawnPoint[0]->GetActorLocation()/* + FVector(0, 0, 1500)*/);
+		}
+	}
+	else
+	{
+		for (AActor* gate : gates)
+		{
+			AGateBase* target = Cast<AGateBase>(gate);
+			if (gate->ActorHasTag(telegate))
+			{
+				UE_LOG(LogTemp, Log, TEXT("GateCheck!"));
+				ACharacterBase* CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+				CharacterRef->SetActorLocation(gate->GetActorLocation()/* + FVector(0, 0, 1500)*/);
+				break;
+			}
+
+		}
+		//TArray<class AGateBase*> gatelist;
+		//
+		//ULevelStreaming* levelRef = BelongTileRef->LevelRef;
+		//ULevel* level = levelRef->GetLoadedLevel();
+		//for (AActor* actor : level->Actors)
+		//{
+		//	if (actor->ActorHasTag(FName(TEXT("Gate"))))
+		//	{
+		//		gatelist.Add(Cast<AGateBase>(actor));
+		//	}
+		//	
+		//}
+
+		//for (AGateBase* gate : gatelist)
+		//{
+		//	if (gate->ActorHasTag(telegate))
+		//	{
+		//		ACharacterBase* CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		//		CharacterRef->SetActorLocation(gate->GetActorLocation()/* + FVector(0, 0, 1500)*/);
+		//		break;
+		//	}
+
+		//}
+
+	}
+
+	
 }
 
 void ALevelScriptBase::SetGate()
@@ -57,7 +184,6 @@ void ALevelScriptBase::SetGate()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGateBase::StaticClass(), gates);
 	for (AActor* gate : gates)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Find Gate and Init Gate"));
 		AGateBase* target = Cast<AGateBase>(gate);
 		target->InitGate();
 
@@ -66,7 +192,55 @@ void ALevelScriptBase::SetGate()
 
 void ALevelScriptBase::SetSpawnPoints(ATileBase* target)
 {
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("MonsterSpawnPoint")), target->MonsterSpawnPoints);
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("ItemSpawnPoint")), target->ItemSpawnPoints);
-	UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName(TEXT("MissionSpawnPoint")), target->MissionSpawnPoints);
+	UE_LOG(LogTemp, Log, TEXT("Call SetSpawnPoints!"));
+	ULevelStreaming* levelRef = target->LevelRef;
+	ULevel* level = levelRef->GetLoadedLevel();
+	for (AActor* actor : level->Actors)
+	{ 
+		if (actor->ActorHasTag(FName(TEXT("MonsterSpawnPoint"))))
+		{
+			target->MonsterSpawnPoints.AddUnique(actor);
+		}
+		if (actor->ActorHasTag(FName(TEXT("ItemSpawnPoint"))))
+		{
+			target->ItemSpawnPoints.AddUnique(actor);
+		}
+		if (actor->ActorHasTag(FName(TEXT("MissionSpawnPoint"))))
+		{
+			target->MissionSpawnPoints.AddUnique(actor);
+		}
+		if (actor->ActorHasTag(FName(TEXT("CharacterSpawnPoint"))))
+		{
+			target->CharacterSpawnPoint.AddUnique(actor);
+
+		}
+	}
+}
+
+void ALevelScriptBase::PlayLoadSequencePlayer()
+{
+	if (IsValid(LoadSequencePlayer))
+	{
+		LoadSequencePlayer->Play();
+	}
+
+}
+
+
+void ALevelScriptBase::InitLevelSequence()
+{
+	ULevelSequence* loadEffectSequence = Cast<ULevelSequence>(InGameScriptRef->GetAssetManager()->GetFadeInEffectSequence());
+
+	if (!IsValid(loadEffectSequence)) return;
+	ALevelSequenceActor* loadActor = nullptr;
+
+	LoadSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), loadEffectSequence
+		, FMovieSceneSequencePlaybackSettings(), loadActor);
+
+}
+
+void ALevelScriptBase::ClearAllTimerHandle()
+{
+	GetWorldTimerManager().ClearTimer(TravelSequenceDelayHandle);
+	GetWorldTimerManager().ClearTimer(ResourceReturnTimerHandle);
 }
