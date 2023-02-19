@@ -9,8 +9,7 @@
 #include "../../Item/public/ItemInfoStruct.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/ProjectileBase.h"
-#include "../../Item/public/ItemBase.h"
-//#include "../../Character/public/CharacterInfoStruct.h"
+#include "../../Item/public/ItemBoxBase.h"
 #include "../public/ChapterManagerBase.h"
 #include "TimerManager.h"
 #include "../../AISystem/public/AIControllerBase.h"
@@ -187,6 +186,7 @@ void ATileBase::SpawnMonster()
 
 void ATileBase::SpawnItem()
 {
+	//스폰 포인트 순서를 무작위로 지정
 	for (int i = 0; i < 100; i++)
 	{
 		int32 selectidxA = FMath::RandRange(0, ItemSpawnPoints.Num() - 1);
@@ -198,29 +198,14 @@ void ATileBase::SpawnItem()
 		ItemSpawnPoints[selectidxB] = temp;
 
 	}
-	int8 spawnMax = FMath::RandRange(1, MaxItemSpawn);
+
+	int8 spawnMax = FMath::RandRange(1, MAX_ITEM_SPAWN);
 	for (int8 i = 0; i < spawnMax; i++)
 	{
-		int8 itemType = FMath::RandRange(1, 3);
-		// 1 == Buff
-		// 2 == Weapon
-		// 3 == Projectile
-		uint8 type;
-		type = FMath::RandRange(0, InGameScriptRef->GetAssetManager()->ItemAssets.Num() - 1);
-		AItemBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->ItemAssets[type], ItemSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
-		if (type == 6)
-		{
-			target->InitItem(EItemCategoryInfo::E_Weapon);
-		}
-		else if (type == 7)
-		{
-			target->InitItem(EItemCategoryInfo::E_Bullet);
-		}
-		else
-		{
-			target->InitItem(EItemCategoryInfo::E_Buff);
-		}
-		
+		int8 type = FMath::RandRange(0, InGameScriptRef->GetAssetManager()->ItemBoxAssets.Num() - 1);
+		AItemBoxBase* target = GetWorld()->SpawnActor<AItemBoxBase>(InGameScriptRef->GetAssetManager()->ItemBoxAssets[type]
+																	, ItemSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
+		target->InitItemBox(false);
 	}
 }
 
@@ -228,23 +213,21 @@ void ATileBase::SpawnMission()
 {
 	for (int i = 0; i < 100; i++)
 	{
-		int32 SelectidxA = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
-		int32 SelectidxB = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
-		AActor* Temp;
+		int32 selectidxA = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
+		int32 selectidxB = FMath::RandRange(0, MissionSpawnPoints.Num() - 1);
+		AActor* newMissionItemBox; //미션 아이템이 포함된 아이템 박스
 
-		Temp = MissionSpawnPoints[SelectidxA];
-		MissionSpawnPoints[SelectidxA] = MissionSpawnPoints[SelectidxB];
-		MissionSpawnPoints[SelectidxB] = Temp;
-
+		newMissionItemBox = MissionSpawnPoints[selectidxA];
+		MissionSpawnPoints[selectidxA] = MissionSpawnPoints[selectidxB];
+		MissionSpawnPoints[selectidxB] = newMissionItemBox;
+		
 	}
 
 	if(Mission->Type == 1) // 아이템 습득
 	{
-		//AItemBoxBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
-	//	AItemBase* target = GetWorld()->SpawnActor<AItemBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
-	//	target->InitItem(EItemCategoryInfo::E_Mission);
-	//	Mission->ItemList.Add(target);
-	
+		AItemBoxBase* target = GetWorld()->SpawnActor<AItemBoxBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator);
+		target->InitItemBox(true);
+		target->OnMissionItemSpawned.BindUFunction(Mission, FName("TryAddMissionItem"));
 	}
 	else if(Mission->Type == 2)// 몬스터 잡기
 	{
@@ -263,10 +246,8 @@ void ATileBase::SpawnMission()
 		MonsterList.AddUnique(target);
 		Mission->MonsterList.AddUnique(target);
 		
-	}
-		
+	}		
 }
-
 
 void ATileBase::MonsterDie(AEnemyCharacterBase* target)
 {
@@ -295,17 +276,17 @@ void ATileBase::BindDelegate()
 	{
 		FString name = enemy->GetController()->GetName();
 		//UE_LOG(LogTemp, Log, TEXT("Controller %s"), *name);
-		ClearResourceDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::DeactivateAI);
-		StartChapterDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::ActivateAI);
+		FinishTileDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::DeactivateAI);
+		StartTileDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::ActivateAI);
 		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));
 	}
 }
 
-void ATileBase::OnAI()
+void ATileBase::ActivateAI()
 {
-	if (StartChapterDelegate.IsBound())
+	if (StartTileDelegate.IsBound())
 	{
-		StartChapterDelegate.Broadcast();
+		StartTileDelegate.Broadcast();
 	}
 	else
 	{
@@ -313,11 +294,11 @@ void ATileBase::OnAI()
 	}
 }
 
-void ATileBase::OffAI()
+void ATileBase::DeactivateAI()
 {
-	if (ClearResourceDelegate.IsBound())
+	if (FinishTileDelegate.IsBound())
 	{
-		ClearResourceDelegate.Broadcast();
+		FinishTileDelegate.Broadcast();
 	}
 	else
 	{

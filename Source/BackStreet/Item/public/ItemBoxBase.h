@@ -7,7 +7,8 @@
 #include "ItemBoxBase.generated.h"
 #define MAX_TRY_SPAWN_COUNT 25
 
-DECLARE_DELEGATE_OneParam(FDeleOpenItemBox, AActor*);
+DECLARE_DELEGATE_OneParam(FDeleAddMissionItem, class AItemBase*);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeleOpenItemBox, AActor*, Owner);
 
 UCLASS()
 class BACKSTREET_API AItemBoxBase : public AActor
@@ -16,7 +17,10 @@ class BACKSTREET_API AItemBoxBase : public AActor
 
 // ----- Delegate ---------------------------
 public:
-	FDeleOpenItemBox OnPlayerOpenBegin;
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDeleOpenItemBox OnPlayerOpenBegin;
+
+	FDeleAddMissionItem OnMissionItemSpawned;
 
 // ----- Global, Component ------------------
 public:	

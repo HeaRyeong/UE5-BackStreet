@@ -3,6 +3,9 @@
 
 #include "../public/ItemBoxBase.h"
 #include "../public/ItemBase.h"
+#include "../../StageSystem/public/MissionBase.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
@@ -39,7 +42,7 @@ AItemBoxBase::AItemBoxBase()
 void AItemBoxBase::BeginPlay()
 {
 	Super::BeginPlay();
-	OnPlayerOpenBegin.BindUFunction(this, FName("OnItemBoxOpened"));
+	OnPlayerOpenBegin.AddDynamic(this, &AItemBoxBase::OnItemBoxOpened);
 
 	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());
 }
@@ -121,6 +124,11 @@ TArray<AItemBase*> AItemBoxBase::SpawnItems(int32 TargetSpawnCount)
 				itemList.Add(newItem);
 				newItem->SetActorScale3D(FVector(0.1));
 				newItem->InitItem((EItemCategoryInfo)targetItemType, targetItemID);
+
+				if (targetItemType == (int32)EItemCategoryInfo::E_Mission)
+				{
+					OnMissionItemSpawned.ExecuteIfBound(newItem); //새 아이템을 UMission에 등록
+				}
 				bMissionItemFlag = (bMissionItemFlag || (EItemCategoryInfo)targetItemType == EItemCategoryInfo::E_Mission);
 
 				currentSpawnCount++;

@@ -36,7 +36,7 @@ void ACharacterBase::BeginPlay()
 		GetInventoryRef()->InitInventory();
 		BuffManagerRef->InitBuffManager(this);
 	}
-	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
+	//GamemodeRef->FinishTileDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
 
 // Called every frame

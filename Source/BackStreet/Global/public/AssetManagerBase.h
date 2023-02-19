@@ -37,7 +37,7 @@ public:
 		TArray<TSubclassOf<class AEnemyCharacterBase>> EnemyAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<TSubclassOf<class AItemBase>> ItemAssets;
+		TArray<TSubclassOf<class AItemBoxBase>> ItemBoxAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AWeaponBase>> WeaponAssets;
@@ -46,7 +46,7 @@ public:
 		TArray<TSubclassOf<class AProjectileBase>> ProjectileAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<TSubclassOf<class AItemBase>> MissionAssets;
+		TArray<TSubclassOf<class AItemBoxBase>> MissionAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay|VFX")
 		class ULevelSequence* TileTravelEffectSequence;

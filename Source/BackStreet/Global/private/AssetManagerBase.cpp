@@ -23,7 +23,6 @@ void AAssetManagerBase::BeginPlay()
 	
 }
 
-
 TSubclassOf<AEnemyCharacterBase> AAssetManagerBase::GetEnemyWithID(int32 EnemyID)
 {
 	TSubclassOf<AEnemyCharacterBase> enemy;

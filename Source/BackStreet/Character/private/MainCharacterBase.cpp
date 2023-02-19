@@ -160,7 +160,7 @@ void AMainCharacterBase::Investigate(AActor* TargetActor)
 	}
 	else if (TargetActor->ActorHasTag("ItemBox"))
 	{
-		Cast<AItemBoxBase>(TargetActor)->OnPlayerOpenBegin.ExecuteIfBound(this);
+		Cast<AItemBoxBase>(TargetActor)->OnPlayerOpenBegin.Broadcast(this);
 	}
 }
 

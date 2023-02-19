@@ -44,7 +44,7 @@ void ABackStreetGameModeBase::StartChapter()
 	//FTimerHandle delegateBindDelayTimer;
 	//GetWorldTimerManager().SetTimer(delegateBindDelayTimer, FTimerDelegate::CreateLambda([&]()
 	//	{
-	//		StartChapterDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
+	//		StartTileDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
 	//	}), 0.1f, false, 0.5f);
 
 }

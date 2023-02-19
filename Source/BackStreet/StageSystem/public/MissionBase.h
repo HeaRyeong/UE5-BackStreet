@@ -38,7 +38,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
 
-protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<class AItemBase*> ItemList;
 	
