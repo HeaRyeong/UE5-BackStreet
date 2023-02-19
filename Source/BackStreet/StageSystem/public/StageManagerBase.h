@@ -84,7 +84,7 @@ public:
 
 public:
 
-		FScriptDelegate UnloadDelegate;
+		//FScriptDelegate UnloadDelegate;
 //public:
 //	UPROPERTY(VisibleAnywhere)
 //		FScriptDelegate MyScriptDelegate;

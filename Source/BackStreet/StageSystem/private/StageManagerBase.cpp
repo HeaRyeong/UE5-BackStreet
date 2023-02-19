@@ -119,15 +119,15 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 
 void AStageManagerBase::LoadStage()
 {
-	FScriptDelegate MyScriptDelegate;
+	//FScriptDelegate MyScriptDelegate;
 
 	if (CurrentTile->LevelRef != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
 		CurrentTile->LevelRef->SetShouldBeLoaded(true);
 		CurrentTile->LevelRef->SetShouldBeVisible(true);
-		MyScriptDelegate.BindUFunction(this, "CompleteLoad");
-		CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
+		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
+		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
 		//CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
 		// Timer
 		//GetWorldTimerManager().UnPauseTimer(ClearTimerHandle);
@@ -142,8 +142,8 @@ void AStageManagerBase::LoadStage()
 		name += FString::FromInt(CurrentTile->YPos * GridSize + CurrentTile->XPos);
 		CurrentTile->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), CurrentTile->LevelToLoad)->CreateInstance(name);
 		CurrentTile->LevelRef->LevelTransform.SetLocation(CurrentTile->GetActorLocation());
-		MyScriptDelegate.BindUFunction(this, "CompleteLoad");
-		CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
+		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
+		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
 		CurrentTile->LevelRef->SetShouldBeLoaded(true);
 		CurrentTile->LevelRef->SetShouldBeVisible(true);
 	
@@ -165,8 +165,8 @@ void AStageManagerBase::UnLoadStage()
 			UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
 			UnloadTile->LevelRef->SetShouldBeLoaded(false);
 			UnloadTile->LevelRef->SetShouldBeVisible(false);
-			UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
-			CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
+			//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
+			//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
 		
 			// Pause Timer
 			//GetWorldTimerManager().PauseTimer(ClearTimerHandle);
