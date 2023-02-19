@@ -40,7 +40,7 @@ void ALevelScriptInGame::StartGame()
 
 	ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	ChapterManager->InitChapterManager();
-	GameModeRef->StartChapter();
+	//GameModeRef->StartChapter();
 }
 
 void ALevelScriptInGame::SetGameModeRef()

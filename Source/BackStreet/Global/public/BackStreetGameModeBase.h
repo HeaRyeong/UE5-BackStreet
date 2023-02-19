@@ -7,7 +7,6 @@
 #include "Engine/StreamableManager.h"
 #include "BackStreetGameModeBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateSingleParam, bool, bGameIsOver);
 
 UCLASS()
@@ -16,14 +15,8 @@ class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateNoParam StartChapterDelegate;
-
-	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSingleParam FinishChapterDelegate;
 	
-	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateNoParam ClearResourceDelegate;
-
 public:
 	ABackStreetGameModeBase();
 

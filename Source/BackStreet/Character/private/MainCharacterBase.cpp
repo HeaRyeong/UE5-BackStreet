@@ -229,7 +229,7 @@ void AMainCharacterBase::RotateToCursor()
 	if (CharacterState.CharacterActionState != ECharacterActionType::E_Idle
 		&& CharacterState.CharacterActionState != ECharacterActionType::E_Attack) return;
 
-	FRotator newRotation = PlayerControllerRef->	();
+	FRotator newRotation = PlayerControllerRef->GetRotationToCursor();
 	if (newRotation != FRotator())
 	{
 		newRotation.Pitch = newRotation.Roll = 0.0f;
