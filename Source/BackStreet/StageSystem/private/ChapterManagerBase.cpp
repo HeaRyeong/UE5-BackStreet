@@ -6,6 +6,8 @@
 #include "../public/GridBase.h"
 #include "../public/MissionBase.h"
 #include "../../Item/public/ItemBase.h"
+#include "../public/ALevelScriptInGame.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
 #include "../public/TileBase.h"
 
 // Sets default values
@@ -32,6 +34,17 @@ void AChapterManagerBase::Tick(float DeltaTime)
 
 void AChapterManagerBase::InitChapterManager()
 {
+	FActorSpawnParameters spawnParams;
+	FRotator rotator;
+	FVector spawnLocation = FVector::ZeroVector;
+
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	StageManager = GetWorld()->SpawnActor<AStageManagerBase>(AStageManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
+	StageManager->InitStageManager();
+	StageManager->ChapterClearDelegate.AddDynamic(this, &AChapterManagerBase::ClearChapter);
+	
 	CurrentChapter = nullptr;
 	ChapterLV = 0;
 	StatWeight = 0.0f;
@@ -39,6 +52,31 @@ void AChapterManagerBase::InitChapterManager()
 
 	CreateChapter();
 }
+
+void AChapterManagerBase::ClearChapter()
+{
+	if (IsGameClear())
+	{
+		// Call 게임 클리어 및 종료 
+		// 게임 클리어 UI 띄우는 델리게이트 Call
+		UE_LOG(LogTemp, Log, TEXT("Game Clear"));
+		CleanChapterManager();
+		GameModeRef->FinishChapterDelegate.Broadcast(false);
+	}
+	else
+	{
+		// 현재 챕터 청소, 보상, 새로운 챕터
+		UE_LOG(LogTemp, Log, TEXT("Clear ChapterCall"));
+		// 챕터 청소 전 Unload 시키기 현재 move타일에서 언로드 시키고 있음
+		CleanChapterManager();
+		// 보상
+		CreateChapter();
+		// UI Update
+		InGameScriptRef->SetMiniMapUI();
+		StageManager->MoveStage((uint8)EDirection::E_Start);
+	}
+}
+
 
 bool AChapterManagerBase::TryAddMissionItem(AItemBase* target)
 {
@@ -81,9 +119,7 @@ void AChapterManagerBase::CreateChapter()
 	ChapterLV++;
 	StatWeight += 0.1f;
 
-	StageManager = GetWorld()->SpawnActor<AStageManagerBase>(AStageManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
-	StageManager->InitStageManager(CurrentChapter);
-
+	StageManager->SetStage(CurrentChapter);
 	CreateMission();
 }
 
@@ -137,6 +173,7 @@ void AChapterManagerBase::CreateMission()
 
 void AChapterManagerBase::CleanChapterManager()
 {
+	UE_LOG(LogTemp, Log, TEXT("Remove Chapter"));
 	StageManager->CleanManager();
 	CurrentChapter->RemoveChapter();
 }

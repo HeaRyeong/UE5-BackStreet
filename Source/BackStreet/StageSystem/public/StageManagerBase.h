@@ -6,13 +6,20 @@
 #include "GameFramework/Actor.h"
 #include "UObject/WeakObjectPtr.h"
 #include "StageManagerBase.generated.h"
-#define GridSize 3
+#define MAX_GRID_SIZE 3
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateClearChapter);
 
 UCLASS()
 class BACKSTREET_API AStageManagerBase : public AActor
 {
 	GENERATED_BODY()
+
+	// Delegate
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateClearChapter ChapterClearDelegate;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -28,7 +35,10 @@ public:
 
 public:
 	UFUNCTION()
-		void InitStageManager(class AGridBase* Chapter);
+		void InitStageManager();
+
+	UFUNCTION()
+		void SetStage(class AGridBase* Chapter);
 
 	UFUNCTION()
 		void CleanManager();

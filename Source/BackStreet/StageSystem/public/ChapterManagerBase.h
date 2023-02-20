@@ -33,13 +33,13 @@ public:
 		void InitChapterManager();
 
 	UFUNCTION()
-		bool IsGameClear() { return (ChapterLV > MAX_CHAPTER_COUNT) ? true : false; }
+		bool IsGameClear() { return (ChapterLV >= MAX_CHAPTER_COUNT) ? true : false; }
 
 	UFUNCTION()
 		bool IsChapterClear() { return Missions.IsEmpty(); }
 
-	//UFUNCTION()
-	//	void ClearChapter();
+	UFUNCTION()
+		void ClearChapter();
 
 	UFUNCTION()
 		bool TryAddMissionItem(AItemBase* target);
@@ -59,7 +59,7 @@ public:
 	UFUNCTION()
 		int8 GetChapterLV() { return ChapterLV; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		AStageManagerBase* GetStageManager() { return StageManager; }
 
 private:
@@ -83,10 +83,16 @@ private:
 		float StatWeight;
 
 private:
+	UPROPERTY()
+		class ALevelScriptInGame* InGameScriptRef;
+
 	UPROPERTY(VisibleAnywhere)
 		class AStageManagerBase* StageManager;
 
 	UPROPERTY(VisibleAnywhere)
 		TArray<class UMissionBase*> Missions;
+
+	UPROPERTY()
+		class ABackStreetGameModeBase* GameModeRef;
 
 };
