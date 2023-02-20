@@ -7,7 +7,7 @@
 #include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
 #define MAX_ITEM_SPAWN 3
-#define MaxStageType 5
+#define MAX_STAGE_TYPE 5
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
 
@@ -24,6 +24,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateNoParam FinishTileDelegate;
+
 
 public:
 	ATileBase();
@@ -108,6 +109,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		TArray<class AEnemyCharacterBase*> GetMonsterList() { return MonsterList; };
 
+	UFUNCTION(BlueprintCallable)
+		TArray<class AItemBoxBase*> GetItemBoxList() { return ItemBoxList; };
+
 public:
 	UPROPERTY()
 		bool bIsVisited;
@@ -126,6 +130,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		TArray<class AItemBoxBase*> ItemBoxList;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class UMissionBase* Mission;

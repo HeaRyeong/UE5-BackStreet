@@ -126,7 +126,7 @@ void ATileBase::SetStage()
 
 void ATileBase::SpawnMonster()
 {
-	uint16 type = FMath::RandRange(0, MaxStageType - 1);
+	uint16 type = FMath::RandRange(0, MAX_STAGE_TYPE - 1);
 	FStageEnemyTypeStruct stageTypeInfo = GameModeRef->GetStageTypeInfoWithRow(type);
 	TArray<int32> enemyIDList;
 	int8 spawnNum = FMath::RandRange(stageTypeInfo.MinSpawn, stageTypeInfo.MaxSpawn);
@@ -211,6 +211,7 @@ void ATileBase::SpawnItem()
 		AItemBoxBase* target = GetWorld()->SpawnActor<AItemBoxBase>(InGameScriptRef->GetAssetManager()->ItemBoxAssets[type]
 																	, ItemSpawnPoints[i]->GetActorLocation(), FRotator::ZeroRotator);
 		target->InitItemBox(false);
+		ItemBoxList.AddUnique(target);
 	}
 }
 
@@ -236,6 +237,7 @@ void ATileBase::SpawnMission()
 		AItemBoxBase* target = GetWorld()->SpawnActor<AItemBoxBase>(InGameScriptRef->GetAssetManager()->MissionAssets[0], MissionSpawnPoints[0]->GetActorLocation()
 																	, FRotator::ZeroRotator, actorSpawnParameters);
 		target->InitItemBox(true);
+		ItemBoxList.AddUnique(target);
 		target->OnMissionItemSpawned.BindUFunction(Mission, FName("TryAddMissionItem"));
 	}
 	else if(Mission->Type == 2)// 몬스터 잡기
