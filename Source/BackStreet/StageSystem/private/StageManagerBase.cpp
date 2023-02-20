@@ -119,7 +119,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 
 void AStageManagerBase::LoadStage()
 {
-	FScriptDelegate MyScriptDelegate;
+	//FScriptDelegate MyScriptDelegate;
 
 	if (CurrentTile->LevelRef != nullptr)
 	{
