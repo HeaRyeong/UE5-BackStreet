@@ -61,34 +61,37 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 
 void ATileBase::SelectMap()
 {
-	int NextMap = FMath::RandRange(4, 6);
-	//NextMap = 6;
-	// 메인, 서브, 보스에 따라 또 갈리기
-	switch (NextMap)
-	{
-	case 1:
-		LevelToLoad = FName(TEXT("Main1"));
-		break;
-	case 2:
-		LevelToLoad = FName(TEXT("Main2"));
-		break;
-	case 3:
-		LevelToLoad = FName(TEXT("Main3"));
-		break;
-	case 4:
-		LevelToLoad = FName(TEXT("TypeA"));
-		break;
-	case 5:
-		LevelToLoad = FName(TEXT("TypeB"));
-			break;
-	case 6:
-		LevelToLoad = FName(TEXT("TypeC"));
-		break;
-		//case 6:
-		//	NextLevelToLoad = FName(TEXT("Sub3Prefab"));
-		//	break;
 
-	}
+	const TArray<FName> Stages = { FName("TypeA"),FName("TypeB"),FName("TypeC"),FName("TypeD"),FName("TypeE"),FName("TypeF") };
+	int32 mapIdx = FMath::RandRange(0, Stages.Num() - 1);
+
+	LevelToLoad = Stages[mapIdx];
+		// 메인, 서브, 보스에 따라 또 갈리기
+	//switch (NextMap)
+	//{
+	//case 1:
+	//	LevelToLoad = FName(TEXT("Main1"));
+	//	break;
+	//case 2:
+	//	LevelToLoad = FName(TEXT("Main2"));
+	//	break;
+	//case 3:
+	//	LevelToLoad = FName(TEXT("Main3"));
+	//	break;
+	//case 4:
+	//	LevelToLoad = FName(TEXT("TypeA"));
+	//	break;
+	//case 5:
+	//	LevelToLoad = FName(TEXT("TypeB"));
+	//		break;
+	//case 6:
+	//	LevelToLoad = FName(TEXT("TypeC"));
+	//	break;
+	//	//case 6:
+	//	//	NextLevelToLoad = FName(TEXT("Sub3Prefab"));
+	//	//	break;
+
+	//}
 
 }
 
