@@ -157,7 +157,6 @@ void ATileBase::SpawnMonster()
 		MonsterList.Add(target);
 		target->EnemyID = enemyIDList[enemyIDIdx];
 		target->InitEnemyStat();
-
 	}
 	
 }

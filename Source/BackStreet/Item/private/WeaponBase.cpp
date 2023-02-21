@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
@@ -34,7 +34,7 @@ void AWeaponBase::InitWeapon()
 {
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
-	//¹«±â ½ºÅÈÀÌ ÃÊ±âÈ­°¡ µÇÁö ¾Ê¾Ò´Ù¸é
+	//ë¬´ê¸° ìŠ¤íƒ¯ì´ ì´ˆê¸°í™”ê°€ ë˜ì§€ ì•Šì•˜ë‹¤ë©´
 	if (WeaponStat.WeaponName == FName(""))
 	{
 		GamemodeRef->UpdateWeaponStatWithID(this, WeaponID);
@@ -51,21 +51,14 @@ void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponState
 
 void AWeaponBase::Attack()
 {
-	//¹ß»çÃ¼°¡ ÀÖ´Â ¹«±â¶ó¸é ¹ß»ç
+	//ë°œì‚¬ì²´ê°€ ìžˆëŠ” ë¬´ê¸°ë¼ë©´ ë°œì‚¬
 	if (WeaponStat.bHasProjectile)
 	{
-		TryFireProjectile();
-		
-		if (OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Reload)
-		{
-			//PlayEffectSound(AttackSound); ºó ¹æ¾Æ¼è ¼Ò¸®?
-		}
-		else
-		{
-			PlayEffectSound(AttackSound);
-		}
+		bool result = TryFireProjectile();
+		PlayEffectSound(result ? AttackSound : AttackFailSound);
+		if (result)	UpdateDurabilityState();
 	}
-	//±ÙÁ¢ °ø°ÝÀÌ °¡´ÉÇÑ ¹«±â¶ó¸é ±ÙÁ¢ °ø°Ý ·ÎÁ÷ ¼öÇà
+	//ê·¼ì ‘ ê³µê²©ì´ ê°€ëŠ¥í•œ ë¬´ê¸°ë¼ë©´ ê·¼ì ‘ ê³µê²© ë¡œì§ ìˆ˜í–‰
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		PlayEffectSound(AttackSound);
@@ -73,8 +66,6 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 2.0f, false, 1.0f);
 	}
-	UpdateDurabilityState();
-
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
 
@@ -114,7 +105,7 @@ void AWeaponBase::ClearAllTimerHandle()
 AProjectileBase* AWeaponBase::CreateProjectile()
 {
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this; //ProjectileÀÇ ¼ÒÀ¯ÀÚ´Â Player
+	SpawnParams.Owner = this; //Projectileì˜ ì†Œìœ ìžëŠ” Player
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -140,7 +131,7 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	{
 		newProjectile->SetOwner(this);
 		newProjectile->InitProjectile(OwnerCharacterRef);
-		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //¹öÇÁ/µð¹öÇÁ·Î ÀÎÇØ °­È­/³ÊÇÁµÈ °ªÀ» ¹Ý¿µ
+		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //ë²„í”„/ë””ë²„í”„ë¡œ ì¸í•´ ê°•í™”/ë„ˆí”„ëœ ê°’ì„ ë°˜ì˜
 		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
 		return newProjectile;
 	}
@@ -157,7 +148,6 @@ bool AWeaponBase::TryReload()
 	{
 		addAmmoCnt = (WeaponStat.MaxAmmoPerMagazine - WeaponState.CurrentAmmoCount);
 	}
-	PlayEffectSound(ReloadSound);
 	WeaponState.CurrentAmmoCount += addAmmoCnt;
 	WeaponState.TotalAmmoCount -= addAmmoCnt;
 
@@ -188,8 +178,14 @@ bool AWeaponBase::TryFireProjectile()
 	if (!IsValid(OwnerCharacterRef)) return false;
 	if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite && WeaponState.CurrentAmmoCount == 0)
 	{
-		//StopAttackÀÇ ResetActionState·Î ÀÎÇØ ½ÇÇàÀÌ µÇÁö ¾Ê´Â Çö»ó ¹æÁö¸¦ À§ÇØ
-		//Å¸ÀÌ¸Ó¸¦ ÅëÇØ ÀÏÁ¤ ½Ã°£ÀÌ Áö³­ ÈÄ¿¡ Reload¸¦ ½Ãµµ.
+		if (OwnerCharacterRef->ActorHasTag("Player"))
+		{
+			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("íƒ„í™˜ì´ ë¶€ì¡±í•©ë‹ˆë‹¤.")), FColor::White);
+			UE_LOG(LogTemp, Warning, TEXT("No Ammo"));
+		}
+
+		//StopAttackì˜ ResetActionStateë¡œ ì¸í•´ ì‹¤í–‰ì´ ë˜ì§€ ì•ŠëŠ” í˜„ìƒ ë°©ì§€ë¥¼ ìœ„í•´
+		//íƒ€ì´ë¨¸ë¥¼ í†µí•´ ì¼ì • ì‹œê°„ì´ ì§€ë‚œ í›„ì— Reloadë¥¼ ì‹œë„.
 		GetWorldTimerManager().SetTimer(AutoReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
 			OwnerCharacterRef->TryReload();
 		}), 1.0f, false, AUTO_RELOAD_DELAY_VALUE);
@@ -198,7 +194,7 @@ bool AWeaponBase::TryFireProjectile()
 
 	AProjectileBase* newProjectile = CreateProjectile();
 
-	//½ºÆùÇÑ ¹ß»çÃ¼°¡ Valid ÇÏ´Ù¸é ¹ß»ç
+	//ìŠ¤í°í•œ ë°œì‚¬ì²´ê°€ Valid í•˜ë‹¤ë©´ ë°œì‚¬
 	if (IsValid(newProjectile))
 	{
 		if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
@@ -213,10 +209,12 @@ bool AWeaponBase::TryFireProjectile()
 
 float AWeaponBase::GetAttackRange()
 {
-	if (!WeaponStat.bHasProjectile || !WeaponStat.bIsInfiniteAmmo
-		|| (WeaponState.CurrentAmmoCount == 0.0f && WeaponState.TotalAmmoCount == 0.0f))
+	if (!IsValid(OwnerCharacterRef)) return 200.0f;
+
+	if (WeaponStat.WeaponType == EWeaponType::E_Melee ||
+		(!OwnerCharacterRef->GetCharacterStat().bInfinite && WeaponState.CurrentAmmoCount == 0.0f && WeaponState.TotalAmmoCount == 0.0f))
 	{
-		return 200.0f; //¸ÅÅ©·Î³ª const ¸â¹ö·Î ¼öÁ¤ÇÏ±â 
+		return 150.0f; //ë§¤í¬ë¡œë‚˜ const ë©¤ë²„ë¡œ ìˆ˜ì •í•˜ê¸° 
 	}
 	return 700.0f;
 }
@@ -228,7 +226,7 @@ void AWeaponBase::UpdateDurabilityState()
 	{
 		if (IsValid(DestroyEffectParticle))
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DestroyEffectParticle, GetActorLocation(), FRotator()); //ÆÄ±« È¿°ú
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DestroyEffectParticle, GetActorLocation(), FRotator()); //íŒŒê´´ íš¨ê³¼
 		}
 		ClearAllTimerHandle();
 		OwnerCharacterRef->StopAttack();
@@ -243,8 +241,8 @@ void AWeaponBase::MeleeAttack()
 	FVector StartLocation = WeaponMesh->GetSocketLocation(FName("GrabPoint"));
 	FVector EndLocation = WeaponMesh->GetSocketLocation(FName("End"));
 
-	//°Ë·Î Trace
-	//±ÙÁ¢ ¹«±âÀÇ °¢ ÁöÁ¡¿¡¼­ ÀÌÀü ¿ùµå ÁÂÇ¥ -> ÇöÀç ¿ùµå ÁÂÇ¥·Î LineTrace¸¦ ÁøÇà 
+	//ê²€ë¡œ Trace
+	//ê·¼ì ‘ ë¬´ê¸°ì˜ ê° ì§€ì ì—ì„œ ì´ì „ ì›”ë“œ ì¢Œí‘œ -> í˜„ìž¬ ì›”ë“œ ì¢Œí‘œë¡œ LineTraceë¥¼ ì§„í–‰ 
 	TArray<FVector> currTracePositionList = GetCurrentMeleePointList();
 	if (MeleePrevTracePointList.Num() == MAX_LINETRACE_POS_COUNT)
 	{
@@ -254,36 +252,36 @@ void AWeaponBase::MeleeAttack()
 			const FVector& endPoint = currTracePositionList[tracePointIdx];
 			GetWorld()->LineTraceSingleByChannel(hitResult, beginPoint, endPoint, ECollisionChannel::ECC_Camera, MeleeLineTraceQueryParams);
 
-			if (hitResult.bBlockingHit && IsValid(hitResult.GetActor()) //hitResult¿Í hitActorÀÇ Validity Ã¼Å©
-				&& OwnerCharacterRef->Tags.IsValidIndex(1) //hitActorÀÇ Tags Ã¼Å©(1)
-				&& hitResult.GetActor()->ActorHasTag("Character") //hitActorÀÇ Type Ã¼Å©
-				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1])) //°ø°ÝÀÚ¿Í ÇÇ°ÝÀÚÀÇ Å¸ÀÔÀÌ °°ÀºÁö Ã¼Å©
+			if (hitResult.bBlockingHit && IsValid(hitResult.GetActor()) //hitResultì™€ hitActorì˜ Validity ì²´í¬
+				&& OwnerCharacterRef->Tags.IsValidIndex(1) //hitActorì˜ Tags ì²´í¬(1)
+				&& hitResult.GetActor()->ActorHasTag("Character") //hitActorì˜ Type ì²´í¬
+				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1])) //ê³µê²©ìžì™€ í”¼ê²©ìžì˜ íƒ€ìž…ì´ ê°™ì€ì§€ ì²´í¬
 			{
 				bIsMeleeTraceSucceed = true;
-				DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor::Yellow, false, 1.0f, 0, 1.5f);
+				//DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor::Yellow, false, 1.0f, 0, 1.5f);
 				break;
 			}
-			else
-				DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
+			//else
+			//	DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor(255, 0, 0), false, 1.0f, 0, 1.5f);
 		}
 	}
 	MeleePrevTracePointList = currTracePositionList;
 
-	//hitResult°¡ ValidÇÏ´Ù¸é ¾Æ·¡ Á¶°Ç¹®¿¡¼­ µ¥¹ÌÁö¸¦ °¡ÇÔ
+	//hitResultê°€ Validí•˜ë‹¤ë©´ ì•„ëž˜ ì¡°ê±´ë¬¸ì—ì„œ ë°ë¯¸ì§€ë¥¼ ê°€í•¨
 	if (bIsMeleeTraceSucceed)
 	{
-		// »ç¿îµå
+		// ì‚¬ìš´ë“œ
 		if (HitImpactSound != nullptr)
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, HitImpactSound, GetActorLocation());
 		}
 
-		//µ¥¹ÌÁö¸¦ ÁÖ°í
+		//ë°ë¯¸ì§€ë¥¼ ì£¼ê³ 
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
 		(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, 3.0f, 0.5f);
 
-		//È¿°ú ÀÌ¹ÌÅÍ Ãâ·Â
+		//íš¨ê³¼ ì´ë¯¸í„° ì¶œë ¥
 		if (IsValid(HitEffectParticle))
 		{
 			FTransform emitterSpawnTransform(FQuat(0.0f), hitResult.Location, FVector(1.5f));
@@ -291,6 +289,7 @@ void AWeaponBase::MeleeAttack()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
 			GamemodeRef->PlayCameraShakeEffect(OwnerCharacterRef->ActorHasTag("Player")? ECameraShakeType::E_Attack : ECameraShakeType::E_Hit, hitResult.Location);
 		}
+		UpdateDurabilityState();
 	}
 }
 

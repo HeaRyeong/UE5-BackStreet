@@ -144,7 +144,7 @@ protected:
 		class USoundCue* RollSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* WalkSound;
+		class USoundCue* ErrorSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class USoundCue* BuffSound;

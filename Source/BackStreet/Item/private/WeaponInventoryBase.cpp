@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "../public/WeaponInventoryBase.h"
@@ -26,7 +26,7 @@ void AWeaponInventoryBase::InitInventory()
 {
 	if (!IsValid(GetOwner()) || !GetOwner()->ActorHasTag("Character"))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AInventory´Â CharacterBase ÀÌ¿ÜÀÇ Å¬·¡½º¿¡¼­´Â ¼ÒÀ¯ÇÒ ¼ö ¾ø½À´Ï´Ù."));
+		UE_LOG(LogTemp, Warning, TEXT("AInventoryëŠ” CharacterBase ì´ì™¸ì˜ í´ë˜ìŠ¤ì—ì„œëŠ” ì†Œìœ í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤."));
 		return;
 	}
 	OwnerCharacterRef = Cast<ACharacterBase>(GetOwner());
@@ -34,7 +34,7 @@ void AWeaponInventoryBase::InitInventory()
 
 	InventoryArray.Empty();
 
-	//¹Ì¸® Å¬·¡½º / Id Á¤º¸¸¦ ÃÊ±âÈ­ ÇÔ 
+	//ë¯¸ë¦¬ í´ë˜ìŠ¤ / Id ì •ë³´ë¥¼ ì´ˆê¸°í™” í•¨ 
 	for (int32 classIdx = 0; classIdx < WeaponIDList.Num(); classIdx++)
 	{
 		WeaponClassInfoMap.Add(WeaponIDList[classIdx], WeaponClassList[classIdx]);
@@ -60,39 +60,39 @@ void AWeaponInventoryBase::EquipWeapon(int32 InventoryIdx, bool bIsNewWeapon)
 
 bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ADD #0"));
-	if (!IsValid(OwnerCharacterRef)) return false;
+	if (!IsValid(OwnerCharacterRef) || !IsValid(GamemodeRef)) return false;
+	if (!WeaponClassInfoMap.Contains(NewWeaponID))
+	{
+		GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("ë™ì¼í•œ ë¬´ê¸°ê°€ ì¸ë²¤í† ë¦¬ì— ìˆìŠµë‹ˆë‹¤.")), FColor::White);
+		return false;
+	}
 
-	UE_LOG(LogTemp, Warning, TEXT("ADD #1"));
-	if (!WeaponClassInfoMap.Contains(NewWeaponID)) return false;
-
-	UE_LOG(LogTemp, Warning, TEXT("ADD #2"));
 	FWeaponStatStruct newWeaponStat = GamemodeRef->GetWeaponStatInfoWithID(NewWeaponID);
 	FWeaponStateStruct newWeaponState = FWeaponStateStruct();
 	newWeaponState.CurrentDurability = newWeaponStat.MaxDurability;
 
-	//¸ÕÀú, ¿ø°Å¸® ¹«±âÀÇ Áßº¹ ¿©ºÎ¸¦ ÆÇ´Ü. Áßº¹µÈ´Ù¸é Ammo¸¦ Ãß°¡
+	//ë¨¼ì €, ì›ê±°ë¦¬ ë¬´ê¸°ì˜ ì¤‘ë³µ ì—¬ë¶€ë¥¼ íŒë‹¨. ì¤‘ë³µëœë‹¤ë©´ Ammoë¥¼ ì¶”ê°€
 	int32 duplicateIdx = CheckWeaponDuplicate(NewWeaponID);
 	if (newWeaponStat.bHasProjectile && duplicateIdx != -1)
 	{
 		InventoryArray[duplicateIdx].WeaponState.TotalAmmoCount += 25;
-		UE_LOG(LogTemp, Warning, TEXT("ADD #3"));
 		return false;
 	}
-	//±×·¸Áö ¾Ê´Ù¸é ¹«±â ¿ë·® Ã¼Å©¸¦ ÁøÇàÇÏ°í ¹«±â Ãß°¡¸¦ ÁøÇà
+	//ê·¸ë ‡ì§€ ì•Šë‹¤ë©´ ë¬´ê¸° ìš©ëŸ‰ ì²´í¬ë¥¼ ì§„í–‰í•˜ê³  ë¬´ê¸° ì¶”ê°€ë¥¼ ì§„í–‰
 	else if (newWeaponStat.WeaponWeight == 0 || newWeaponStat.WeaponWeight + CurrentCapacity <= MaxCapacity)
 	{
 		InventoryArray.Add({ NewWeaponID, newWeaponStat, newWeaponState });
-		if (GetCurrentWeaponCount() == 1) //±âÁ¸ ÀÎº¥Åä¸®°¡ ºñ¾îÀÖ¾ú´Ù¸é? ¹Ù·Î ÀåÂø±îÁö ÇØÁÜ
+		if (GetCurrentWeaponCount() == 1) //ê¸°ì¡´ ì¸ë²¤í† ë¦¬ê°€ ë¹„ì–´ìˆì—ˆë‹¤ë©´? ë°”ë¡œ ì¥ì°©ê¹Œì§€ í•´ì¤Œ
 		{
 			EquipWeapon(InventoryArray.Num() - 1, true);
-		}
+		}	
 		CurrentCapacity += newWeaponStat.WeaponWeight;
 		SortInventory();
 		OnInventoryIsUpdated.Broadcast(InventoryArray);
 
 		return true;
 	}
+	GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("ë¬´ê¸°ë¥¼ ì¶”ê°€í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.")), FColor::White);
 	return false;
 }
 
@@ -120,7 +120,7 @@ bool AWeaponInventoryBase::SwitchToNextWeapon()
 	if (!InventoryArray.IsValidIndex(nextIdx)) return false;
 	if (!IsValid(OwnerCharacterRef)) return false;
 
-	RestoreCurrentWeapon(); //ÇöÀç ¹«±â¸¦ DestroyÇÏ°í, Á¤º¸¸¸ List¿¡ ÀúÀåÇÑ´Ù.
+	RestoreCurrentWeapon(); //í˜„ì¬ ë¬´ê¸°ë¥¼ Destroyí•˜ê³ , ì •ë³´ë§Œ Listì— ì €ì¥í•œë‹¤.
 	EquipWeapon(nextIdx);
 	SetCurrentIdx(nextIdx);
 	SortInventory();
@@ -189,7 +189,7 @@ AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
 	UClass* targetClass = *(WeaponClassInfoMap.Find(WeaponID));
 	if (!targetClass)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Weapon Class°¡ Invalid ÇÕ´Ï´Ù."));
+		UE_LOG(LogTemp, Warning, TEXT("Weapon Classê°€ Invalid í•©ë‹ˆë‹¤."));
 		return nullptr;
 	}
 	FActorSpawnParameters spawnParams;
@@ -222,8 +222,8 @@ void AWeaponInventoryBase::SortInventory()
 {
 	if (InventoryArray.Num() <= 1) return;
 
-	//InventoryÀÇ ÃÖ´ë LenÀÌ 10ÀÌ±â ¶§¹®¿¡
-	//O(n^2)ÀÌ¾îµµ »ó¼ö ½Ã°£¿¡ ±ÙÁ¢ÇÑ °á°ú¸¦ ³¿
+	//Inventoryì˜ ìµœëŒ€ Lenì´ 10ì´ê¸° ë•Œë¬¸ì—
+	//O(n^2)ì´ì–´ë„ ìƒìˆ˜ ì‹œê°„ì— ê·¼ì ‘í•œ ê²°ê³¼ë¥¼ ëƒ„
 	for (int32 selIdx = 0; selIdx < GetCurrentWeaponCount() - 1; selIdx++)
 	{
 		FInventoryItemInfoStruct tempInfo = FInventoryItemInfoStruct();
