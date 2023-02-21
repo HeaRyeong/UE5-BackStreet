@@ -8,6 +8,7 @@
 #include "../../Character/public/EnemyCharacterBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/MainCharacterBase.h"
+#include "../../Item/public/ItemBoxBase.h"
 #include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
 
@@ -34,25 +35,63 @@ void AStageManagerBase::Tick(float DeltaTime)
 
 }
 
-void AStageManagerBase::InitStageManager(AGridBase* Chapter)
+void AStageManagerBase::InitStageManager()
 {
 	CharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	//GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));	
+}
 
-
-	for (ATileBase* tile : Chapter->StageArray)
+void AStageManagerBase::SetStage(AGridBase* Chapter)
+{
+	if (Stages.IsEmpty())
 	{
-		Stages.Add(tile);
+		for (ATileBase* tile : Chapter->StageArray)
+		{
+			Stages.Add(tile);
+		}
 	}
-
+	else
+		UE_LOG(LogTemp, Log, TEXT("Check Stages :: Is Not Empty"));
+	
 	CurrentTile = nullptr;
 	SetMissionStages();
-	//InitTileTravelSequence();
 }
 
 void AStageManagerBase::CleanManager()
 {
+	for (ATileBase* target : Stages)
+	{
+		TArray<AEnemyCharacterBase*> monsterList = target->GetMonsterList();
+		TArray<AItemBoxBase*> itemBoxList = target->GetItemBoxList();
+
+		for (int32 i = 0; i < monsterList.Num(); i++)
+		{
+			if (!monsterList.IsValidIndex(i))
+			{
+				monsterList.RemoveAt(i);
+				i--;
+			}
+		}
+		for (AEnemyCharacterBase* remove : target->GetMonsterList())
+		{
+			remove->Destroy();
+		}
+
+		for (int32 i = 0; i < itemBoxList.Num(); i++)
+		{
+			if (!itemBoxList.IsValidIndex(i))
+			{
+				itemBoxList.RemoveAt(i);
+				i--;
+			}
+		}
+		for (AItemBoxBase* remove : target->GetItemBoxList())
+		{
+			remove->Destroy();
+		}
+
+
+	}
 	Stages.Empty();
 	CurrentTile = nullptr;
 }
@@ -106,6 +145,9 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 		break;
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
+		ChapterClearDelegate.Broadcast();
+		// юс╫ц Unload
+		UnLoadStage();
 		break;
 	default:
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
@@ -139,7 +181,7 @@ void AStageManagerBase::LoadStage()
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
 		FString name = FString::FromInt(InGameScriptRef->ChapterManager->GetChapterLV());
 		name += FString(TEXT("Stage"));
-		name += FString::FromInt(CurrentTile->YPos * GridSize + CurrentTile->XPos);
+		name += FString::FromInt(CurrentTile->YPos * MAX_GRID_SIZE + CurrentTile->XPos);
 		CurrentTile->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), CurrentTile->LevelToLoad)->CreateInstance(name);
 		CurrentTile->LevelRef->LevelTransform.SetLocation(CurrentTile->GetActorLocation());
 		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
@@ -199,7 +241,7 @@ void AStageManagerBase::CompleteUnLoad()
 
 ATileBase* AStageManagerBase::GetStage(int32 XPosition, int32 YPosition)
 {
-	int32 size = GridSize;
+	int32 size = MAX_GRID_SIZE;
 
 	if (XPosition >= 0 && XPosition < size && YPosition >= 0 && YPosition < size)
 	{

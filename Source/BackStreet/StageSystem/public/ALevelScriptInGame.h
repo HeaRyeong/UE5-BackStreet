@@ -49,6 +49,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateMiniMapUI();
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void SetMiniMapUI();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AAssetManagerBase> AssetManagerBP;
