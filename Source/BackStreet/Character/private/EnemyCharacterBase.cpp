@@ -156,3 +156,9 @@ float AEnemyCharacterBase::PlayPreChaseAnimation()
 
 	return PlayAnimMontage(PreChaseAnimMontage);
 }
+
+void AEnemyCharacterBase::ClearAllTimerHandle()
+{
+	Super::ClearAllTimerHandle();
+	GetWorldTimerManager().ClearTimer(TurnTimeOutTimerHandle);
+}

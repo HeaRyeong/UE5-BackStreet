@@ -5,6 +5,7 @@
 #include "../public/ChapterManagerBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Global/public/AssetManagerBase.h"
+#include "../../Character/public/MainCharacterBase.h"
 
 ALevelScriptInGame::ALevelScriptInGame()
 {
@@ -31,6 +32,7 @@ void ALevelScriptInGame::BeginPlay()
 
 void ALevelScriptInGame::StartGame()
 {
+	
 	FActorSpawnParameters spawnParams;
 	FRotator rotator;
 	FVector spawnLocation = FVector::ZeroVector;
@@ -40,6 +42,7 @@ void ALevelScriptInGame::StartGame()
 
 	ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	ChapterManager->InitChapterManager();
+	
 	//GameModeRef->StartChapter();
 }
 

@@ -64,6 +64,7 @@ void AMainCharacterBase::BeginPlay()
 	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	InitDynamicMeshMaterial(NormalMaterial);
+	
 }
 
 // Called every frame
@@ -220,6 +221,9 @@ void AMainCharacterBase::Die()
 	Super::Die();
 	if (IsValid(GamemodeRef))
 	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+		//ClearAllTimerHandle();
+		GamemodeRef->ClearResourceDelegate.Broadcast();
 		GamemodeRef->FinishChapterDelegate.Broadcast(true);
 	}
 	ClearAllTimerHandle();
