@@ -43,28 +43,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 		class ATileBase* BelongTileRef;
 
-	// Sequence
-
-public:
-	UFUNCTION()
-		void PlayLoadSequencePlayer();
-
-private:
-	UFUNCTION()
-		void InitLevelSequence();
-
-	UFUNCTION()
-		void ClearAllTimerHandle();
-
-private:
-	UPROPERTY(VisibleAnywhere)
-		class ULevelSequencePlayer* LoadSequencePlayer;
-
-	UPROPERTY(VisibleAnywhere)
-		FTimerHandle TravelSequenceDelayHandle;
-
-	UPROPERTY(VisibleAnywhere)
-		FTimerHandle ResourceReturnTimerHandle;
 
 private:
 	UPROPERTY()

@@ -95,6 +95,8 @@ public:
 		void CompleteUnLoad();
 
 public:
+	UPROPERTY(VisibleAnywhere)
+		FTimerHandle FadeOutEffectHandle;
 
 		//FScriptDelegate UnloadDelegate;
 //public:
