@@ -30,6 +30,10 @@ void AAIControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ABackStreetGameModeBase* gameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	gameModeRef->ClearResourceDelegate.AddDynamic(this, &AAIControllerBase::ClearAllTimerHandle);
+
 	//Ω√¿€ Ω√, AI ∑Œ¡˜¿ª ¿·Ω√ ∏ÿ√Á µ–¥Ÿ.
 	if (IsValid(GetBrainComponent()))
 	{

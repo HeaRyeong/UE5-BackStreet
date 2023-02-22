@@ -69,5 +69,8 @@ private:
 private:
 	UPROPERTY()
 		class ALevelScriptInGame* InGameScriptRef;
+
+	UPROPERTY()
+		class ABackStreetGameModeBase* GameModeRef;
 	
 };

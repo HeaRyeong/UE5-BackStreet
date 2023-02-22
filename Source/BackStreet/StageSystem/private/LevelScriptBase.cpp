@@ -29,8 +29,9 @@ void ALevelScriptBase::BeginPlay()
 	Super::BeginPlay();
 	UE_LOG(LogTemp, Log, TEXT("Call ALevelScriptBase BeginPlay!"));
 	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
-
+	GameModeRef->ClearResourceDelegate.AddDynamic(this, &ALevelScriptBase::ClearAllTimerHandle);
 	InitLevelSequence();
 	
 	PlayLoadSequencePlayer();
@@ -52,6 +53,7 @@ void ALevelScriptBase::BeginPlay()
 		}
 		SetGate();
 		TeleportCharacter();
+		BelongTileRef->UnPauseStage();
 		ClearAllTimerHandle();
 		}), 1.0f, false, 0.75f);
 
@@ -107,7 +109,7 @@ void ALevelScriptBase::TeleportCharacter()
 		break;
 	}
 
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGateBase::StaticClass(), gates);
+	
 	ULevelStreaming* levelRef = BelongTileRef->LevelRef;
 	ULevel* level = levelRef->GetLoadedLevel();
 	for (AActor* actor : level->Actors)
@@ -131,7 +133,7 @@ void ALevelScriptBase::TeleportCharacter()
 		if (BelongTileRef->CharacterSpawnPoint[0] != nullptr)
 		{
 			ACharacterBase* CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-			CharacterRef->SetActorLocation(BelongTileRef->CharacterSpawnPoint[0]->GetActorLocation()/* + FVector(0, 0, 1500)*/);
+			CharacterRef->SetActorLocation(BelongTileRef->CharacterSpawnPoint[0]->GetActorLocation());
 		}
 	}
 	else
@@ -143,35 +145,12 @@ void ALevelScriptBase::TeleportCharacter()
 			{
 				UE_LOG(LogTemp, Log, TEXT("GateCheck!"));
 				ACharacterBase* CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-				CharacterRef->SetActorLocation(gate->GetActorLocation()/* + FVector(0, 0, 1500)*/);
+				CharacterRef->SetActorLocation(gate->GetActorLocation());
 				break;
 			}
 
 		}
-		//TArray<class AGateBase*> gatelist;
-		//
-		//ULevelStreaming* levelRef = BelongTileRef->LevelRef;
-		//ULevel* level = levelRef->GetLoadedLevel();
-		//for (AActor* actor : level->Actors)
-		//{
-		//	if (actor->ActorHasTag(FName(TEXT("Gate"))))
-		//	{
-		//		gatelist.Add(Cast<AGateBase>(actor));
-		//	}
-		//	
-		//}
-
-		//for (AGateBase* gate : gatelist)
-		//{
-		//	if (gate->ActorHasTag(telegate))
-		//	{
-		//		ACharacterBase* CharacterRef = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-		//		CharacterRef->SetActorLocation(gate->GetActorLocation()/* + FVector(0, 0, 1500)*/);
-		//		break;
-		//	}
-
-		//}
-
+	
 	}
 
 	

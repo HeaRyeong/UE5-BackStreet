@@ -16,6 +16,7 @@ class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
+
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSingleParam StartChapterDelegate;
 
@@ -27,6 +28,7 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSystemMessage PrintSystemMessageDelegate;
+
 
 public:
 	ABackStreetGameModeBase();

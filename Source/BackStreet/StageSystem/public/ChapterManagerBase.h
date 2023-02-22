@@ -7,7 +7,7 @@
 #include "ChapterManagerBase.generated.h"
 // Chapter °¹¼ö
 
-#define MAX_CHAPTER_COUNT 2 
+#define MAX_CHAPTER_COUNT 1
 #define MAX_MISSION_COUNT 2
 #define MAX_MISSION_ITEM_COUNT 10
 
