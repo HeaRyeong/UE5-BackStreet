@@ -5,6 +5,7 @@
 #include "../../AISystem/public/AIControllerBase.h"
 #include "../public/CharacterInfoStruct.h"
 #include "../../Item/public/WeaponInventoryBase.h"
+#include "../../Item/public/WeaponBase.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/WidgetComponent.h"
@@ -30,12 +31,13 @@ void AEnemyCharacterBase::BeginPlay()
 	Super::BeginPlay();
 	
 	SpawnDefaultController();
-	SetDefaultWeapon();
-	SetDefaultStat();
-	InitFloatingHpWidget();	
+	InitFloatingHpWidget();
 	InitEnemyStat();
+	SetDefaultWeapon();
 
 	InitDynamicMeshMaterial(GetMesh()->GetMaterial(0));
+
+	GamemodeRef->ClearResourceDelegate.AddDynamic(this, &AEnemyCharacterBase::ClearAllTimerHandle);
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
@@ -43,6 +45,7 @@ void AEnemyCharacterBase::InitEnemyStat()
 	GamemodeRef->UpdateCharacterStatWithID(this, EnemyID);
 	CharacterState.CharacterCurrHP = CharacterStat.CharacterMaxHP;
 	GetCharacterMovement()->MaxWalkSpeed = CharacterStat.CharacterMoveSpeed;
+	SetDefaultStat();
 }
 
 bool AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
@@ -95,7 +98,6 @@ void AEnemyCharacterBase::SetDefaultWeapon()
 
 void AEnemyCharacterBase::SetDefaultStat()
 {
-	CharacterStat.bInfinite = true;
 	CharacterStat.bInfinite = true;
 }
 
@@ -153,4 +155,10 @@ float AEnemyCharacterBase::PlayPreChaseAnimation()
 	if (PreChaseAnimMontage == nullptr) return 0.0f;
 
 	return PlayAnimMontage(PreChaseAnimMontage);
+}
+
+void AEnemyCharacterBase::ClearAllTimerHandle()
+{
+	Super::ClearAllTimerHandle();
+	GetWorldTimerManager().ClearTimer(TurnTimeOutTimerHandle);
 }

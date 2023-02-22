@@ -47,16 +47,21 @@ void ATileBase::InitTile(int XPosition, int YPosition)
 	XPos = XPosition;
 	YPos = YPosition;
 
-	bIsVisited = false;
+	bIsVisited = bIsClear = false;
 	Gate.Add(false); // UP
 	Gate.Add(false); // DOWN
 	Gate.Add(false); // LEFT
 	Gate.Add(false); // RIGHT
 
 	StageType = EStageCategoryInfo::E_Normal;
-	ClearTime = 0;
-	//LevelToLoad = GamemodeRef->GetAssetManager()->GetRandomMap();
+	StageTime = 0;
+	
 	SelectMap();
+
+	// Timer 설정뒤 Pause
+	GameModeRef->ClearResourceDelegate.AddDynamic(this, &ATileBase::ClearTimer);
+	GetWorldTimerManager().SetTimer(StageTimerHandle, this, &ATileBase::AddTime, 1.0f, true);
+	GetWorldTimerManager().PauseTimer(StageTimerHandle);
 }
 
 void ATileBase::SelectMap()
@@ -157,7 +162,6 @@ void ATileBase::SpawnMonster()
 		MonsterList.Add(target);
 		target->EnemyID = enemyIDList[enemyIDIdx];
 		target->InitEnemyStat();
-
 	}
 	
 }
@@ -177,7 +181,7 @@ void ATileBase::SpawnItem()
 
 	}
 
-	int8 spawnMax = FMath::RandRange(1, MAX_ITEM_SPAWN);
+	int8 spawnMax = FMath::RandRange(MIN_ITEM_SPAWN, MAX_ITEM_SPAWN);
 	for (int8 i = 0; i < spawnMax; i++)
 	{
 		int8 type = FMath::RandRange(0, InGameScriptRef->GetAssetManager()->ItemBoxAssets.Num() - 1);
@@ -251,10 +255,11 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* target)
 	if (MonsterList.IsEmpty())
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Stage Clear"));
-		//bIsClear = true;
+		bIsClear = true;
 
 		//// 스테이지 클리어 처리
 		//GamemodeRef->FinishChapterDelegate.Broadcast(false);
+		PauseTimer();
 	}
 }
 
@@ -270,11 +275,13 @@ void ATileBase::BindDelegate()
 	}
 }
 
-void ATileBase::ActivateAI()
+void ATileBase::UnPauseStage()
 {
 	if (StartTileDelegate.IsBound())
 	{
+		UE_LOG(LogTemp, Log, TEXT("Call UnPauseStage"));
 		StartTileDelegate.Broadcast();
+		UnPauseTimer();
 	}
 	else
 	{
@@ -282,11 +289,13 @@ void ATileBase::ActivateAI()
 	}
 }
 
-void ATileBase::DeactivateAI()
+void ATileBase::PauseStage()
 {
 	if (FinishTileDelegate.IsBound())
 	{
+		UE_LOG(LogTemp, Log, TEXT("Call PauseStage"));
 		FinishTileDelegate.Broadcast();
+		PauseTimer();
 	}
 	else
 	{
@@ -349,9 +358,28 @@ void ATileBase::StageReward()
 	CharacterRef->UpdateCharacterStat(NewStat);*/
 }
 
-void ATileBase::SetReward()
+void ATileBase::AddTime()
 {
-	UE_LOG(LogTemp, Log, TEXT("Call SetReward"));
-	ClearTime++;
+	StageTime++;
 }
 
+
+void ATileBase::PauseTimer()
+{
+	UE_LOG(LogTemp, Log, TEXT("Call PauseTiemr"));
+	GetWorldTimerManager().PauseTimer(StageTimerHandle);
+}
+
+void ATileBase::UnPauseTimer()
+{
+	UE_LOG(LogTemp, Log, TEXT("Call UnPauseTiemr"));
+
+	if(!bIsClear)
+		GetWorldTimerManager().UnPauseTimer(StageTimerHandle);
+}
+
+void ATileBase::ClearTimer()
+{
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	//GetWorldTimerManager().ClearTimer(StageTimerHandle);
+}

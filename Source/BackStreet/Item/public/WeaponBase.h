@@ -175,7 +175,7 @@ protected:
 		class USoundCue* AttackSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* ReloadSound;
+		class USoundCue* AttackFailSound;
 
 private:
 	//Ä³¸¯ÅÍ Ref

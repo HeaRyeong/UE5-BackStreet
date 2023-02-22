@@ -144,7 +144,7 @@ protected:
 		class USoundCue* RollSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
-		class USoundCue* WalkSound;
+		class USoundCue* ErrorSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
 		class USoundCue* BuffSound;
@@ -157,7 +157,7 @@ protected:
 
 // ------- ±× ¿Ü -----------
 public:
-	//UFUNCTION()
+	UFUNCTION()
 	virtual void ClearAllTimerHandle() override;
 
 private:
