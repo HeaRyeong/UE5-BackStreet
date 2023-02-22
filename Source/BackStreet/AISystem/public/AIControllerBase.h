@@ -24,10 +24,10 @@ public:
 	UFUNCTION()
 		virtual void BeginPlay() override;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void ActivateAI();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void DeactivateAI();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|AI")
@@ -41,7 +41,7 @@ protected:
 
 	//최대 시야 수명
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
-		float MaxSightAge;
+		float MaxSightAge = 5.5f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI|Perception")
 		class UAISenseConfig_Sight* SightPerceptionConfig;
