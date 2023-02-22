@@ -30,10 +30,15 @@ void AAIControllerBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ABackStreetGameModeBase* gameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	gameModeRef->ClearResourceDelegate.AddDynamic(this, &AAIControllerBase::ClearAllTimerHandle);
+
 	//½ÃÀÛ ½Ã, AI ·ÎÁ÷À» Àá½Ã ¸ØÃç µÐ´Ù.
 	if (IsValid(GetBrainComponent()))
 	{
-		GetBrainComponent()->PauseLogic(FString("PrevGameStart"));
+		//GetBrainComponent()->PauseLogic(FString("PrevGameStart"));
+		DeactivateAI();
 	}
 }
 
@@ -75,11 +80,11 @@ void AAIControllerBase::UpdateTargetPerception(AActor* Actor, FAIStimulus Stimul
 	}
 	else
 	{
+		GetBlackboardComponent()->SetValueAsBool("HasLineOfSight", false);
 		GetWorldTimerManager().SetTimer(SightLossTimerHandle, FTimerDelegate::CreateLambda([&]()
 		{
-			GetBlackboardComponent()->SetValueAsBool("HasLineOfSight", false);
 			GetBlackboardComponent()->SetValueAsObject("TargetCharacter", nullptr);
-		}), 1.0f, false, 4.0f);
+		}), 1.0f, false, MaxSightAge);
 	}
 	
 }

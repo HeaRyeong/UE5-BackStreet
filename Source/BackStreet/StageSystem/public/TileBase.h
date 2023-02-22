@@ -6,7 +6,8 @@
 #include "../public/StageInfoStruct.h"
 #include "../../Global/public/AssetManagerBase.h"
 #include "TileBase.generated.h"
-#define MAX_ITEM_SPAWN 3
+#define MAX_ITEM_SPAWN 10
+#define MIN_ITEM_SPAWN 7
 #define MAX_STAGE_TYPE 5
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateNoParam);
@@ -33,6 +34,14 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+
+public:
+	UFUNCTION(BlueprintCallable)
+		void UnPauseStage();
+
+	UFUNCTION(BlueprintCallable)
+		void PauseStage();
 
 // ===============초기화===============
 public:
@@ -83,12 +92,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void MonsterDie(AEnemyCharacterBase* Target);
 
-	UFUNCTION(BlueprintCallable)
-		void ActivateAI();
-
-	UFUNCTION(BlueprintCallable)
-		void DeactivateAI();
-
 
 private:
 	UFUNCTION()
@@ -113,8 +116,11 @@ public:
 		TArray<class AItemBoxBase*> GetItemBoxList() { return ItemBoxList; };
 
 public:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 		bool bIsVisited;
+
+	UPROPERTY(VisibleAnywhere)
+		bool bIsClear;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<AActor*> MonsterSpawnPoints;
@@ -138,18 +144,36 @@ public:
 		class UMissionBase* Mission;
 
 
+	// ------ 스테이지 타이머 관련 ------- 플레이 타임, 보상 관련
+
 public:
-	// 스테이지 보상 관련
 	UFUNCTION()
 		void StageReward();
+
 	UFUNCTION()
-		void SetReward();
+		void AddTime();
+
+	UFUNCTION()
+		void PauseTimer();
+
+	UFUNCTION()
+		void UnPauseTimer();
+
+	UFUNCTION()
+		void ClearTimer();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FTimerHandle GetStageTimerHandle() { return StageTimerHandle; };
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetTime() { return StageTime; };
+
 public:
 	UPROPERTY(VisibleAnywhere)
-		FTimerHandle ClearTimerHandle;
+		FTimerHandle StageTimerHandle;
 
 	UPROPERTY(VisibleAnywhere)
-		int32 ClearTime;
+		int32 StageTime;
 
 // ---- 참조 -----
 public:

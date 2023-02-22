@@ -9,10 +9,16 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateStageClear);
+
 UCLASS()
 class BACKSTREET_API ALevelScriptInGame : public ALevelScriptActor
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateStageClear StageClearDelegate;
 
 public:
 	ALevelScriptInGame();

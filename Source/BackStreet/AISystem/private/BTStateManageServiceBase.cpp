@@ -8,7 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "AIController.h"
 #define INF 1e7f
-#define MAX_CHASE_DISTANCE 1250.0f
+#define MAX_CHASE_DISTANCE 1750.0f
 
 UBTStateManageServiceBase::UBTStateManageServiceBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -90,12 +90,14 @@ bool UBTStateManageServiceBase::CheckReturnState()
 
 bool UBTStateManageServiceBase::CheckChaseState()
 {
-	return BlackboardRef->GetValueAsBool("HasLineOfSight");
+	const ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
+	return IsValid(targetCharacterRef);
 }
 
 bool UBTStateManageServiceBase::CheckAttackState()
 {
 	if(!BlackboardRef->GetValueAsBool(FName("ReadyToAttack"))) return false;
+	if (!BlackboardRef->GetValueAsBool(FName("HasLineOfSight"))) return false;
 	if (!BlackboardRef->GetValueAsBool(FName("PreChaseAnimFlag"))) return false;
 
 	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));

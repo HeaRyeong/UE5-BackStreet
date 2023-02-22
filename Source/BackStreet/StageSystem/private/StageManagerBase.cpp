@@ -74,6 +74,7 @@ void AStageManagerBase::CleanManager()
 		}
 		for (AEnemyCharacterBase* remove : target->GetMonsterList())
 		{
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(remove);
 			remove->Destroy();
 		}
 
@@ -87,10 +88,11 @@ void AStageManagerBase::CleanManager()
 		}
 		for (AItemBoxBase* remove : target->GetItemBoxList())
 		{
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(remove);
 			remove->Destroy();
 		}
 
-
+		target->ClearTimer();
 	}
 	Stages.Empty();
 	CurrentTile = nullptr;
@@ -106,7 +108,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	if (CurrentTile != nullptr)
 	{
 		UnloadTile = CurrentTile;
-		UnloadTile->DeactivateAI();
+		UnloadTile->PauseStage();
 	}
 
 	MoveDir = (EDirection)Dir;
@@ -116,32 +118,32 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	case EDirection::E_UP:
 		CurrentTile = GetStage(CurrentTile->XPos + 1, CurrentTile->YPos);
 		LoadStage();
-		CurrentTile->ActivateAI();
+		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
 		CurrentTile = GetStage(CurrentTile->XPos - 1, CurrentTile->YPos);
 		LoadStage();
-		CurrentTile->ActivateAI();
+		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
 		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos - 1);
 		LoadStage();
-		CurrentTile->ActivateAI();
+		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
 		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos + 1);
 		LoadStage();
-		CurrentTile->ActivateAI();
+		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
 		CurrentTile = Stages[0];
 		LoadStage();
-		CurrentTile->ActivateAI();
+		//CurrentTile->UnPauseStage();
 		break;
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
@@ -170,10 +172,7 @@ void AStageManagerBase::LoadStage()
 		CurrentTile->LevelRef->SetShouldBeVisible(true);
 		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
 		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
-		//CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
-		// Timer
-		//GetWorldTimerManager().UnPauseTimer(ClearTimerHandle);
-
+	
 	}
 	else
 	{
@@ -188,12 +187,10 @@ void AStageManagerBase::LoadStage()
 		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
 		CurrentTile->LevelRef->SetShouldBeLoaded(true);
 		CurrentTile->LevelRef->SetShouldBeVisible(true);
-	
-		//CharacterRef->SetActorLocation(targetStage->GetActorLocation() + FVector(0, 0, 1500));
-		// Clear Timer ¼³Á¤
-		//GetWorldTimerManager().SetTimer(ClearTimerHandle, this, &ATileBase::SetReward, 60.0f, true);
-
+		
 	}
+
+	
 }
 
 void AStageManagerBase::UnLoadStage()
@@ -208,13 +205,11 @@ void AStageManagerBase::UnLoadStage()
 			//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
 			//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
 		
-			// Pause Timer
-			//GetWorldTimerManager().PauseTimer(ClearTimerHandle);
 		}
 		else
 		{
 			UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
-	
+		
 		}
 	}
 	else

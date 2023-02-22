@@ -32,8 +32,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0.1f, UIMax = 10.0f))
 		float CharacterAtkMultiplier = 1.0f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0.2f, UIMax = 1.0f))
-		float CharacterAtkSpeed = 0.25f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0.2f, UIMax = 2.0f))
+		float CharacterAtkSpeed = 0.75f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 100.0f, UIMax = 1000.0f))
 		float CharacterMoveSpeed = 400.0f;

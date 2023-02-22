@@ -11,6 +11,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateClearChapter);
 
+
 UCLASS()
 class BACKSTREET_API AStageManagerBase : public AActor
 {
@@ -20,6 +21,7 @@ class BACKSTREET_API AStageManagerBase : public AActor
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateClearChapter ChapterClearDelegate;
+
 	
 public:	
 	// Sets default values for this actor's properties

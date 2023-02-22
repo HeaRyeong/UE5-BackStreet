@@ -51,6 +51,7 @@ void ABackStreetGameModeBase::StartChapter()
 
 void ABackStreetGameModeBase::RewardStageClear(EStatUpCategoryInfo RewardType)
 {
+
 	//if (!IsValid(PlayerCharacterRef)) return;
 
 	//FCharacterStatStruct NewStat = PlayerCharacterRef->GetCharacterStat();

@@ -36,7 +36,7 @@ void ACharacterBase::BeginPlay()
 		GetInventoryRef()->InitInventory();
 		BuffManagerRef->InitBuffManager(this);
 	}
-	//GamemodeRef->FinishTileDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
+	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
 
 // Called every frame
@@ -187,22 +187,26 @@ void ACharacterBase::TryAttack()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
 	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
+	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
 	if (GetWeaponActorRef()->GetWeaponStat().WeaponType == EWeaponType::E_Shoot)
 	{
-		PlayAnimMontage(ShootAnimMontage, CharacterStat.CharacterAtkSpeed + 1.0f);
+		PlayAnimMontage(ShootAnimMontage, attackSpeed + 1.0f);
 	}
 	else
 	{
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], CharacterStat.CharacterAtkSpeed + 1.0f);
+		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 1.0f);
 	}
 }
 
 void ACharacterBase::Attack()
 {
 	if (!IsValid(GetWeaponActorRef())) return;
+	
+	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
+
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, FMath::Max(0.0f, 1.0f - CharacterStat.CharacterAtkSpeed));
+										, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
 	GetWeaponActorRef()->Attack();
 }
  
