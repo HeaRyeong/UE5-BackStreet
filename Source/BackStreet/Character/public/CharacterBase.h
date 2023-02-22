@@ -184,5 +184,4 @@ private:
 
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
-
 };

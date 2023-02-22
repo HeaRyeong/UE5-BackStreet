@@ -30,7 +30,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly)
 		class USphereComponent* OverlapVolume;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -54,6 +54,9 @@ public:
 
 	UFUNCTION()
 		void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+		void OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
 	//최대 MaxSpawnCount 만큼의 아이템을 확률에 기반하여 스폰하여 List 형태로 반환

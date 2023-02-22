@@ -16,21 +16,20 @@ AItemBoxBase::AItemBoxBase()
 {
 	this->Tags.Add(FName("ItemBox"));
 	PrimaryActorTick.bCanEverTick = false;
+	SetActorTickEnabled(false);
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENE_ROOT"));
-
+	RootComponent = OverlapVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
+	//OverlapVolume->SetupAttachment(RootComponent);
+	OverlapVolume->SetRelativeScale3D(FVector(5.0f));
+	OverlapVolume->SetCollisionProfileName("ItemTrigger", true);
+		
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ITEM_MESH"));
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetCollisionProfileName("Item", false);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
+	
 	ParticleComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ITEM_NIAGARA_COMPONENT"));
 	ParticleComponent->SetupAttachment(RootComponent);
-
-	OverlapVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
-	OverlapVolume->SetupAttachment(RootComponent);
-	OverlapVolume->SetRelativeScale3D(FVector(5.0f));
-	OverlapVolume->OnComponentBeginOverlap.AddDynamic(this, &AItemBoxBase::OnOverlapBegins);
 
 	//미션 아이템 명시적 추가
 	SpawnItemTypeList.Add(EItemCategoryInfo::E_Mission);
@@ -42,7 +41,10 @@ AItemBoxBase::AItemBoxBase()
 void AItemBoxBase::BeginPlay()
 {
 	Super::BeginPlay();
+
 	OnPlayerOpenBegin.AddDynamic(this, &AItemBoxBase::OnItemBoxOpened);
+	OverlapVolume->OnComponentBeginOverlap.AddDynamic(this, &AItemBoxBase::OnOverlapBegins);
+	MeshComponent->OnComponentHit.AddDynamic(this, &AItemBoxBase::OnMeshHit);
 
 	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());
 }
@@ -86,6 +88,12 @@ void AItemBoxBase::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor
 	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
 
 	//UI Deactivate
+}
+
+void AItemBoxBase::OnMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	const FVector meshLocation = MeshComponent->GetComponentLocation();
+	SetActorLocation(meshLocation, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 TArray<AItemBase*> AItemBoxBase::SpawnItems(int32 TargetSpawnCount)

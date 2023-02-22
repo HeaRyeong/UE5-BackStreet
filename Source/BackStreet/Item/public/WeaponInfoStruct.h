@@ -115,7 +115,7 @@ public:
 
 	//현재 탄창에 있는 발사체 수
 	UPROPERTY(BlueprintReadOnly)
-		int32 CurrentAmmoCount = 1;
+		int32 CurrentAmmoCount = 0;
 
 	//탄창에 있는 탄환들의 총합
 	UPROPERTY(BlueprintReadOnly)

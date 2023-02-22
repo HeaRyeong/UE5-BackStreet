@@ -52,30 +52,34 @@ void AWeaponInventoryBase::EquipWeapon(int32 InventoryIdx, bool bIsNewWeapon)
 		SetCurrentWeaponRef(newWeapon);
 		OwnerCharacterRef->EquipWeapon(GetCurrentWeaponRef());
 		SetCurrentIdx(InventoryIdx);
-
-		if (bIsNewWeapon) SyncCurrentWeaponInfo(false);
-		else SyncCurrentWeaponInfo(true);
+		SyncCurrentWeaponInfo(true);
 	}
 }
 
 bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 {
 	if (!IsValid(OwnerCharacterRef) || !IsValid(GamemodeRef)) return false;
-	if (!WeaponClassInfoMap.Contains(NewWeaponID))
-	{
-		GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("동일한 무기가 인벤토리에 있습니다.")), FColor::White);
-		return false;
-	}
+	if (!WeaponClassInfoMap.Contains(NewWeaponID))	return false;
 
 	FWeaponStatStruct newWeaponStat = GamemodeRef->GetWeaponStatInfoWithID(NewWeaponID);
 	FWeaponStateStruct newWeaponState = FWeaponStateStruct();
 	newWeaponState.CurrentDurability = newWeaponStat.MaxDurability;
+	newWeaponState.CurrentAmmoCount = newWeaponStat.MaxAmmoPerMagazine;
 
 	//먼저, 원거리 무기의 중복 여부를 판단. 중복된다면 Ammo를 추가
 	int32 duplicateIdx = CheckWeaponDuplicate(NewWeaponID);
-	if (newWeaponStat.bHasProjectile && duplicateIdx != -1)
+	if (duplicateIdx != -1)
 	{
-		InventoryArray[duplicateIdx].WeaponState.TotalAmmoCount += 25;
+		if (newWeaponStat.bHasProjectile && !newWeaponStat.bIsInfiniteAmmo)
+		{
+			InventoryArray[duplicateIdx].WeaponState.TotalAmmoCount += InventoryArray[duplicateIdx].WeaponStat.MaxAmmoPerMagazine;
+			if(duplicateIdx == CurrentIdx) SyncCurrentWeaponInfo(true);
+			return true;
+		}
+		else
+		{
+			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("동일한 무기가 인벤토리에 있습니다.")), FColor::White);
+		}
 		return false;
 	}
 	//그렇지 않다면 무기 용량 체크를 진행하고 무기 추가를 진행
@@ -92,7 +96,7 @@ bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 
 		return true;
 	}
-	GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("무기를 추가할 수 없습니다.")), FColor::White);
+	GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("무기를 추가할 수 없습니다. 인벤토리를 비우세요.")), FColor::White);
 	return false;
 }
 
@@ -261,6 +265,7 @@ void AWeaponInventoryBase::RemoveCurrentWeapon()
 	if (!IsValid(GetCurrentWeaponRef())) return;
 	CurrentWeaponRef->Destroy();
 	RemoveWeapon(GetCurrentIdx());
+	OnInventoryIsUpdated.Broadcast(InventoryArray);
 }
 
 int32 AWeaponInventoryBase::CheckWeaponDuplicate(int32 TargetWeaponID)
