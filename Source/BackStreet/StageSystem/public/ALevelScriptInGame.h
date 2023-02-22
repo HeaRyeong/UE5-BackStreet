@@ -20,6 +20,9 @@ public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateStageClear StageClearDelegate;
 
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateStageClear FadeOutDelegate;
+
 public:
 	ALevelScriptInGame();
 	virtual void Tick(float DeltaTime) override;
@@ -52,6 +55,9 @@ public:
 		class AAssetManagerBase* GetAssetManager() { return AssetManager; }
 
 public:
+	UFUNCTION(BlueprintImplementableEvent)
+		void FadeOut();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateMiniMapUI();
 
