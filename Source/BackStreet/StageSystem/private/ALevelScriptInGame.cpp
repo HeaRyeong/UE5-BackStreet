@@ -24,9 +24,9 @@ void ALevelScriptInGame::Tick(float DeltaTime)
 void ALevelScriptInGame::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	//SetGameModeRef()
-	//StartGame();
+	FadeOutDelegate.AddDynamic(this, &ALevelScriptInGame::FadeOut);
+
+
 }
 
 

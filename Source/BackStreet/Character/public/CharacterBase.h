@@ -185,7 +185,4 @@ private:
 	UPROPERTY()
 		FTimerHandle ReloadTimerHandle;
 
-	UPROPERTY()
-		TArray<FTimerHandle> BuffDebuffTimerHandleList;
-
 };

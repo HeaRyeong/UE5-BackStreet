@@ -37,7 +37,7 @@ void AEnemyCharacterBase::BeginPlay()
 
 	InitDynamicMeshMaterial(GetMesh()->GetMaterial(0));
 
-	GamemodeRef->ClearResourceDelegate.AddDynamic(this, &AEnemyCharacterBase::ClearAllTimerHandle);
+	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &AEnemyCharacterBase::ClearAllTimerHandle);
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
@@ -84,6 +84,7 @@ void AEnemyCharacterBase::Die()
 	Super::Die();
 
 	SpawnDeathItems();
+	ClearAllTimerHandle();
 	EnemyDeathDelegate.ExecuteIfBound(this);
 	Controller->Destroy();
 }

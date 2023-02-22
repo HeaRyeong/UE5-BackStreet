@@ -83,7 +83,7 @@ void ATileBase::SetStage()
 	if (StageType == EStageCategoryInfo::E_Boss)
 	{
 		SpawnMission();
-
+		SpawnItem();
 	}
 	else if (StageType == EStageCategoryInfo::E_Mission)
 	{
