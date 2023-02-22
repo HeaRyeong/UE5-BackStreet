@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "../public/MainCharacterBase.h"
@@ -116,14 +116,14 @@ void AMainCharacterBase::Roll()
 	FRotator newRotation = { 0, FMath::Atan2(newDirection.Y, newDirection.X) * 180.0f / 3.141592, 0.0f};
 	newRotation.Yaw += 270.0f;
 
-	// »ç¿îµå
+	// ì‚¬ìš´ë“œ
 	if (RollSound->IsValidLowLevelFast())
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, RollSound, GetActorLocation());
 	}
 
 	GetMesh()->SetWorldRotation(newRotation);
-	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle); //Roll µµÁß¿¡ RotationÀÌ ¹Ù²î´Â Çö»ó ¹æÁö
+	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle); //Roll ë„ì¤‘ì— Rotationì´ ë°”ë€ŒëŠ” í˜„ìƒ ë°©ì§€
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 	PlayAnimMontage(RollAnimMontage, CharacterStat.CharacterMoveSpeed / 450.0f);
@@ -192,11 +192,16 @@ void AMainCharacterBase::TryAttack()
 	if (CharacterState.CharacterActionState != ECharacterActionType::E_Attack
 		&& CharacterState.CharacterActionState != ECharacterActionType::E_Idle) return;
 
-	//°ø°İÀ» ÇÏ°í, Ä¿¼­ À§Ä¡·Î RotationÀ» Á¶Á¤
+	if (!IsValid(InventoryRef) || !IsValid(GetWeaponActorRef()))
+	{
+		GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("ë¬´ê¸°ê°€ ì—†ìŠµë‹ˆë‹¤.")), FColor::White);
+	}
+
+	//ê³µê²©ì„ í•˜ê³ , ì»¤ì„œ ìœ„ì¹˜ë¡œ Rotationì„ ì¡°ì •
 	Super::TryAttack();
 	RotateToCursor();
 
-	//Pressed »óÅÂ¸¦ 0.2s µÚ¿¡ Ã¼Å©ÇØ¼­ °è¼Ó ´­·ÁÀÖ´Ù¸é Attack ¹İº¹
+	//Pressed ìƒíƒœë¥¼ 0.2s ë’¤ì— ì²´í¬í•´ì„œ ê³„ì† ëˆŒë ¤ìˆë‹¤ë©´ Attack ë°˜ë³µ
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
 	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
 }
@@ -265,7 +270,7 @@ TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 			result = (result || UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius
 														, { itemObjectType }, targetClass, {}, totalItemList));
 
-			if (totalItemList.Num() > 0) return totalItemList; //Ã£´Â Áï½Ã ¹İÈ¯
+			if (totalItemList.Num() > 0) return totalItemList; //ì°¾ëŠ” ì¦‰ì‹œ ë°˜í™˜
 		}
 	}
 	return totalItemList;
