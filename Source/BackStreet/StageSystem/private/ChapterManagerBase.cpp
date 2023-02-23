@@ -8,7 +8,9 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/ALevelScriptInGame.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "Engine/LevelStreaming.h"
 #include "../public/TileBase.h"
+#include "../public/GateBase.h"
 
 // Sets default values
 AChapterManagerBase::AChapterManagerBase()
@@ -103,8 +105,22 @@ bool AChapterManagerBase::TryRemoveMissionItem(AItemBase* target)
 
 void AChapterManagerBase::RemoveMission(UMissionBase* target)
 {
+	UE_LOG(LogTemp, Log, TEXT("Call RemoveMission !"));
 	Missions.Remove(target);
-	
+	ULevelStreaming* levelRef = StageManager->GetCurrentStage()->LevelRef;
+	ULevel* level = levelRef->GetLoadedLevel();
+	for (AActor* actor : level->Actors)
+	{
+		if (actor != nullptr)
+		{
+			if (actor->ActorHasTag(FName(TEXT("ChapterGate"))))
+			{
+				UE_LOG(LogTemp, Log, TEXT("RemoveMission : Find Gate!"));
+				Cast<AGateBase>(actor)->ActiveGate();
+			}
+		}
+
+	}
 }
 
 void AChapterManagerBase::CreateChapter()
