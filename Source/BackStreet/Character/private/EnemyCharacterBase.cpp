@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "../public/EnemyCharacterBase.h"
@@ -6,11 +6,13 @@
 #include "../public/CharacterInfoStruct.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/ItemBase.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
+#include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Components/WidgetComponent.h"
-#include "../../StageSystem/public/TileBase.h"
-#define TURN_TIME_OUT_SEC 0.5f
+#include "Kismet/KismetMathLibrary.h"
+#define TURN_TIME_OUT_SEC 1.0f
 
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
@@ -104,9 +106,19 @@ void AEnemyCharacterBase::SetDefaultStat()
 
 void AEnemyCharacterBase::SpawnDeathItems()
 {
-	for (int32 itemIdx = 0; itemIdx < SpawnItemIDList.Num(); itemIdx++)
+	int32 totalSpawnItemCount = UKismetMathLibrary::RandomIntegerInRange(0, MaxSpawnItemCount);
+	int32 trySpawnCount = 0; //스폰 시도를 한 횟수
+	
+	TArray<AItemBase*> spawnedItemList;
+
+	UE_LOG(LogTemp, Warning, TEXT("totalSpawnItemCount %d"), totalSpawnItemCount);
+
+	while(totalSpawnItemCount)
 	{
-		if (!SpawnItemTypeList.IsValidIndex(itemIdx) || !ItemSpawnProbabilityList.IsValidIndex(itemIdx)) return;
+		if (++trySpawnCount > totalSpawnItemCount * 3) break; //스폰할 아이템 개수의 3배만큼 시도
+
+		const int32 itemIdx = UKismetMathLibrary::RandomIntegerInRange(0, SpawnItemIDList.Num()-1);
+		if (!SpawnItemTypeList.IsValidIndex(itemIdx) || !ItemSpawnProbabilityList.IsValidIndex(itemIdx)) continue;
 
 		const uint8 itemType = (uint8)SpawnItemTypeList[itemIdx];
 		const uint8 itemID = SpawnItemIDList[itemIdx];
@@ -114,8 +126,22 @@ void AEnemyCharacterBase::SpawnDeathItems()
 
 		if(FMath::RandRange(0.0f, 1.0f) <= spawnProbability)
 		{
-			GamemodeRef->SpawnItemToWorld(itemType, itemID, GetActorLocation() + FMath::VRand() * 10.0f);
+			AItemBase* newItem = GamemodeRef->SpawnItemToWorld(itemType, itemID, GetActorLocation() + FMath::VRand() * 10.0f);
+
+			UE_LOG(LogTemp, Warning, TEXT("Spawned@"));
+
+			if (IsValid(newItem))
+			{
+				spawnedItemList.Add(newItem);
+				totalSpawnItemCount -= 1;
+			}
 		}
+	}
+
+	for (auto& targetItem : spawnedItemList)
+	{
+		targetItem->ActivateProjectileMovement();
+		targetItem->ActivateItem();
 	}
 }
 
@@ -130,7 +156,7 @@ void AEnemyCharacterBase::SetFacialMaterialEffect(bool NewState)
 
 void AEnemyCharacterBase::Turn(float Angle)
 {
-	if (FMath::Abs(Angle) <= 0.1f)
+	if (FMath::Abs(Angle) <= 0.05f)
 	{
 		CharacterState.TurnDirection = 0;
 		return;
@@ -138,6 +164,7 @@ void AEnemyCharacterBase::Turn(float Angle)
 
 	FRotator newRotation =  GetActorRotation();
 	newRotation.Yaw += Angle;
+	newRotation.Pitch = newRotation.Roll = 0.0f;
 	SetActorRotation(newRotation);
 	
 	if (GetVelocity().Length() == 0.0f)
@@ -147,8 +174,10 @@ void AEnemyCharacterBase::Turn(float Angle)
 		GetWorldTimerManager().SetTimer(TurnTimeOutTimerHandle, FTimerDelegate::CreateLambda([&]() {
 			CharacterState.TurnDirection = 0;
 		}), 1.0f, false, TURN_TIME_OUT_SEC);
+		return;
 	}
 	CharacterState.TurnDirection = 0;
+	return;
 }
 
 float AEnemyCharacterBase::PlayPreChaseAnimation()

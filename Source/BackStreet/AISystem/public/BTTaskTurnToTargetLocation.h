@@ -37,7 +37,7 @@ protected:
 	
 	//이번 tick에 돌 Angle을 반환
 	UFUNCTION()
-		float CalculateTurnAngle(const FVector& OwnerLocation, const FVector& OwnerForwardVector);
+		double CalculateTurnAngle(const FVector& OwnerLocation, const FVector& OwnerForwardVector);
 
 	UFUNCTION()
 		void LogMessage(FString str, FVector2D vec);

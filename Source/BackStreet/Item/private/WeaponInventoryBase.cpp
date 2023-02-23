@@ -200,9 +200,11 @@ AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
 	spawnParams.Owner = OwnerCharacterRef;
 	spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FVector spawnLocation = OwnerCharacterRef->GetActorLocation();
-	FRotator spawnRotation = FRotator();
-	AWeaponBase* newWeapon = Cast<AWeaponBase>(GetWorld()->SpawnActor(targetClass, &spawnLocation, &spawnRotation, spawnParams));
+	const FVector spawnLocation = OwnerCharacterRef->GetActorLocation();
+	const FRotator spawnRotation = FRotator();
+	const FVector spawnScale3D = FVector(1.0f / OwnerCharacterRef->GetCapsuleComponent()->GetComponentScale().X);
+	FTransform spawnTransform = FTransform(spawnRotation, spawnLocation, spawnScale3D);
+	AWeaponBase* newWeapon = Cast<AWeaponBase>(GetWorld()->SpawnActor(targetClass, &spawnTransform, spawnParams));
 
 	return newWeapon;
 }
