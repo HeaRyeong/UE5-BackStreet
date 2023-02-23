@@ -231,7 +231,11 @@ void AMainCharacterBase::Die()
 	if (IsValid(GamemodeRef))
 	{
 		ALevelScriptInGame* inGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
-		inGameScriptRef->GetChapterManager()->GetStageManager()->GetCurrentStage()->FinishTileDelegate.Broadcast();
+
+		if (IsValid(inGameScriptRef))
+		{
+			inGameScriptRef->GetChapterManager()->GetStageManager()->GetCurrentStage()->FinishTileDelegate.Broadcast();
+		}
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 		//ClearAllTimerHandle();
 		GamemodeRef->ClearResourceDelegate.Broadcast();

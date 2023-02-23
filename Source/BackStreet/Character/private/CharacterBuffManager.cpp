@@ -71,7 +71,7 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 
 			break;
 		case ECharacterDebuffType::E_Slow:
-			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed *= Variable;
+			characterStat.CharacterMoveSpeed *= Variable;
 			characterStat.CharacterAtkSpeed *= Variable;
 			break;
 		case ECharacterDebuffType::E_AttackDown:
@@ -114,7 +114,7 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 			characterStat.CharacterDefense *= Variable;
 			break;
 		case ECharacterBuffType::E_SpeedUp:
-			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed *= Variable;
+			characterStat.CharacterMoveSpeed *= Variable;
 			characterStat.CharacterAtkSpeed *= Variable;
 			break;
 		case ECharacterBuffType::E_Invincibility:
@@ -156,7 +156,7 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			GetWorldTimerManager().ClearTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX]);
 			break;
 		case ECharacterDebuffType::E_Slow:
-			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed = characterStat.CharacterMoveSpeed;
+			characterStat.CharacterMoveSpeed = characterStat.CharacterMoveSpeed;
 			characterStat.CharacterAtkSpeed /= ResetVal;
 			break;
 		case ECharacterDebuffType::E_Stun:
@@ -189,7 +189,7 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			characterStat.CharacterAtkMultiplier /= ResetVal;
 			break;
 		case ECharacterBuffType::E_SpeedUp:
-			OwnerCharacterRef->GetCharacterMovement()->MaxWalkSpeed /= ResetVal;
+			characterStat.CharacterMoveSpeed /= ResetVal;
 			characterStat.CharacterAtkSpeed /= ResetVal;
 			break;
 		case ECharacterBuffType::E_Invincibility:

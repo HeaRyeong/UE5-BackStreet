@@ -42,16 +42,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
 		int32 DefaultWeaponID;
 
+	//최대 스폰할 아이템의 개수. 미션 아이템은 무시.
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|DropItem", meta = (UIMin = 0, UIMax = 2))
+		int32 MaxSpawnItemCount;
+
 	//적이 죽고 스폰할 아이템의 Type 리스트 (각 아이템은 Idx로 구별)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|DropItem")
 		TArray<EItemCategoryInfo> SpawnItemTypeList;
 
 	//적이 죽구 스폰할 아이템 ID 리스트 (각 아이템은 Idx로 구별)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|DropItem")
 		TArray<uint8> SpawnItemIDList;
 
 	//적이 죽고 스폰할 아이템의 스폰 확률 리스트  (0.0f ~ 1.0f),  (각 아이템은 Idx로 구별)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|DropItem")
 		TArray<float> ItemSpawnProbabilityList;
 
 // ----- Action ---------------
