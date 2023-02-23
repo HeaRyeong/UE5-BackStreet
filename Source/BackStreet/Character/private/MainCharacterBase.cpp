@@ -9,6 +9,10 @@
 #include "../../Item/public/ItemBase.h"
 #include "../../Item/public/ItemBoxBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../StageSystem/public/ALevelScriptInGame.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/StageManagerBase.h"
+#include "../../StageSystem/public/TileBase.h"
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
@@ -226,12 +230,18 @@ void AMainCharacterBase::Die()
 	Super::Die();
 	if (IsValid(GamemodeRef))
 	{
+		ALevelScriptInGame* inGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+
+		if (IsValid(inGameScriptRef))
+		{
+			inGameScriptRef->GetChapterManager()->GetStageManager()->GetCurrentStage()->FinishTileDelegate.Broadcast();
+		}
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 		//ClearAllTimerHandle();
 		GamemodeRef->ClearResourceDelegate.Broadcast();
 		GamemodeRef->FinishChapterDelegate.Broadcast(true);
 	}
-	ClearAllTimerHandle();
+	//ClearAllTimerHandle();
 	UE_LOG(LogTemp, Warning, TEXT("DIE DELEGATE"));
 }
 

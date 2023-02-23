@@ -80,6 +80,7 @@ void AGateBase::UpdateNewTile()
 {
 	if (!(this->Tags[0].Compare(FName(TEXT("StartGate")))))
 	{
+		InGameScriptRef->FadeOutDelegate.Broadcast();
 		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Start);
 		UE_LOG(LogTemp, Log, TEXT("Start Gate"));
 	}
@@ -87,6 +88,7 @@ void AGateBase::UpdateNewTile()
 	{
 		if (InGameScriptRef->ChapterManager->IsChapterClear())
 		{
+			InGameScriptRef->FadeOutDelegate.Broadcast();
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Chapter);
 			UE_LOG(LogTemp, Log, TEXT("ChapterGate"));
 		}
@@ -98,21 +100,25 @@ void AGateBase::UpdateNewTile()
 	}
 	else if (!(this->Tags[1].Compare(FName(TEXT("UP")))))
 	{
+		InGameScriptRef->FadeOutDelegate.Broadcast();
 		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_UP);
 		UE_LOG(LogTemp, Log, TEXT("Up Gate"));
 	}
 	else if (!(this->Tags[1].Compare(FName(TEXT("DOWN")))))
 	{
+		InGameScriptRef->FadeOutDelegate.Broadcast();
 		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_DOWN);
 		UE_LOG(LogTemp, Log, TEXT("Down Gate"));
 	}
 	else if (!(this->Tags[1].Compare(FName(TEXT("RIGHT")))))
 	{
+		InGameScriptRef->FadeOutDelegate.Broadcast();
 		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_RIGHT);
 		UE_LOG(LogTemp, Log, TEXT("Right Gate"));
 	}
 	else if (!(this->Tags[1].Compare(FName(TEXT("LEFT")))))
 	{
+		InGameScriptRef->FadeOutDelegate.Broadcast();
 		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_LEFT);
 		UE_LOG(LogTemp, Log, TEXT("Left Gate"));
 	}

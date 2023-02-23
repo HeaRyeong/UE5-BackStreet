@@ -31,35 +31,9 @@ void ALevelScriptBase::BeginPlay()
 	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
 	GameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
-	GameModeRef->ClearResourceDelegate.AddDynamic(this, &ALevelScriptBase::ClearAllTimerHandle);
-	InitLevelSequence();
-	
-	PlayLoadSequencePlayer();
-	
+	InGameScriptRef->ChapterManager->GetStageManager()->UnLoadStage();
 
-	GetWorldTimerManager().SetTimer(ResourceReturnTimerHandle, FTimerDelegate::CreateLambda([&]() {
-		UE_LOG(LogTemp, Log, TEXT("Call Timer"));
-		InGameScriptRef->ChapterManager->GetStageManager()->UnLoadStage();
-
-		if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
-		{
-			BelongTileRef = InGameScriptRef->ChapterManager->GetStageManager()->GetCurrentStage();
-			if (BelongTileRef != nullptr)
-			{
-				BelongTileRef->ScriptRef = this;
-				if (!(BelongTileRef->bIsVisited))
-					InitLevel(BelongTileRef);
-			}
-		}
-		SetGate();
-		TeleportCharacter();
-		BelongTileRef->UnPauseStage();
-		ClearAllTimerHandle();
-		}), 1.0f, false, 0.75f);
-
-
-
-	/*if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
+	if (InGameScriptRef != nullptr && InGameScriptRef->ChapterManager != nullptr)
 	{
 		BelongTileRef = InGameScriptRef->ChapterManager->GetStageManager()->GetCurrentStage();
 		if (BelongTileRef != nullptr)
@@ -70,7 +44,9 @@ void ALevelScriptBase::BeginPlay()
 		}
 	}
 	SetGate();
-	TeleportCharacter();*/
+	TeleportCharacter();
+	BelongTileRef->UnPauseStage();
+
 }
 
 void ALevelScriptBase::InitLevel(ATileBase* target)
@@ -196,30 +172,3 @@ void ALevelScriptBase::SetSpawnPoints(ATileBase* target)
 	}
 }
 
-void ALevelScriptBase::PlayLoadSequencePlayer()
-{
-	if (IsValid(LoadSequencePlayer))
-	{
-		LoadSequencePlayer->Play();
-	}
-
-}
-
-
-void ALevelScriptBase::InitLevelSequence()
-{
-	ULevelSequence* loadEffectSequence = Cast<ULevelSequence>(InGameScriptRef->GetAssetManager()->GetFadeInEffectSequence());
-
-	if (!IsValid(loadEffectSequence)) return;
-	ALevelSequenceActor* loadActor = nullptr;
-
-	LoadSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), loadEffectSequence
-		, FMovieSceneSequencePlaybackSettings(), loadActor);
-
-}
-
-void ALevelScriptBase::ClearAllTimerHandle()
-{
-	GetWorldTimerManager().ClearTimer(TravelSequenceDelayHandle);
-	GetWorldTimerManager().ClearTimer(ResourceReturnTimerHandle);
-}

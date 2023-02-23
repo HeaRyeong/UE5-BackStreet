@@ -64,7 +64,7 @@ void AWeaponBase::Attack()
 		PlayEffectSound(AttackSound);
 		GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 2.0f, false, 1.0f);
+		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.0f, false, 4.0f - WeaponStat.WeaponAtkSpeedRate);
 	}
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }

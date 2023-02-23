@@ -9,6 +9,7 @@
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Item/public/ItemBoxBase.h"
+#include "../../Item/public/ItemBase.h"
 #include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
 
@@ -39,6 +40,7 @@ void AStageManagerBase::InitStageManager()
 {
 	CharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	InGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));	
+
 }
 
 void AStageManagerBase::SetStage(AGridBase* Chapter)
@@ -88,12 +90,21 @@ void AStageManagerBase::CleanManager()
 		}
 		for (AItemBoxBase* remove : target->GetItemBoxList())
 		{
-			GetWorld()->GetTimerManager().ClearAllTimersForObject(remove);
-			remove->Destroy();
+			if(remove!=nullptr)
+				remove->Destroy();
 		}
 
 		target->ClearTimer();
 	}
+	TArray<AActor*> items;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBase::StaticClass(),items);
+
+	for (AActor* remove : items)
+	{
+		if (remove != nullptr)
+			remove->Destroy();
+	}
+
 	Stages.Empty();
 	CurrentTile = nullptr;
 }
@@ -112,8 +123,20 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	}
 
 	MoveDir = (EDirection)Dir;
+	
+	/*if(InGameScriptRef->FadeOutDelegate.IsBound())
+		InGameScriptRef->FadeOutDelegate.Broadcast();
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Check FadeOutDelegate Bound"));
 
-	switch ((EDirection)Dir)
+	}*/
+
+	GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
+		UE_LOG(LogTemp, Log, TEXT("Call Timer"));
+	
+	
+		switch (MoveDir)
 	{
 	case EDirection::E_UP:
 		CurrentTile = GetStage(CurrentTile->XPos + 1, CurrentTile->YPos);
@@ -154,11 +177,13 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	default:
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
 		break;
-	}
-	
+		}
 
-	// UI 업데이트
-	InGameScriptRef->UpdateMiniMapUI();
+		// UI 업데이트
+		InGameScriptRef->UpdateMiniMapUI();
+	
+		}), 1.0f, false, 1.0f);
+
 }
 
 void AStageManagerBase::LoadStage()
