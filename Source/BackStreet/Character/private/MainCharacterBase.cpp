@@ -130,7 +130,7 @@ void AMainCharacterBase::Roll()
 	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle); //Roll 도중에 Rotation이 바뀌는 현상 방지
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
-	PlayAnimMontage(RollAnimMontage, CharacterStat.CharacterMoveSpeed / 450.0f);
+	PlayAnimMontage(RollAnimMontage, FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 450.0f));
 }
 
 void AMainCharacterBase::ZoomIn(float Value)
@@ -192,7 +192,12 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 void AMainCharacterBase::TryAttack()
 {
-	if (!PlayerControllerRef->GetActionKeyIsDown("Attack")) return; 
+	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Orange, FString("Pressed"), true);
+	if (!PlayerControllerRef->GetActionKeyIsDown("Attack"))
+	{
+		GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Yellow, FString("No Input"), true);
+		return;
+	}
 	if (CharacterState.CharacterActionState != ECharacterActionType::E_Attack
 		&& CharacterState.CharacterActionState != ECharacterActionType::E_Idle) return;
 
@@ -201,13 +206,15 @@ void AMainCharacterBase::TryAttack()
 		GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("무기가 없습니다.")), FColor::White);
 	}
 
+	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Orange, FString("Attack"), true);
+
 	//공격을 하고, 커서 위치로 Rotation을 조정
 	Super::TryAttack();
 	RotateToCursor();
 
 	//Pressed 상태를 0.2s 뒤에 체크해서 계속 눌려있다면 Attack 반복
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
-	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this, &AMainCharacterBase::TryAttack, 1.0f, false, 0.2f);
+	GetWorldTimerManager().SetTimer(AttackLoopTimerHandle, this, &AMainCharacterBase::TryAttack, 1.0f, false, 0.1f);
 }
 
 void AMainCharacterBase::Attack()

@@ -108,7 +108,7 @@ void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType,
 	if (CameraShakeEffectList.Num() < (uint8)EffectType) return;
 
 	Location = Location + (PlayerCharacterRef->FollowingCamera->GetComponentLocation() - PlayerCharacterRef->GetActorLocation());
-	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius);
+	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeEffectList[(uint8)EffectType], Location, Radius * 0.75f, Radius * 1.5f, 0.5f);
 }
 
 AItemBase* ABackStreetGameModeBase::SpawnItemToWorld(uint8 ItemType, uint8 ItemID, FVector SpawnLocation)

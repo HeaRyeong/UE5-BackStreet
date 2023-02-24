@@ -21,6 +21,10 @@ AWeaponBase::AWeaponBase()
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WEAPON_MESH"));
 	WeaponMesh->SetupAttachment(DefaultSceneRoot);
+
+	MeleeTrailParticle = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ITEM_NIAGARA_COMPONENT"));
+	MeleeTrailParticle->SetupAttachment(WeaponMesh);
+	MeleeTrailParticle->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -65,6 +69,7 @@ void AWeaponBase::Attack()
 		GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
 		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.0f, false, 4.0f - WeaponStat.WeaponAtkSpeedRate);
+		MeleeTrailParticle->Activate();
 	}
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
 }
@@ -74,6 +79,7 @@ void AWeaponBase::StopAttack()
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
 	MeleePrevTracePointList.Empty();
 	MeleeLineTraceQueryParams.ClearIgnoredActors();
+	MeleeTrailParticle->Deactivate();
 }
 
 void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
@@ -112,11 +118,11 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
 	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
 
-	if (WeaponStat.WeaponType == EWeaponType::E_Shoot)
+	//if (WeaponStat.WeaponType == EWeaponType::E_Shoot)
 	{
-		SpawnLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
+		//SpawnLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
 	}
-	else
+	//else
 	{
 		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
 		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
@@ -258,7 +264,7 @@ void AWeaponBase::MeleeAttack()
 				&& !hitResult.GetActor()->ActorHasTag(OwnerCharacterRef->Tags[1])) //공격자와 피격자의 타입이 같은지 체크
 			{
 				bIsMeleeTraceSucceed = true;
-				//DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor::Yellow, false, 1.0f, 0, 1.5f);
+			//	DrawDebugLine(GetWorld(), beginPoint, endPoint, FColor::Yellow, false, 1.0f, 0, 1.5f);
 				break;
 			}
 			//else
