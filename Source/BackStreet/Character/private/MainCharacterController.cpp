@@ -31,12 +31,20 @@ FRotator AMainCharacterController::GetRotationToCursor()
 {
 	if (!IsValid(PlayerRef)) return FRotator();
 
-	FRotator retRotation;
-	
-	//Trace의 시작은 마우스의 World Location
+	FRotator retRotation = FRotator();
+	FVector cursorWorldDeprojectionLocation = GetCursorDeprojectionWorldLocation();
+
+	retRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(), cursorWorldDeprojectionLocation);
+	retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw + 270.0f);
+	return retRotation;
+}
+
+FVector AMainCharacterController::GetCursorDeprojectionWorldLocation()
+{
 	FVector traceStartLocation, traceEndLocation, mouseDirection;
 	FHitResult hitResult;
 
+	//Trace의 시작은 마우스의 World Location
 	DeprojectMousePositionToWorld(traceStartLocation, mouseDirection);
 
 	//마우스 커서 위치에서 바닥으로의 INF만큼의 위치가 Trace의 마지막 지점
@@ -46,15 +54,8 @@ FRotator AMainCharacterController::GetRotationToCursor()
 	GetWorld()->LineTraceSingleByChannel(hitResult, traceStartLocation, traceEndLocation
 		, ECollisionChannel::ECC_Camera);
 
-	//hit에 성공했다면
-	if (hitResult.bBlockingHit)
-	{
-		retRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(), hitResult.Location);
-		retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw + 270.0f);
-		return retRotation;
-	}
-
-	return FRotator();
+	if (hitResult.bBlockingHit) return hitResult.Location;
+	return FVector();
 }
 
 bool AMainCharacterController::GetActionKeyIsDown(FName MappingName)
