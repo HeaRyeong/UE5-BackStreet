@@ -27,6 +27,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		UBoxComponent* OverlapVolume;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+		class UStaticMeshComponent* Mesh;
+	
+
 //----------- 핵심 로직 ---------------
 public:
 	UFUNCTION()
@@ -38,8 +42,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void EnterGate();
 
+	UFUNCTION(BlueprintCallable)
+		void ActiveGate();
+
+
 public:
-	//새 타일을 로드 / 기존 타일을 언로드 한다.
+	
 	UFUNCTION()
 		void UpdateNewTile();
 
@@ -49,7 +57,15 @@ public:
 
 
 //-------- 그 외-----------------------
+public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
+		TArray<class UMaterialInterface*> GateMaterialList;
+
 private:
 	UPROPERTY()
 		class ALevelScriptInGame* InGameScriptRef;
+
+	UPROPERTY()
+		class ABackStreetGameModeBase* GamemodeRef;
 };

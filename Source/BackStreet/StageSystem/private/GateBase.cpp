@@ -7,6 +7,7 @@
 #include "../public/ChapterManagerBase.h"
 #include "../public/ALevelScriptInGame.h"
 #include "../public/StageManagerBase.h"
+#include "Math/Color.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -17,7 +18,9 @@ AGateBase::AGateBase()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	OverlapVolume = CreateDefaultSubobject<UBoxComponent>(TEXT("OverlapVolume"));
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	OverlapVolume->SetupAttachment(RootComponent);
+	Mesh->SetupAttachment(RootComponent);
 
 	OverlapVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AGateBase::OverlapBegins);
 }
@@ -34,7 +37,7 @@ void AGateBase::BeginPlay()
 {
 	Super::BeginPlay();
 	InGameScriptRef =  Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
-
+	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());
 }
 
 void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -64,10 +67,7 @@ void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 
 void AGateBase::InitGate()
 {
-	
-		CheckHaveToActive();
-	
-	
+	CheckHaveToActive();
 }
 
 void AGateBase::EnterGate()
@@ -75,54 +75,75 @@ void AGateBase::EnterGate()
 	UpdateNewTile();
 }
 
+void AGateBase::ActiveGate()
+{
+	if (this->ActorHasTag(FName("ChapterGate")))
+	{
+		if (InGameScriptRef->ChapterManager->IsChapterClear())
+		{
+			UE_LOG(LogTemp, Log, TEXT("Call ActiveGate!"));
+			Mesh->SetMaterial(0, GateMaterialList[1]);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Check IsChpaterClear!"));
+		}
+	}
+	
+}
+
 
 void AGateBase::UpdateNewTile()
 {
-	if (!(this->Tags[0].Compare(FName(TEXT("StartGate")))))
+	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("동일한 무기가 인벤토리에 있습니다.")), FColor::White);
+	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남아있습니다, 미션을 클리어 해주세요.")), FColor::White);
+	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남아있습니다, 미션을 클리어 해주세요.")), FColor::White);
+
+	if (this->ActorHasTag(FName("StartGate")))
 	{
 		InGameScriptRef->FadeOutDelegate.Broadcast();
 		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Start);
-		UE_LOG(LogTemp, Log, TEXT("Start Gate"));
+		
 	}
-	else if (!(this->Tags[0].Compare(FName(TEXT("ChapterGate")))))
+	else if (this->ActorHasTag(FName("ChapterGate")))
 	{
 		if (InGameScriptRef->ChapterManager->IsChapterClear())
 		{
 			InGameScriptRef->FadeOutDelegate.Broadcast();
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Chapter);
-			UE_LOG(LogTemp, Log, TEXT("ChapterGate"));
-		}
-		else
+			
+		}else
 		{
-			UE_LOG(LogTemp, Log, TEXT("Please Clear Mission"));
+			//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남아있습니다, 미션을 클리어 해주세요.")), FColor::White);
 		}
-	
-	}
-	else if (!(this->Tags[1].Compare(FName(TEXT("UP")))))
+	}else
 	{
-		InGameScriptRef->FadeOutDelegate.Broadcast();
-		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_UP);
-		UE_LOG(LogTemp, Log, TEXT("Up Gate"));
+		 if (this->ActorHasTag(FName("UP")))
+		{
+			InGameScriptRef->FadeOutDelegate.Broadcast();
+			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_UP);
+			UE_LOG(LogTemp, Log, TEXT("Up Gate"));
+		}
+		else if (this->ActorHasTag(FName("DOWN")))
+		{
+			InGameScriptRef->FadeOutDelegate.Broadcast();
+			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_DOWN);
+			UE_LOG(LogTemp, Log, TEXT("Down Gate"));
+		}
+		else if (this->ActorHasTag(FName("RIGHT")))
+		{
+			InGameScriptRef->FadeOutDelegate.Broadcast();
+			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_RIGHT);
+			UE_LOG(LogTemp, Log, TEXT("Right Gate"));
+		}
+		else if (this->ActorHasTag(FName("LEFT")))
+		{
+			InGameScriptRef->FadeOutDelegate.Broadcast();
+			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_LEFT);
+			UE_LOG(LogTemp, Log, TEXT("Left Gate"));
+		}
+
 	}
-	else if (!(this->Tags[1].Compare(FName(TEXT("DOWN")))))
-	{
-		InGameScriptRef->FadeOutDelegate.Broadcast();
-		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_DOWN);
-		UE_LOG(LogTemp, Log, TEXT("Down Gate"));
-	}
-	else if (!(this->Tags[1].Compare(FName(TEXT("RIGHT")))))
-	{
-		InGameScriptRef->FadeOutDelegate.Broadcast();
-		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_RIGHT);
-		UE_LOG(LogTemp, Log, TEXT("Right Gate"));
-	}
-	else if (!(this->Tags[1].Compare(FName(TEXT("LEFT")))))
-	{
-		InGameScriptRef->FadeOutDelegate.Broadcast();
-		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_LEFT);
-		UE_LOG(LogTemp, Log, TEXT("Left Gate"));
-	}
-	
 }
 
 void AGateBase::CheckHaveToActive()
@@ -139,7 +160,16 @@ void AGateBase::CheckHaveToActive()
 		{
 			Destroy();
 		}
-			
+		// Set Material	
+		if (InGameScriptRef->ChapterManager->IsChapterClear())
+		{
+			Mesh->SetMaterial(0, GateMaterialList[1]);
+		}
+		else
+		{
+			Mesh->SetMaterial(0, GateMaterialList[2]);
+		}
+		
 	}
 	else
 	{
@@ -173,7 +203,11 @@ void AGateBase::CheckHaveToActive()
 
 				}
 			}
+	
 		}
+
+		// Set Material
+		Mesh->SetMaterial(0, GateMaterialList[0]);
 	}
 
 }
