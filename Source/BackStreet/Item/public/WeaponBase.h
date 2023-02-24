@@ -36,6 +36,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		UStaticMeshComponent* WeaponMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		class UNiagaraComponent* MeleeTrailParticle;
+
 //------- 기본 프로퍼티, Action -------------------
 public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")

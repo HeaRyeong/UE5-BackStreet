@@ -30,6 +30,9 @@ public:
 	UFUNCTION()
 		FRotator GetRotationToCursor();
 
+	UFUNCTION()
+		FVector GetCursorDeprojectionWorldLocation();
+
 	//특정 Action 키가 아직 눌려있는지 확인
 	UFUNCTION()
 		bool GetActionKeyIsDown(FName MappingName);
