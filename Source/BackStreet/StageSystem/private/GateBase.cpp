@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "../public/GateBase.h"
@@ -52,10 +52,10 @@ void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 
 	//	UpdateNewTile();
 
-	//	////»õ Å¸ÀÏÀ» CrossFade µµÁß¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+	//	////ìƒˆ íƒ€ì¼ì„ CrossFade ë„ì¤‘ì— ì—…ë°ì´íŠ¸ í•œë‹¤.
 	//	//GetWorldTimerManager().SetTimer(TravelSequenceDelayHandle, this, &AGateBase::UpdateNewTile, 1.0f, false, 0.5f);
 
-	//	////CrossFade°¡ ³¡³ª¸é Gate¸¦ ¹ÝÈ¯ÇÑ´Ù.
+	//	////CrossFadeê°€ ëë‚˜ë©´ Gateë¥¼ ë°˜í™˜í•œë‹¤.
 	//	//GetWorldTimerManager().SetTimer(ResourceReturnTimerHandle, FTimerDelegate::CreateLambda([&]() {
 	//	//	GamemodeRef->ChapterManager->GetStageManager()->UnLoadStage();
 	//	//	ClearAllTimerHandle();
@@ -95,10 +95,6 @@ void AGateBase::ActiveGate()
 
 void AGateBase::UpdateNewTile()
 {
-	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("µ¿ÀÏÇÑ ¹«±â°¡ ÀÎº¥Åä¸®¿¡ ÀÖ½À´Ï´Ù.")), FColor::White);
-	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("¾ÆÁ÷ ¹Ì¼ÇÀÌ ³²¾ÆÀÖ½À´Ï´Ù, ¹Ì¼ÇÀ» Å¬¸®¾î ÇØÁÖ¼¼¿ä.")), FColor::White);
-	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("¾ÆÁ÷ ¹Ì¼ÇÀÌ ³²¾ÆÀÖ½À´Ï´Ù, ¹Ì¼ÇÀ» Å¬¸®¾î ÇØÁÖ¼¼¿ä.")), FColor::White);
-
 	if (this->ActorHasTag(FName("StartGate")))
 	{
 		InGameScriptRef->FadeOutDelegate.Broadcast();
@@ -112,11 +108,13 @@ void AGateBase::UpdateNewTile()
 			InGameScriptRef->FadeOutDelegate.Broadcast();
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Chapter);
 			
-		}else
-		{
-			//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("¾ÆÁ÷ ¹Ì¼ÇÀÌ ³²¾ÆÀÖ½À´Ï´Ù, ¹Ì¼ÇÀ» Å¬¸®¾î ÇØÁÖ¼¼¿ä.")), FColor::White);
 		}
-	}else
+		else
+		{
+			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("ì•„ì§ ë¯¸ì…˜ì´ ë‚¨ì•„ìžˆìŠµë‹ˆë‹¤, ë¯¸ì…˜ì„ í´ë¦¬ì–´ í•´ì£¼ì„¸ìš”.")), FColor::White);
+		}
+	}
+	else
 	{
 		 if (this->ActorHasTag(FName("UP")))
 		{
