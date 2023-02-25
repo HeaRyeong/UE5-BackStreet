@@ -69,7 +69,7 @@ public:
 	UFUNCTION()
 		void UpdateProjectileStatWithID(class AProjectileBase* TargetProjectile, const uint8 ProjectileID);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FWeaponStatStruct GetWeaponStatInfoWithID(const uint8 WeaponID);
 
 	UFUNCTION()
