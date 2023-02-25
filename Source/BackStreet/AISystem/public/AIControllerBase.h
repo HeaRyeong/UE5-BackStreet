@@ -53,6 +53,10 @@ public:
 	UFUNCTION()
 		void UpdateTargetPerception(AActor* Actor, FAIStimulus Stimulus);
 
+//-- Blackboard 관련 ----------------------
+public:
+	UFUNCTION()
+		void UpdateNewWeapon();
 
 //--자원 관리 ---------------------
 public:

@@ -2,6 +2,7 @@
 
 
 #include "../public/AIControllerBase.h"
+#include "../../Item/public/WeaponBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Character/public/EnemyCharacterBase.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -87,6 +88,18 @@ void AAIControllerBase::UpdateTargetPerception(AActor* Actor, FAIStimulus Stimul
 		}), 1.0f, false, MaxSightAge);
 	}
 	
+}
+
+void AAIControllerBase::UpdateNewWeapon()
+{
+	if(!IsValid(GetPawn())) return;
+
+	AWeaponBase* weaponActorRef = Cast<ACharacterBase>(GetPawn())->GetWeaponActorRef();
+
+	if (IsValid(weaponActorRef))
+	{
+		GetBlackboardComponent()->SetValueAsBool("HasRangedWeapon", weaponActorRef->GetWeaponStat().WeaponType != EWeaponType::E_Melee);
+	}		
 }
 
 void AAIControllerBase::ClearAllTimerHandle()

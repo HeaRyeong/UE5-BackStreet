@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "../public/GateBase.h"
@@ -52,10 +52,10 @@ void AGateBase::OverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* 
 
 	//	UpdateNewTile();
 
-	//	////»õ Å¸ÀÏÀ» CrossFade µµÁß¿¡ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+	//	////ï¿½ï¿½ Å¸ï¿½ï¿½ï¿½ï¿½ CrossFade ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ñ´ï¿½.
 	//	//GetWorldTimerManager().SetTimer(TravelSequenceDelayHandle, this, &AGateBase::UpdateNewTile, 1.0f, false, 0.5f);
 
-	//	////CrossFade°¡ ³¡³ª¸é Gate¸¦ ¹ÝÈ¯ÇÑ´Ù.
+	//	////CrossFadeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Gateï¿½ï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
 	//	//GetWorldTimerManager().SetTimer(ResourceReturnTimerHandle, FTimerDelegate::CreateLambda([&]() {
 	//	//	GamemodeRef->ChapterManager->GetStageManager()->UnLoadStage();
 	//	//	ClearAllTimerHandle();
@@ -95,9 +95,6 @@ void AGateBase::ActiveGate()
 
 void AGateBase::UpdateNewTile()
 {
-	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("µ¿ÀÏÇÑ ¹«±â°¡ ÀÎº¥Åä¸®¿¡ ÀÖ½À´Ï´Ù.")), FColor::White);
-	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("¾ÆÁ÷ ¹Ì¼ÇÀÌ ³²¾ÆÀÖ½À´Ï´Ù, ¹Ì¼ÇÀ» Å¬¸®¾î ÇØÁÖ¼¼¿ä.")), FColor::White);
-
 	if (this->ActorHasTag(FName("StartGate")))
 	{
 		InGameScriptRef->FadeOutDelegate.Broadcast();
@@ -121,9 +118,10 @@ void AGateBase::UpdateNewTile()
 				}), 1.0f, false, 1.0f);
 		}else
 		{
-			//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("¾ÆÁ÷ ¹Ì¼ÇÀÌ ³²¾ÆÀÖ½À´Ï´Ù, ¹Ì¼ÇÀ» Å¬¸®¾î ÇØÁÖ¼¼¿ä.")), FColor::White);
+			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ï´ï¿½, ï¿½Ì¼ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½.")), FColor::White);
 		}
-	}else
+	}
+	else
 	{
 		 if (this->ActorHasTag(FName("UP")))
 		{
