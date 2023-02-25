@@ -156,7 +156,7 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 			GetWorldTimerManager().ClearTimer(BuffDebuffTimerHandleList[DEBUFF_DAMAGE_TIMER_IDX]);
 			break;
 		case ECharacterDebuffType::E_Slow:
-			characterStat.CharacterMoveSpeed = characterStat.CharacterMoveSpeed;
+			characterStat.CharacterMoveSpeed /= ResetVal;
 			characterStat.CharacterAtkSpeed /= ResetVal;
 			break;
 		case ECharacterDebuffType::E_Stun:
