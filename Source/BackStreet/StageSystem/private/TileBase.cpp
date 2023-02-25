@@ -254,7 +254,6 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* target)
 
 	if (MonsterList.IsEmpty())
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Stage Clear"));
 		bIsClear = true;
 
 		//// 스테이지 클리어 처리
@@ -268,7 +267,6 @@ void ATileBase::BindDelegate()
 	for (AEnemyCharacterBase* enemy : MonsterList)
 	{
 		FString name = enemy->GetController()->GetName();
-		//UE_LOG(LogTemp, Log, TEXT("Controller %s"), *name);
 		FinishTileDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::DeactivateAI);
 		StartTileDelegate.AddDynamic(Cast<AAIControllerBase>(enemy->GetController()), &AAIControllerBase::ActivateAI);
 		enemy->EnemyDeathDelegate.BindUFunction(this, FName("MonsterDie"));

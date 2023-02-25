@@ -135,6 +135,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	if (CurrentTile != nullptr)
 	{
 		UnloadTile = CurrentTile;
+		UnloadLevel = CurrentTile->LevelRef;
 		UnloadTile->PauseStage();
 	}
 
@@ -171,8 +172,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
 		InGameScriptRef->GetChapterManager()->ClearChapter();
-		// 임시 Unload
-		UnLoadStage();
+		//UnLoadStage();
 		break;
 	default:
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
@@ -220,27 +220,25 @@ void AStageManagerBase::LoadStage()
 void AStageManagerBase::UnLoadStage()
 {
 	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase::UnLoadStage"));
-	if (UnloadTile != nullptr)
+
+
+
+	if (UnloadLevel != nullptr) // 레벨 스트리밍 인스턴스 존재
 	{
-		if (UnloadTile->LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
-		{
-			UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
-			UnloadTile->LevelRef->SetShouldBeLoaded(false);
-			UnloadTile->LevelRef->SetShouldBeVisible(false);
-			//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
-			//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
-		
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
-		
-		}
+		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
+		UnloadLevel->SetShouldBeLoaded(false);
+		UnloadLevel->SetShouldBeVisible(false);
+		//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
+		//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
+
 	}
 	else
 	{
-		//CompleteUnLoad();
+		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
+
 	}
+
+
 
 }
 
