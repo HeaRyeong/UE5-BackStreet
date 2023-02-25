@@ -12,6 +12,9 @@
 #include "../../Item/public/ItemBase.h"
 #include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
+#include "../../Item/public/WeaponBase.h"
+#include "Engine/LevelStreaming.h"
+
 
 
 // Sets default values
@@ -61,6 +64,7 @@ void AStageManagerBase::SetStage(AGridBase* Chapter)
 
 void AStageManagerBase::CleanManager()
 {
+
 	for (ATileBase* target : Stages)
 	{
 		TArray<AEnemyCharacterBase*> monsterList = target->GetMonsterList();
@@ -96,6 +100,7 @@ void AStageManagerBase::CleanManager()
 
 		target->ClearTimer();
 	}
+
 	TArray<AActor*> items;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBase::StaticClass(),items);
 
@@ -104,6 +109,16 @@ void AStageManagerBase::CleanManager()
 		if (remove != nullptr)
 			remove->Destroy();
 	}
+
+	TArray<AActor*> weapons;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), weapons);
+
+	for (AActor* remove : weapons)
+	{
+		if (remove != nullptr)
+			remove->Destroy();
+	}
+
 
 	Stages.Empty();
 	CurrentTile = nullptr;
@@ -116,78 +131,62 @@ void AStageManagerBase::SetMissionStages()
 
 void AStageManagerBase::MoveStage(uint8 Dir)
 {
+	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase:: MoveStage Dir: %d "),Dir);
 	if (CurrentTile != nullptr)
 	{
 		UnloadTile = CurrentTile;
+		UnloadLevel = CurrentTile->LevelRef;
 		UnloadTile->PauseStage();
 	}
 
 	MoveDir = (EDirection)Dir;
 	
-	/*if(InGameScriptRef->FadeOutDelegate.IsBound())
-		InGameScriptRef->FadeOutDelegate.Broadcast();
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Check FadeOutDelegate Bound"));
 
-	}*/
-
-	GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
-		UE_LOG(LogTemp, Log, TEXT("Call Timer"));
-	
-	
-		switch (MoveDir)
+	switch (MoveDir)
 	{
 	case EDirection::E_UP:
 		CurrentTile = GetStage(CurrentTile->XPos + 1, CurrentTile->YPos);
 		LoadStage();
-		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
 		CurrentTile = GetStage(CurrentTile->XPos - 1, CurrentTile->YPos);
 		LoadStage();
-		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
 		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos - 1);
 		LoadStage();
-		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
 		CurrentTile = GetStage(CurrentTile->XPos, CurrentTile->YPos + 1);
 		LoadStage();
-		//CurrentTile->UnPauseStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
 		CurrentTile = Stages[0];
 		LoadStage();
-		//CurrentTile->UnPauseStage();
 		break;
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
-		ChapterClearDelegate.Broadcast();
-		// 임시 Unload
-		UnLoadStage();
+		InGameScriptRef->GetChapterManager()->ClearChapter();
+		//UnLoadStage();
 		break;
 	default:
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
 		break;
-		}
+	}
 
-		// UI 업데이트
-		InGameScriptRef->UpdateMiniMapUI();
-	
-		}), 1.0f, false, 1.0f);
+	// UI 업데이트
+	InGameScriptRef->UpdateMiniMapUI();
 
 }
 
 void AStageManagerBase::LoadStage()
 {
+	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase::LoadStage"));
 	//FScriptDelegate MyScriptDelegate;
 
 	if (CurrentTile->LevelRef != nullptr)
@@ -220,27 +219,26 @@ void AStageManagerBase::LoadStage()
 
 void AStageManagerBase::UnLoadStage()
 {
-	if (UnloadTile != nullptr)
+	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase::UnLoadStage"));
+
+
+
+	if (UnloadLevel != nullptr) // 레벨 스트리밍 인스턴스 존재
 	{
-		if (UnloadTile->LevelRef != nullptr) // 레벨 스트리밍 인스턴스 존재
-		{
-			UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
-			UnloadTile->LevelRef->SetShouldBeLoaded(false);
-			UnloadTile->LevelRef->SetShouldBeVisible(false);
-			//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
-			//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
-		
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
-		
-		}
+		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
+		UnloadLevel->SetShouldBeLoaded(false);
+		UnloadLevel->SetShouldBeVisible(false);
+		//UnloadDelegate.BindUFunction(this, "CompleteUnLoad");
+		//CurrentTile->LevelRef->OnLevelLoaded.Add(UnloadDelegate);
+
 	}
 	else
 	{
-		//CompleteUnLoad();
+		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , error"));
+
 	}
+
+
 
 }
 

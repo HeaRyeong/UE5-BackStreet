@@ -62,6 +62,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
 		TArray<class UMaterialInterface*> GateMaterialList;
 
+	UPROPERTY(VisibleAnywhere)
+		FTimerHandle FadeOutEffectHandle;
+
 private:
 	UPROPERTY()
 		class ALevelScriptInGame* InGameScriptRef;

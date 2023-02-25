@@ -45,7 +45,11 @@ void ALevelScriptBase::BeginPlay()
 	}
 	SetGate();
 	TeleportCharacter();
-	BelongTileRef->UnPauseStage();
+	if (BelongTileRef != nullptr && BelongTileRef->StageTimerHandle.IsValid())
+	{
+		BelongTileRef->UnPauseStage();
+	}
+
 
 }
 
