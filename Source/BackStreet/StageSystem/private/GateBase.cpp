@@ -97,12 +97,17 @@ void AGateBase::UpdateNewTile()
 {
 	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("동일한 무기가 인벤토리에 있습니다.")), FColor::White);
 	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남아있습니다, 미션을 클리어 해주세요.")), FColor::White);
-	//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남아있습니다, 미션을 클리어 해주세요.")), FColor::White);
 
 	if (this->ActorHasTag(FName("StartGate")))
 	{
 		InGameScriptRef->FadeOutDelegate.Broadcast();
-		InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Start);
+
+		GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
+	
+				InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Start);
+				GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+			}), 1.0f, false, 1.0f);
+		//InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Start);
 		
 	}
 	else if (this->ActorHasTag(FName("ChapterGate")))
@@ -110,8 +115,10 @@ void AGateBase::UpdateNewTile()
 		if (InGameScriptRef->ChapterManager->IsChapterClear())
 		{
 			InGameScriptRef->FadeOutDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_Chapter);
-			
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+				}), 1.0f, false, 1.0f);
 		}else
 		{
 			//GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남아있습니다, 미션을 클리어 해주세요.")), FColor::White);
@@ -121,25 +128,37 @@ void AGateBase::UpdateNewTile()
 		 if (this->ActorHasTag(FName("UP")))
 		{
 			InGameScriptRef->FadeOutDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_UP);
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+				}), 1.0f, false, 1.0f);
 			UE_LOG(LogTemp, Log, TEXT("Up Gate"));
 		}
 		else if (this->ActorHasTag(FName("DOWN")))
 		{
 			InGameScriptRef->FadeOutDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_DOWN);
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+				}), 1.0f, false, 1.0f);
 			UE_LOG(LogTemp, Log, TEXT("Down Gate"));
 		}
 		else if (this->ActorHasTag(FName("RIGHT")))
 		{
 			InGameScriptRef->FadeOutDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_RIGHT);
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+				}), 1.0f, false, 1.0f);
 			UE_LOG(LogTemp, Log, TEXT("Right Gate"));
 		}
 		else if (this->ActorHasTag(FName("LEFT")))
 		{
 			InGameScriptRef->FadeOutDelegate.Broadcast();
+			GetWorldTimerManager().SetTimer(FadeOutEffectHandle, FTimerDelegate::CreateLambda([&]() {
 			InGameScriptRef->ChapterManager->GetStageManager()->MoveStage((uint8)EDirection::E_LEFT);
+			GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+				}), 1.0f, false, 1.0f);
 			UE_LOG(LogTemp, Log, TEXT("Left Gate"));
 		}
 
