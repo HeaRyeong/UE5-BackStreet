@@ -84,7 +84,7 @@ private:
 		class ATileBase* UnloadTile;
 
 	UPROPERTY(VisibleAnywhere)
-		class ATileBase* UnloadLevel;
+		class ULevelStreaming* UnloadLevel;
 	
 	UPROPERTY(VisibleAnywhere)
 		EDirection MoveDir;
