@@ -221,7 +221,7 @@ void ATileBase::SpawnMission()
 	{
 		FActorSpawnParameters actorSpawnParameters;
 		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->MissionEnemyAssets[0], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
 		Mission->MonsterList.Add(target);
 		target->Tags.AddUnique("MissionMonster");
 		MonsterList.AddUnique(target);
@@ -232,7 +232,7 @@ void ATileBase::SpawnMission()
 	{
 		FActorSpawnParameters actorSpawnParameters;
 		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->EnemyAssets[4], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
+		AEnemyCharacterBase* target = GetWorld()->SpawnActor<AEnemyCharacterBase>(InGameScriptRef->GetAssetManager()->MissionEnemyAssets[1], MissionSpawnPoints[0]->GetActorLocation(), FRotator::ZeroRotator, actorSpawnParameters);
 		Mission->MonsterList.Add(target);
 		target->Tags.AddUnique("MissionMonster");
 		MonsterList.AddUnique(target);

@@ -37,6 +37,9 @@ public:
 		TArray<TSubclassOf<class AEnemyCharacterBase>> EnemyAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<TSubclassOf<class AEnemyCharacterBase>> MissionEnemyAssets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AItemBoxBase>> ItemBoxAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

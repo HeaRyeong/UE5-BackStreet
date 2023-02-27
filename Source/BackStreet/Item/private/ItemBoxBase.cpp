@@ -112,7 +112,7 @@ TArray<AItemBase*> AItemBoxBase::SpawnItems(int32 TargetSpawnCount)
 	{
 		if (++currentTryCount >= MAX_TRY_SPAWN_COUNT) break;
 
-		int32 targetItemInfoIdx = !bMissionItemFlag ? 0 : UKismetMathLibrary::RandomIntegerInRange(0, SpawnItemTypeList.Num()-1);
+		int32 targetItemInfoIdx = !bMissionItemFlag ? 0 : UKismetMathLibrary::RandomIntegerInRange(1, SpawnItemTypeList.Num()-1);
 		const int32 targetItemType = (int32)SpawnItemTypeList[targetItemInfoIdx];
 		const int32 targetItemID = SpawnItemIDList[targetItemInfoIdx];
 		const float targetItemProbability = ItemSpawnProbabilityList[targetItemInfoIdx];
