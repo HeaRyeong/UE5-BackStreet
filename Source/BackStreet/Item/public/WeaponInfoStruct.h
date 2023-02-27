@@ -65,6 +65,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		ECharacterDebuffType DebuffType;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float DebuffTotalTime;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float DebuffVariable;
+
 	// 내구도 PROPERTY 추가
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bInfinite = false;

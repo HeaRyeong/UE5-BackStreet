@@ -192,10 +192,8 @@ float AMainCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 void AMainCharacterBase::TryAttack()
 {
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Orange, FString("Pressed"), true);
 	if (!PlayerControllerRef->GetActionKeyIsDown("Attack"))
 	{
-		GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Yellow, FString("No Input"), true);
 		return;
 	}
 	if (CharacterState.CharacterActionState != ECharacterActionType::E_Attack
@@ -205,8 +203,6 @@ void AMainCharacterBase::TryAttack()
 	{
 		GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("무기가 없습니다.")), FColor::White);
 	}
-
-	GEngine->AddOnScreenDebugMessage(0, 3.0f, FColor::Orange, FString("Attack"), true);
 
 	//공격을 하고, 커서 위치로 Rotation을 조정
 	Super::TryAttack();
