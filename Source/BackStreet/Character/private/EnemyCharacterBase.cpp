@@ -10,6 +10,10 @@
 #include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../StageSystem/public/ALevelScriptInGame.h"
+#include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/StageManagerBase.h"
+#include "../../StageSystem/public/MissionBase.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #define TURN_TIME_OUT_SEC 1.0f
@@ -117,31 +121,47 @@ void AEnemyCharacterBase::SpawnDeathItems()
 
 	UE_LOG(LogTemp, Warning, TEXT("totalSpawnItemCount %d"), totalSpawnItemCount);
 
-	while(totalSpawnItemCount)
+	if (SpawnItemTypeList.IsValidIndex(0)&&SpawnItemTypeList[0] == EItemCategoryInfo::E_Mission)
 	{
-		if (++trySpawnCount > totalSpawnItemCount * 3) break; //스폰할 아이템 개수의 3배만큼 시도
-
-		const int32 itemIdx = UKismetMathLibrary::RandomIntegerInRange(0, SpawnItemIDList.Num()-1);
-		if (!SpawnItemTypeList.IsValidIndex(itemIdx) || !ItemSpawnProbabilityList.IsValidIndex(itemIdx)) continue;
-
-		const uint8 itemType = (uint8)SpawnItemTypeList[itemIdx];
-		const uint8 itemID = SpawnItemIDList[itemIdx];
-		const float spawnProbability = ItemSpawnProbabilityList[itemIdx];
-
-		if(FMath::RandRange(0.0f, 1.0f) <= spawnProbability)
-		{
-			AItemBase* newItem = GamemodeRef->SpawnItemToWorld(itemType, itemID, GetActorLocation() + FMath::VRand() * 10.0f);
-
-			UE_LOG(LogTemp, Warning, TEXT("Spawned@"));
-
-			if (IsValid(newItem))
+		ALevelScriptInGame* level = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
+		UMissionBase* target = level->GetChapterManager()->GetStageManager()->GetCurrentStage()->Mission;
+		AItemBase* newItem = GamemodeRef->SpawnItemToWorld((uint8)SpawnItemTypeList[0], SpawnItemIDList[0], GetActorLocation() + FMath::VRand() * 10.0f);
+		if (IsValid(newItem))
 			{
 				spawnedItemList.Add(newItem);
-				totalSpawnItemCount -= 1;
+				newItem->Dele_MissionItemSpawned.BindUFunction(target, FName("TryAddMissionItem"));
+			}
+	
+	}
+	else
+	{
+		while(totalSpawnItemCount)
+		{
+			if (++trySpawnCount > totalSpawnItemCount * 3) break; //스폰할 아이템 개수의 3배만큼 시도
+		
+			const int32 itemIdx = UKismetMathLibrary::RandomIntegerInRange(0, SpawnItemIDList.Num()-1);
+			if (!SpawnItemTypeList.IsValidIndex(itemIdx) || !ItemSpawnProbabilityList.IsValidIndex(itemIdx)) continue;
+		
+			const uint8 itemType = (uint8)SpawnItemTypeList[itemIdx];
+			const uint8 itemID = SpawnItemIDList[itemIdx];
+			const float spawnProbability = ItemSpawnProbabilityList[itemIdx];
+		
+			if(FMath::RandRange(0.0f, 1.0f) <= spawnProbability)
+			{
+				AItemBase* newItem = GamemodeRef->SpawnItemToWorld(itemType, itemID, GetActorLocation() + FMath::VRand() * 10.0f);
+		
+				UE_LOG(LogTemp, Warning, TEXT("Spawned@"));
+		
+				if (IsValid(newItem))
+				{
+					spawnedItemList.Add(newItem);
+					totalSpawnItemCount -= 1;
+				}
 			}
 		}
 	}
 
+	
 	for (auto& targetItem : spawnedItemList)
 	{
 		targetItem->ActivateProjectileMovement();

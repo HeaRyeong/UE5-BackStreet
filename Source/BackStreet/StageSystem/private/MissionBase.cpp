@@ -42,7 +42,7 @@ bool UMissionBase::ClearCheck()
 			return false;
 		break;
 	case 2:
-		if (MonsterList.IsEmpty())
+		if (ItemList.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("Mission Clear "));
 			InGameScriptRef->ChapterManager->RemoveMission(this);
