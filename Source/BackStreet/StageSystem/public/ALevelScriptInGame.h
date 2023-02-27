@@ -64,6 +64,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void SetMiniMapUI();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void PopUpClearUI();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSubclassOf<class AAssetManagerBase> AssetManagerBP;
