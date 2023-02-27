@@ -92,7 +92,15 @@ void AEnemyCharacterBase::Die()
 	SpawnDeathItems();
 	ClearAllTimerHandle();
 	EnemyDeathDelegate.ExecuteIfBound(this);
-	Controller->Destroy();
+
+	AAIControllerBase* aiControllerRef = Cast<AAIControllerBase>(Controller);
+
+	if (IsValid(aiControllerRef))
+	{
+		aiControllerRef->ClearAllTimerHandle();
+		aiControllerRef->UnPossess();
+		aiControllerRef->Destroy();
+	}
 }
 
 void AEnemyCharacterBase::SetDefaultWeapon()
