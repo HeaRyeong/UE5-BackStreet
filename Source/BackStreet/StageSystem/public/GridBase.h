@@ -33,6 +33,32 @@ private:
 	UFUNCTION(BlueprintCallable)
 		class ATileBase* GetTile(int32 XPosition, int32 YPosition);
 
+public:
+	UFUNCTION()
+		void AddTime();
+
+	UFUNCTION()
+		void PauseTimer();
+
+	UFUNCTION()
+		void UnPauseTimer();
+
+	UFUNCTION()
+		void ClearTimer();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		FTimerHandle GetChapterTimerHandle() { return ChapterTimerHandle; };
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetChpaterTime() { return ChapterTime; };
+
+
+public:
+	UPROPERTY(VisibleAnywhere)
+		FTimerHandle ChapterTimerHandle;
+
+	UPROPERTY(VisibleAnywhere)
+		int32 ChapterTime;
 
 private:
 	UPROPERTY()

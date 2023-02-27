@@ -167,6 +167,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
 		CurrentTile = Stages[0];
+		InGameScriptRef->GetChapterManager()->GetChapter()->UnPauseTimer();
 		LoadStage();
 		break;
 	case EDirection::E_Chapter:

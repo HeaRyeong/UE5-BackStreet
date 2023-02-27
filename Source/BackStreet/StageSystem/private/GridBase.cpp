@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "../public/GridBase.h"
 #include "../public/TileBase.h"
+#include "../../Global/public/BackStreetGameModeBase.h"
 
 void AGridBase::CreateMaze()
 {
@@ -24,6 +25,12 @@ void AGridBase::CreateMaze()
 	Tracks.Add(StageArray[0]);
 	RecursiveBacktracking();
 
+	ChapterTime = 0;
+
+	Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()))->ClearResourceDelegate.AddDynamic(this, &AGridBase::ClearTimer);
+	GetWorldTimerManager().SetTimer(ChapterTimerHandle, this, &AGridBase::AddTime, 1.0f, true);
+	GetWorldTimerManager().PauseTimer(ChapterTimerHandle);
+
 }
 
 void AGridBase::RemoveChapter()
@@ -33,6 +40,7 @@ void AGridBase::RemoveChapter()
 		if (!IsValid(tile)) continue;
 		tile->Destroy();
 	}
+	ClearTimer();
 	Destroy();
 }
 
@@ -115,4 +123,27 @@ ATileBase* AGridBase::GetTile(int32 XPosition, int32 YPosition)
 }
 
 
+void AGridBase::AddTime()
+{
+	ChapterTime++;
+}
+
+
+void AGridBase::PauseTimer()
+{
+	UE_LOG(LogTemp, Log, TEXT("Call Chapter Timer Pause"));
+	GetWorldTimerManager().PauseTimer(ChapterTimerHandle);
+}
+
+void AGridBase::UnPauseTimer()
+{
+	UE_LOG(LogTemp, Log, TEXT("Call Chapter Timer UnPause"));
+	GetWorldTimerManager().UnPauseTimer(ChapterTimerHandle);
+}
+
+void AGridBase::ClearTimer()
+{
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	//GetWorldTimerManager().ClearTimer(StageTimerHandle);
+}
 
