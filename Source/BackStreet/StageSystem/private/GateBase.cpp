@@ -118,7 +118,7 @@ void AGateBase::UpdateNewTile()
 				}), 1.0f, false, 1.0f);
 		}else
 		{
-			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("���� �̼��� �����ֽ��ϴ�, �̼��� Ŭ���� ���ּ���.")), FColor::White);
+			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("미션을 클리어해주세요.")), FColor::White);
 		}
 	}
 	else

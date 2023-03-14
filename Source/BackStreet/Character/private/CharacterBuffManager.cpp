@@ -11,6 +11,7 @@
 #define HEAL_BUFF_TIMER_IDX 16
 #define DEBUFF_DAMAGE_TIMER_IDX 15
 #define MAX_BUFF_INFO_LIST_IDX 24
+#define MAX_BUFF_DEBUFF_TIME 150.0f
 
 ACharacterBuffManager::ACharacterBuffManager()
 {
@@ -43,9 +44,12 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 		|| (!bIsDebuff && GetBuffIsActive((ECharacterBuffType)BuffDebuffType)))
 	{
 		float& resetValue = BuffDebuffResetValueList[GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType)];
+		float remainTime = GetWorldTimerManager().GetTimerRemaining(timerHandle);
+
 		ResetStatBuffDebuffState(bIsDebuff, BuffDebuffType, resetValue);
 		resetValue = 0.0f;
-		return SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, TotalTime, Variable);
+
+		return SetBuffDebuffTimer(bIsDebuff, BuffDebuffType, Causer, FMath::Min(TotalTime + remainTime, MAX_BUFF_DEBUFF_TIME), Variable);
 	}
 
 	/*---- 디버프 타이머 세팅 ----------------------------*/
