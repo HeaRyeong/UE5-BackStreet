@@ -50,7 +50,7 @@ public:
 	UFUNCTION()
 		void RemoveMission(class UMissionBase* target);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		AGridBase* GetChapter() { return CurrentChapter; }
 
 	UFUNCTION()

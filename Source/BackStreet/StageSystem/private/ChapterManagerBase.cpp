@@ -107,20 +107,30 @@ void AChapterManagerBase::RemoveMission(UMissionBase* target)
 {
 	UE_LOG(LogTemp, Log, TEXT("Call RemoveMission !"));
 	Missions.Remove(target);
-	ULevelStreaming* levelRef = StageManager->GetCurrentStage()->LevelRef;
-	ULevel* level = levelRef->GetLoadedLevel();
-	for (AActor* actor : level->Actors)
-	{
-		if (actor != nullptr)
-		{
-			if (actor->ActorHasTag(FName(TEXT("ChapterGate"))))
-			{
-				UE_LOG(LogTemp, Log, TEXT("RemoveMission : Find Gate!"));
-				Cast<AGateBase>(actor)->ActiveGate();
-			}
-		}
 
+	if (IsChapterClear())
+	{
+		ULevelStreaming* levelRef = StageManager->GetCurrentStage()->LevelRef;
+			ULevel* level = levelRef->GetLoadedLevel();
+			for (AActor* actor : level->Actors)
+			{
+				if (actor != nullptr)
+				{
+					if (actor->ActorHasTag(FName(TEXT("ChapterGate"))))
+					{
+						UE_LOG(LogTemp, Log, TEXT("RemoveMission : Find Gate!"));
+						Cast<AGateBase>(actor)->ActiveGate();
+					}
+				}
+
+			}
+
+			// Chapter Timer Pause
+			CurrentChapter->PauseTimer();
+			// Chapter Clear UI Call 
+			InGameScriptRef->PopUpClearUI();
 	}
+	
 }
 
 void AChapterManagerBase::CreateChapter()
@@ -190,6 +200,7 @@ void AChapterManagerBase::CreateMission()
 void AChapterManagerBase::CleanChapterManager()
 {
 	UE_LOG(LogTemp, Log, TEXT("Remove Chapter"));
+
 	StageManager->CleanManager();
 	CurrentChapter->RemoveChapter();
 }

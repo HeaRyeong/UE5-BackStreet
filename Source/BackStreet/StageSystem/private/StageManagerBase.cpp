@@ -81,7 +81,7 @@ void AStageManagerBase::CleanManager()
 		for (AEnemyCharacterBase* remove : target->GetMonsterList())
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(remove);
-			remove->Destroy();
+			remove->Die();
 		}
 
 		for (int32 i = 0; i < itemBoxList.Num(); i++)
@@ -110,14 +110,14 @@ void AStageManagerBase::CleanManager()
 			remove->Destroy();
 	}
 
-	TArray<AActor*> weapons;
+	/*TArray<AActor*> weapons;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), weapons);
 
 	for (AActor* remove : weapons)
 	{
 		if (remove != nullptr)
 			remove->Destroy();
-	}
+	}*/
 
 
 	Stages.Empty();
@@ -167,6 +167,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
 		CurrentTile = Stages[0];
+		InGameScriptRef->GetChapterManager()->GetChapter()->UnPauseTimer();
 		LoadStage();
 		break;
 	case EDirection::E_Chapter:

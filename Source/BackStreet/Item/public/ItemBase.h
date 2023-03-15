@@ -9,6 +9,7 @@
 #define MAX_WEAPON_TYPE 6
 #define MAX_PROJECTILE_TYPE 2
 
+DECLARE_DELEGATE_OneParam(FDeleSpawnMissionItem, class AItemBase*);
 DECLARE_DELEGATE_OneParam(FDelePickItem, AActor*);
 
 UCLASS()
@@ -19,6 +20,8 @@ class BACKSTREET_API AItemBase : public AActor
 // ------ DELEGATE, Static Member ---------------------------------------
 public:
 	FDelePickItem OnPlayerBeginPickUp;
+
+	FDeleSpawnMissionItem Dele_MissionItemSpawned;
 
 	UFUNCTION(BlueprintCallable)
 		static int32 GetTargetItemKey(int32 Type, uint8 ItemID) { return Type * 1000 + ItemID; }
