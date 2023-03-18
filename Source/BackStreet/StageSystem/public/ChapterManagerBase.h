@@ -62,6 +62,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		AStageManagerBase* GetStageManager() { return StageManager; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		TArray<class UMissionBase*> GetMissions() { return Missions; }
+
 private:
 	UFUNCTION()
 		void CreateChapter();

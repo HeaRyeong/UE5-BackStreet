@@ -110,6 +110,16 @@ void AStageManagerBase::CleanManager()
 			remove->Destroy();
 	}
 
+<<<<<<< HEAD
+	//TArray<AActor*> weapons;
+	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), weapons);
+
+	//for (AActor* remove : weapons)
+	//{
+	//	if (remove != nullptr)
+	//		remove->Destroy();
+	//}
+=======
 	/*TArray<AActor*> weapons;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), weapons);
 
@@ -118,6 +128,7 @@ void AStageManagerBase::CleanManager()
 		if (remove != nullptr)
 			remove->Destroy();
 	}*/
+>>>>>>> 40c1fb8e3d1a8121b783a9464972fc7ce6848b09
 
 
 	Stages.Empty();

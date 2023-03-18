@@ -29,6 +29,9 @@ public:
 
 	UFUNCTION()
 		bool TryRemoveMonster(class AEnemyCharacterBase* target);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetMissionType() { return (int32)Type; }
 	
 public:
 	// 1 or 2 or 3, 1 == Item 습득 미션, 2 == 몬스터 잡기 미션 , 3 == 보스
