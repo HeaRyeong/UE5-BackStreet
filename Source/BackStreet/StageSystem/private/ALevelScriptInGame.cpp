@@ -6,6 +6,7 @@
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Global/public/AssetManagerBase.h"
 #include "../../Character/public/MainCharacterBase.h"
+#include "../public/MissionBase.h"
 
 ALevelScriptInGame::ALevelScriptInGame()
 {
