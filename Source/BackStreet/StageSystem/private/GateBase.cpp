@@ -118,11 +118,7 @@ void AGateBase::UpdateNewTile()
 				}), 1.0f, false, 1.0f);
 		}else
 		{
-<<<<<<< HEAD
-			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("아직 미션이 남았습니다, 미션을 클리어 해주세요.")), FColor::White);
-=======
 			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("미션을 클리어해주세요.")), FColor::White);
->>>>>>> 40c1fb8e3d1a8121b783a9464972fc7ce6848b09
 		}
 	}
 	else
