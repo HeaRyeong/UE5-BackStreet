@@ -10,6 +10,7 @@
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateStageClear);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateMissionClear);
 
 UCLASS()
 class BACKSTREET_API ALevelScriptInGame : public ALevelScriptActor
@@ -22,6 +23,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateStageClear FadeOutDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateMissionClear MissionClearDelegate;
 
 public:
 	ALevelScriptInGame();
@@ -57,6 +61,9 @@ public:
 public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void FadeOut();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void UpdateMissionUI(class UMissionBase* target);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void UpdateMiniMapUI();

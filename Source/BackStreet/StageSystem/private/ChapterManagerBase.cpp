@@ -107,6 +107,7 @@ void AChapterManagerBase::RemoveMission(UMissionBase* target)
 {
 	UE_LOG(LogTemp, Log, TEXT("Call RemoveMission !"));
 	Missions.Remove(target);
+	InGameScriptRef->UpdateMissionUI(target);
 
 	if (IsChapterClear())
 	{
@@ -129,6 +130,7 @@ void AChapterManagerBase::RemoveMission(UMissionBase* target)
 			CurrentChapter->PauseTimer();
 			// Chapter Clear UI Call 
 			InGameScriptRef->PopUpClearUI();
+
 	}
 	
 }
