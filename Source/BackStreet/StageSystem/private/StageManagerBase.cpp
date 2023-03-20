@@ -109,28 +109,6 @@ void AStageManagerBase::CleanManager()
 		if (remove != nullptr)
 			remove->Destroy();
 	}
-
-<<<<<<< HEAD
-	//TArray<AActor*> weapons;
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), weapons);
-
-	//for (AActor* remove : weapons)
-	//{
-	//	if (remove != nullptr)
-	//		remove->Destroy();
-	//}
-=======
-	/*TArray<AActor*> weapons;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWeaponBase::StaticClass(), weapons);
-
-	for (AActor* remove : weapons)
-	{
-		if (remove != nullptr)
-			remove->Destroy();
-	}*/
->>>>>>> 40c1fb8e3d1a8121b783a9464972fc7ce6848b09
-
-
 	Stages.Empty();
 	CurrentTile = nullptr;
 }
@@ -191,7 +169,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 		break;
 	}
 
-	// UI ¾÷µ¥ÀÌÆ®
+	// UI ì—…ë°ì´íŠ¸
 	InGameScriptRef->UpdateMiniMapUI();
 
 }
@@ -235,7 +213,7 @@ void AStageManagerBase::UnLoadStage()
 
 
 
-	if (UnloadLevel != nullptr) // ·¹º§ ½ºÆ®¸®¹Ö ÀÎ½ºÅÏ½º Á¸Àç
+	if (UnloadLevel != nullptr) // ë ˆë²¨ ìŠ¤íŠ¸ë¦¬ë° ì¸ìŠ¤í„´ìŠ¤ ì¡´ìž¬
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
 		UnloadLevel->SetShouldBeLoaded(false);
