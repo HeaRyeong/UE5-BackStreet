@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "../public/CharacterBuffManager.h"
+#include "../public/BuffDebuffManager.h"
 #include "../public/CharacterBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
@@ -13,13 +13,13 @@
 #define MAX_BUFF_INFO_LIST_IDX 24
 #define MAX_BUFF_DEBUFF_TIME 150.0f
 
-ACharacterBuffManager::ACharacterBuffManager()
+ABuffDebuffManager::ABuffDebuffManager()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DEFAULT_SCENE_ROOT"));
 	SetActorTickEnabled(false);
 }
 
-void ACharacterBuffManager::BeginPlay()
+void ABuffDebuffManager::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -30,7 +30,7 @@ void ACharacterBuffManager::BeginPlay()
 	}
 }
 
-bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
+bool ABuffDebuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 
@@ -142,7 +142,7 @@ bool ACharacterBuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffT
 	return false;
 }
 
-void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
+void ABuffDebuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffDebuffType, float ResetVal)
 {
 	if (!IsValid(OwnerCharacterRef)) return;
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
@@ -209,13 +209,13 @@ void ACharacterBuffManager::ResetStatBuffDebuffState(bool bIsDebuff, uint8 BuffD
 	ClearBuffDebuffTimer(bIsDebuff, BuffDebuffType);
 }
 
-void ACharacterBuffManager::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
+void ABuffDebuffManager::ClearBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	if (!IsValid(OwnerCharacterRef)) return;
 	GetWorldTimerManager().ClearTimer(GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType));
 }
 
-void ACharacterBuffManager::ClearAllBuffDebuffTimer(bool bIsDebuff)
+void ABuffDebuffManager::ClearAllBuffDebuffTimer(bool bIsDebuff)
 {
 	const uint16 startIdx = bIsDebuff ? MAX_BUFF_IDX + 2 : 0;
 	const uint16 endIdx = bIsDebuff ? startIdx + MAX_DEBUFF_IDX : MAX_BUFF_IDX + 1;
@@ -226,53 +226,53 @@ void ACharacterBuffManager::ClearAllBuffDebuffTimer(bool bIsDebuff)
 	}
 }
 
-void ACharacterBuffManager::InitBuffManager(ACharacterBase* NewOwnerRef)
+void ABuffDebuffManager::InitBuffManager(ACharacterBase* NewOwnerRef)
 {
 	if (!IsValid(NewOwnerRef)) return;
 	SetOwner(NewOwnerRef);
 	OwnerCharacterRef = NewOwnerRef;
 }
 
-bool ACharacterBuffManager::SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime, float Variable)
+bool ABuffDebuffManager::SetBuffTimer(ECharacterBuffType BuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
 	return SetBuffDebuffTimer(false, (uint8)BuffType, Causer, TotalTime, Variable);
 }
 
-bool ACharacterBuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Variable)
+bool ABuffDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Variable)
 {
 	if (!IsValid(Causer) || TotalTime == 0.0f) return false;
 	return SetBuffDebuffTimer(true, (uint8)DebuffType, Causer, TotalTime, Variable);
 }
 
-bool ACharacterBuffManager::GetDebuffIsActive(ECharacterDebuffType DebuffType)
+bool ABuffDebuffManager::GetDebuffIsActive(ECharacterDebuffType DebuffType)
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 	if (OwnerCharacterRef->GetCharacterState().CharacterDebuffState & (1 << (int)DebuffType)) return true;
 	return false;
 }
 
-bool ACharacterBuffManager::GetBuffIsActive(ECharacterBuffType BuffType)
+bool ABuffDebuffManager::GetBuffIsActive(ECharacterBuffType BuffType)
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 	if (OwnerCharacterRef->GetCharacterState().CharacterBuffState & (1 << (int)BuffType)) return true;
 	return false;
 }
 
-float ACharacterBuffManager::GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType)
+float ABuffDebuffManager::GetBuffRemainingTime(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	FTimerHandle& targetBuffTimer = GetBuffDebuffTimerHandleRef(bIsDebuff, BuffDebuffType);
 	return GetWorldTimerManager().GetTimerRemaining(targetBuffTimer);
 }
 
-FTimerHandle& ACharacterBuffManager::GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType)
+FTimerHandle& ABuffDebuffManager::GetBuffDebuffTimerHandleRef(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	int16 targetListIdx = GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType);
 	return BuffDebuffTimerHandleList.IsValidIndex(targetListIdx) ? BuffDebuffTimerHandleList[targetListIdx]
 																	: BuffDebuffTimerHandleList[MAX_BUFF_INFO_LIST_IDX];
 }
 
-int16 ACharacterBuffManager::GetBuffDebuffInfoListIndex(bool bIsDebuff, uint8 BuffDebuffType)
+int16 ABuffDebuffManager::GetBuffDebuffInfoListIndex(bool bIsDebuff, uint8 BuffDebuffType)
 {
 	return bIsDebuff ? BuffDebuffType + MAX_BUFF_IDX + 1 : BuffDebuffType;
 }

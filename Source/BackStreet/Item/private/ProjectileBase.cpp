@@ -4,7 +4,7 @@
 #include "../public/ProjectileBase.h"
 #include "../public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "../../Character/public/CharacterBuffManager.h"
+#include "../../Character/public/BuffDebuffManager.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"

@@ -3,7 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "../../Character/public/CharacterBuffManager.h"
+#include "../../Character/public/BuffDebuffManager.h"
 #include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6

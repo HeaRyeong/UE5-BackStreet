@@ -4,17 +4,17 @@
 
 #include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
-#include "CharacterBuffManager.generated.h"
+#include "BuffDebuffManager.generated.h"
 /**
  * 
  */
 UCLASS()
-class BACKSTREET_API ACharacterBuffManager : public AActor
+class BACKSTREET_API ABuffDebuffManager : public AActor
 {
 	GENERATED_BODY()
 public:
 	// Sets default values for this character's properties
-	ACharacterBuffManager();
+	ABuffDebuffManager();
 
 protected:
 	// Called when the game starts or when spawned
@@ -66,7 +66,7 @@ public:
 		int16 GetBuffDebuffInfoListIndex(bool bIsDebuff, uint8 BuffDebuffType);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		ACharacterBuffManager* GetCharacterBuffManager() { return this; }
+		ABuffDebuffManager* GetCharacterBuffManager() { return this; }
 
 private:
 	UPROPERTY()

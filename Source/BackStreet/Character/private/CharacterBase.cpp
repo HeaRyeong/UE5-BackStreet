@@ -1,5 +1,5 @@
 #include "../public/CharacterBase.h"
-#include "../public/CharacterBuffManager.h"
+#include "../public/BuffDebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -27,7 +27,7 @@ void ACharacterBase::BeginPlay()
 	InitCharacterState();
 
 	InventoryRef = Cast<AWeaponInventoryBase>(InventoryComponent->GetChildActor());
-	BuffManagerRef = Cast<ACharacterBuffManager>(BuffManagerComponent->GetChildActor());
+	BuffManagerRef = Cast<ABuffDebuffManager>(BuffManagerComponent->GetChildActor());
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
 	if (IsValid(GetInventoryRef()) && IsValid(BuffManagerRef))

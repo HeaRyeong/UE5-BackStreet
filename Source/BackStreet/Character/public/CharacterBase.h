@@ -98,7 +98,7 @@ public:
 		FCharacterStateStruct GetCharacterState() { return CharacterState; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		class ACharacterBuffManager* GetBuffManagerRef() { return BuffManagerRef; };
+		class ABuffDebuffManager* GetBuffManagerRef() { return BuffManagerRef; };
 
 // ------ 무기 관련 -------------------------------------------
 public:
@@ -171,7 +171,7 @@ protected:
 		class AWeaponInventoryBase* InventoryRef;
 
 	UPROPERTY()
-		class ACharacterBuffManager* BuffManagerRef;
+		class ABuffDebuffManager* BuffManagerRef;
 
 // ----- 타이머 관련 ---------------------------------
 protected:
