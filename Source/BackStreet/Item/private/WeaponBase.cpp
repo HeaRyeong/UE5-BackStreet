@@ -3,7 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "../../Character/public/BuffDebuffManager.h"
+#include "../../Global/public/BuffDebuffManager.h"
 #include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
@@ -285,7 +285,7 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
+		//(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

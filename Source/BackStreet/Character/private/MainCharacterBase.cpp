@@ -3,7 +3,7 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/MainCharacterController.h"
-#include "../public/BuffDebuffManager.h"
+#include "../../Global/public/BuffDebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/ItemBase.h"
@@ -317,7 +317,7 @@ bool AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, 
 		UGameplayStatics::PlaySoundAtLocation(this, bIsDebuff ? DebuffSound : BuffSound, GetActorLocation());
 		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
 	}
-	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
+	//ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 
 	GetWorld()->GetTimerManager().ClearTimer(BuffEffectResetTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(BuffEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {

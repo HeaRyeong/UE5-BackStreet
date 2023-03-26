@@ -1,5 +1,5 @@
 #include "../public/CharacterBase.h"
-#include "../public/BuffDebuffManager.h"
+#include "../../Global/public/BuffDebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -27,14 +27,12 @@ void ACharacterBase::BeginPlay()
 	InitCharacterState();
 
 	InventoryRef = Cast<AWeaponInventoryBase>(InventoryComponent->GetChildActor());
-	BuffManagerRef = Cast<ABuffDebuffManager>(BuffManagerComponent->GetChildActor());
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
-	if (IsValid(GetInventoryRef()) && IsValid(BuffManagerRef))
+	if (IsValid(GetInventoryRef()))
 	{
 		GetInventoryRef()->SetOwner(this);
 		GetInventoryRef()->InitInventory();
-		BuffManagerRef->InitBuffManager(this);
 	}
 	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
@@ -61,23 +59,34 @@ void ACharacterBase::InitCharacterState()
 
 bool ACharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	if (!IsValid(GetBuffManagerRef())) return false;
+	if (!IsValid(GamemodeRef)) return false;
+	if(!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
 
-	bool result = !bIsDebuff ? GetBuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, Causer, TotalTime, Value)
-							: GetBuffManagerRef()->SetDebuffTimer((ECharacterDebuffType)BuffDebuffType, Causer, TotalTime, Value);
-	return result;
+	if (bIsDebuff)
+	{
+		GamemodeRef->GetGlobalBuffDebuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, this, Causer, TotalTime, Value);
+	}
+	else
+	{
+		GamemodeRef->GetGlobalBuffDebuffManagerRef()->SetDebuffTimer((ECharacterDebuffType)BuffDebuffType, this, Causer, TotalTime, Value);
+	}
+
+	return true;
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
 {
-	if (!IsValid(GetBuffManagerRef())) return false;
-	return GetBuffManagerRef()->GetDebuffIsActive(DebuffType);
+	if (!IsValid(GamemodeRef)) return false;
+	if (!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
+	return	GamemodeRef->GetGlobalBuffDebuffManagerRef()->GetDebuffIsActive(DebuffType, this);
 }
 
 bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
 {
-	if (!IsValid(GetBuffManagerRef())) return false;
-	return GetBuffManagerRef()->GetBuffIsActive(BuffType);
+	if (!IsValid(GamemodeRef)) return false;
+	if (!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
+	GamemodeRef->GetGlobalBuffDebuffManagerRef()->GetBuffIsActive(BuffType, this);
+	return false;
 }
 
 void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
@@ -150,11 +159,6 @@ void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffDe
 
 void ACharacterBase::Die()
 {
-	if (IsValid(GetBuffManagerRef()))
-	{
-		GetBuffManagerRef()->ClearAllBuffDebuffTimer(true);
-		GetBuffManagerRef()->ClearAllBuffDebuffTimer(false);
-	}
 	if (IsValid(GetInventoryRef()))
 	{
 		GetInventoryRef()->RemoveCurrentWeapon();
@@ -299,8 +303,6 @@ AWeaponBase* ACharacterBase::GetWeaponActorRef()
 
 void ACharacterBase::ClearAllTimerHandle()
 {
-	GetBuffManagerRef()->ClearAllBuffDebuffTimer(false);
-	GetBuffManagerRef()->ClearAllBuffDebuffTimer(true);
 	GetWorldTimerManager().ClearTimer(AtkIntervalHandle);
 	GetWorldTimerManager().ClearTimer(ReloadTimerHandle);
 }

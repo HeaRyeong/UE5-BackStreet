@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "../public/BackStreetGameModeBase.h"
+#include "../public/BuffDebuffManager.h"
 #include "../../StageSystem/public/GridBase.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../StageSystem/public/ChapterManagerBase.h"
@@ -25,7 +26,6 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 	{
 		StageTypeTable = StageTypeDataTable.Object;
 	}
-
 }
 
 void ABackStreetGameModeBase::BeginPlay()
@@ -36,6 +36,12 @@ void ABackStreetGameModeBase::BeginPlay()
 	//------ Ref 멤버 초기화  ---------------
 	PlayerCharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+	//------ Global Buff/Debuff Manager 초기화 --------
+	if (IsValid(BuffDebuffManager))
+	{
+		BuffDebuffManager = NewObject<UBuffDebuffManager>(this, UBuffDebuffManager::StaticClass(), FName("BuffDebuffManager"));
+		BuffDebuffManager->InitBuffManager(this);
+	}
 }
 
 
