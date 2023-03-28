@@ -37,11 +37,9 @@ void ABackStreetGameModeBase::BeginPlay()
 	PlayerCharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	//------ Global Buff/Debuff Manager √ ±‚»≠ --------
-	if (IsValid(BuffDebuffManager))
-	{
-		BuffDebuffManager = NewObject<UBuffDebuffManager>(this, UBuffDebuffManager::StaticClass(), FName("BuffDebuffManager"));
-		BuffDebuffManager->InitBuffManager(this);
-	}
+	BuffDebuffManager = NewObject<UBuffDebuffManager>(this, UBuffDebuffManager::StaticClass(), FName("BuffDebuffManager"));
+	UE_LOG(LogTemp, Warning, TEXT("TryActivate BuffManager #1"));
+	BuffDebuffManager->InitBuffManager(this);
 }
 
 

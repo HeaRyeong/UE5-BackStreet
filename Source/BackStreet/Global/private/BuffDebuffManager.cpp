@@ -83,7 +83,7 @@ bool UBuffDebuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType
 		Target->UpdateCharacterStat(characterStat);
 		Target->UpdateCharacterState(characterState);
 
-		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
+		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Target, Variable);
 		GamemodeRef->GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 0.1f, false, TotalTime);
 
 		return true;
@@ -124,7 +124,7 @@ bool UBuffDebuffManager::SetBuffDebuffTimer(bool bIsDebuff, uint8 BuffDebuffType
 		}
 		(GetResetValueListRef(Target))[GetBuffDebuffInfoListIndex(bIsDebuff, BuffDebuffType)] = Variable;
 
-		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Variable);
+		timerDelegate.BindUFunction(this, FName("ResetStatBuffDebuffState"), bIsDebuff, BuffDebuffType, Target, Variable);
 		GamemodeRef->GetWorldTimerManager().SetTimer(timerHandle, timerDelegate, 0.1f, false, TotalTime);
 
 		Target->UpdateCharacterStat(characterStat);
@@ -226,7 +226,10 @@ void UBuffDebuffManager::ClearAllBuffDebuffTimer(bool bIsDebuff)
 
 void UBuffDebuffManager::InitBuffManager(ABackStreetGameModeBase* NewGamemodeRef)
 {
+	UE_LOG(LogTemp, Warning, TEXT("TryActivate BuffManager #2"));
 	if (!IsValid(NewGamemodeRef)) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("TryActivate BuffManager #3"));
 
 	for (int newTimerIdx = 0; newTimerIdx <= MAX_BUFF_INFO_LIST_IDX; newTimerIdx += 1)
 	{

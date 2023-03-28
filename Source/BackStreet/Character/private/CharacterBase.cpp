@@ -62,7 +62,7 @@ bool ACharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AAct
 	if (!IsValid(GamemodeRef)) return false;
 	if(!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
 
-	if (bIsDebuff)
+	if (!bIsDebuff)
 	{
 		GamemodeRef->GetGlobalBuffDebuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, this, Causer, TotalTime, Value);
 	}
