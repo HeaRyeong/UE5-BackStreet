@@ -9,7 +9,7 @@
 #include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
-#include "../../Character/public/BuffDebuffManager.h"
+#include "../../Global/public/BuffDebuffManager.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 #define DEFAULT_ITEM_LAUNCH_SPEED 500.0f

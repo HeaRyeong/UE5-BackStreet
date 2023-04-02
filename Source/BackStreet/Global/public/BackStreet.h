@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+#include "TimerManager.h"
 
 /* ----- Niagara 및 사운드 --------*/
 #include "Sound/SoundCue.h"
