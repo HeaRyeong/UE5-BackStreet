@@ -31,6 +31,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 		UChildActorComponent* BuffManagerComponent;
 
+
 // ------- Character Action 기본 ------- 
 public:
 	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
@@ -96,9 +97,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStateStruct GetCharacterState() { return CharacterState; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		class ACharacterBuffManager* GetBuffManagerRef() { return BuffManagerRef; };
 
 // ------ 무기 관련 -------------------------------------------
 public:
@@ -169,9 +167,6 @@ protected:
 
 	UPROPERTY()
 		class AWeaponInventoryBase* InventoryRef;
-
-	UPROPERTY()
-		class ACharacterBuffManager* BuffManagerRef;
 
 // ----- 타이머 관련 ---------------------------------
 protected:

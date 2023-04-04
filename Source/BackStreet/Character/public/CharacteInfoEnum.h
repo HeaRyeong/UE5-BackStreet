@@ -1,6 +1,12 @@
 #pragma once
 
 UENUM(BlueprintType)
+enum class ECharacterAbilityType : uint8
+{
+	E_None		UMETA(DisplayName = "None")
+};
+
+UENUM(BlueprintType)
 enum class ECharacterDebuffType : uint8
 {
 	E_None				UMETA(DisplayName = "None"),

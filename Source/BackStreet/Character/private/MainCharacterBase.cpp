@@ -3,7 +3,7 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/MainCharacterController.h"
-#include "../public/CharacterBuffManager.h"
+#include "../../Global/public/BuffDebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/ItemBase.h"
