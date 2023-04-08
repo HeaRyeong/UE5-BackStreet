@@ -3,7 +3,7 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/MainCharacterController.h"
-#include "../../Global/public/BuffDebuffManager.h"
+#include "../../Global/public/DebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/ItemBase.h"
@@ -308,16 +308,15 @@ void AMainCharacterBase::DropWeapon()
 	Super::DropWeapon();
 }
 
-bool AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool AMainCharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	if (!Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value)) return false;
+	if (!Super::AddNewDebuff(DebuffType, Causer, TotalTime, Value)) return false;
 
 	if (DebuffSound && BuffSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, bIsDebuff ? DebuffSound : BuffSound, GetActorLocation());
-		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
+		UGameplayStatics::PlaySoundAtLocation(this, DebuffSound, GetActorLocation());
 	}
-	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
+	//ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 
 	GetWorld()->GetTimerManager().ClearTimer(BuffEffectResetTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(BuffEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {

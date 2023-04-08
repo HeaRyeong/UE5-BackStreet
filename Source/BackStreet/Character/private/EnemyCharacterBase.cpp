@@ -54,9 +54,9 @@ void AEnemyCharacterBase::InitEnemyStat()
 	SetDefaultStat();
 }
 
-bool AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool AEnemyCharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	return Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
+	return Super::AddNewDebuff(DebuffType, Causer, TotalTime, Value);
 }
 
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -66,6 +66,15 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	if (!IsValid(DamageCauser) || !DamageCauser->ActorHasTag("Player") || damageAmount <= 0.0f) return 0.0f;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitImpactSound, GetActorLocation());
 	EnemyDamageDelegate.ExecuteIfBound(DamageCauser);
+
+	//------------넉백 테스트 코드 230403 ------------
+	/*const float knockBackStrength = 500000.0f; //스펠링?
+	FVector knockBackDirection = GetActorLocation() - DamageCauser->GetActorLocation();
+	knockBackDirection = knockBackDirection.GetSafeNormal();
+	knockBackDirection *= knockBackStrength;
+	knockBackDirection.Z = 0.0f;
+
+	GetCharacterMovement()->AddImpulse(knockBackDirection);*/
 
 	return damageAmount;
 }

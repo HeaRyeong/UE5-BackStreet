@@ -50,7 +50,7 @@ public:
 
 	//캐릭터의 디버프 상태 (Bit-Field로 표현)
 	UPROPERTY(BlueprintReadOnly)
-		int32 CharacterDebuffState = (1<<10);
+		int32 CharacterDebuffState = (1 << 10);
 
 	//캐릭터의 버프 상태
 	UPROPERTY(BlueprintReadOnly)

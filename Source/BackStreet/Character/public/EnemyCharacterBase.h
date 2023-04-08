@@ -89,7 +89,7 @@ public:
 		void InitEnemyStat();
 
 	UFUNCTION(BlueprintCallable)
-		virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+		virtual	bool AddNewDebuff(ECharacterDebuffType BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 protected:
 	UFUNCTION()
