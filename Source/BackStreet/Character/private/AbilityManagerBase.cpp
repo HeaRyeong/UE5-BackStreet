@@ -2,37 +2,66 @@
 
 
 #include "../public/AbilityManagerBase.h"
+#include "../../Character/public/CharacterBase.h"
 
 // Sets default values
-AAbilityManagerBase::AAbilityManagerBase()
+UAbilityManagerBase::UAbilityManagerBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
-}
-
-// Called when the game starts or when spawned
-void AAbilityManagerBase::BeginPlay()
-{
-	Super::BeginPlay();
 	
 }
 
-bool AAbilityManagerBase::TryAddNewAbility(ECharacterAbilityType NewAbility)
+void UAbilityManagerBase::InitAbilityManager()
 {
+	if (IsValid(GetOuter())) return;
+	OwnerCharacterRef = Cast<ACharacterBase>(GetOuter());
+}
+
+bool UAbilityManagerBase::TryAddNewAbility(ECharacterAbilityType NewAbilityType)
+{
+	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
+	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
+	FTimerDelegate healTimerDelegate;
+
+	CharacterAbilityState |= (1 << (int)NewAbilityType);
+
+	switch ((ECharacterAbilityType)NewAbilityType)
+	{
+		//----힐 버프-------------------
+	case ECharacterAbilityType::E_Healing:
+		healTimerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), 1.0f, true, NewAbilityType);
+		OwnerCharacterRef->GetWorldTimerManager().SetTimer(HealTimerHandle, healTimerDelegate, 1.0f, true);
+		break;
+		//----스탯 조정 버프-------------------
+	case ECharacterAbilityType::E_AttackUp:
+		characterStat.CharacterAtkMultiplier *= 1.25f;
+		break;
+	case ECharacterAbilityType::E_DefenseUp:
+		characterStat.CharacterDefense *= 1.25f;
+		break;
+	case ECharacterAbilityType::E_SpeedUp:
+		characterStat.CharacterMoveSpeed *= 1.25f;
+		characterStat.CharacterAtkSpeed *= 1.25f;
+		break;
+	case ECharacterAbilityType::E_Invincibility:
+		characterStat.bIsInvincibility = true;
+		break;
+	case ECharacterAbilityType::E_Infinite:
+		characterStat.bInfinite = true;
+		break;
+	}
+	OwnerCharacterRef->UpdateCharacterStat(characterStat);
+	OwnerCharacterRef->UpdateCharacterState(characterState);
+
 	return false;
 }
 
-bool AAbilityManagerBase::RemoveAbility(ECharacterAbilityType TargetAbilityType)
+bool UAbilityManagerBase::RemoveAbility(ECharacterAbilityType TargetAbilityType)
 {
+	CharacterAbilityState &= ~(1 << (int)TargetAbilityType);
 	return false;
 }
 
-bool AAbilityManagerBase::TryActivateAbility(ECharacterAbilityType TargetAbilityType)
+void UAbilityManagerBase::ClearAllAbility()
 {
-	return false;
-}
-
-void AAbilityManagerBase::ClearAllAbility()
-{
-
+	CharacterAbilityState = (1 << 10);
 }

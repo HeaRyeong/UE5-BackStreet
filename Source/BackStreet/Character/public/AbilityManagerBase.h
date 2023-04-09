@@ -3,30 +3,26 @@
 #pragma once
 
 #include "../../Global/public/BackStreet.h"
-#include "GameFramework/Actor.h"
 #include "AbilityManagerBase.generated.h"
 
 UCLASS()
-class BACKSTREET_API AAbilityManagerBase : public AActor
+class BACKSTREET_API UAbilityManagerBase : public UObject
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AAbilityManagerBase();
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UAbilityManagerBase();
 
 public:
+	UFUNCTION()
+		void InitAbilityManager();
+
 	UFUNCTION()
 		bool TryAddNewAbility(ECharacterAbilityType NewAbilityType);
 
 	UFUNCTION()
 		bool RemoveAbility(ECharacterAbilityType TargetAbilityType);
-
-	UFUNCTION()
-		bool TryActivateAbility(ECharacterAbilityType TargetAbilityType);
 
 	UFUNCTION()
 		void ClearAllAbility();
@@ -36,13 +32,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 1, UIMax = 5))
 		int32 MaxAbilityCount = 3;
 
-	
-
 private:
-	//현재 플레이어가 소유한 어빌리티의 
+	//현재 플레이어가 소유한 어빌리티의 종류
 	UPROPERTY()
-		TSet<ECharacterAbilityType> AbilityList;
+		int32 CharacterAbilityState = (1 << 10);
+
+	UPROPERTY()
+		TArray<float> ResetStatValueList;
 
 	UPROPERTY()
 		int32 CurrentAbilityCount = 0;
+
+	UPROPERTY()
+		class ACharacterBase* OwnerCharacterRef;
+
+	UPROPERTY()
+		FTimerHandle HealTimerHandle;
 };
