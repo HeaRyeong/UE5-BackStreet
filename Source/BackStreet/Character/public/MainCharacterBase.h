@@ -20,6 +20,12 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	//테스트용 코드
+	UFUNCTION(BlueprintCallable)
+		void ActivateHealAbility();
+	UFUNCTION(BlueprintCallable)
+		void DeactivateHealAbility();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -161,6 +167,9 @@ public:
 	virtual void ClearAllTimerHandle() override;
 
 private:
+	UPROPERTY()
+		class UAbilityManagerBase* AbilityManagerRef;
+
 	UPROPERTY()
 		class AMainCharacterController* PlayerControllerRef;
 

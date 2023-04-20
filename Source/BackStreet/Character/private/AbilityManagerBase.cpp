@@ -10,28 +10,35 @@ UAbilityManagerBase::UAbilityManagerBase()
 	
 }
 
-void UAbilityManagerBase::InitAbilityManager()
+void UAbilityManagerBase::InitAbilityManager(ACharacterBase* NewCharacter)
 {
-	if (IsValid(GetOuter())) return;
-	OwnerCharacterRef = Cast<ACharacterBase>(GetOuter());
+	if (!IsValid(NewCharacter)) return;
+	UE_LOG(LogTemp, Warning, TEXT("Initialize Ability Manager Success"));
+	OwnerCharacterRef = NewCharacter;
 }
 
-bool UAbilityManagerBase::TryAddNewAbility(ECharacterAbilityType NewAbilityType)
+bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilityType)
 {
+	if (!IsValid(OwnerCharacterRef)) return false; 
 	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
 	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
-	FTimerDelegate healTimerDelegate;
 
-	CharacterAbilityState |= (1 << (int)NewAbilityType);
+	if (GetIsAbilityActive(NewAbilityType)) return false;
+	if(ActiveAbilityList.Num() >= MaxAbilityCount) return false;
 
-	switch ((ECharacterAbilityType)NewAbilityType)
+	FAbilityInfoStruct newAbilityInfo = GetAbilityInfo(NewAbilityType);
+	newAbilityInfo.AbilityId = (uint8)NewAbilityType;
+	if (newAbilityInfo.AbilityId == -1) return false;
+
+	//레거시 코드(...)
+	switch (NewAbilityType)
 	{
-		//----힐 버프-------------------
+	//----힐 버프-------------------
 	case ECharacterAbilityType::E_Healing:
-		healTimerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), 1.0f, true, NewAbilityType);
-		OwnerCharacterRef->GetWorldTimerManager().SetTimer(HealTimerHandle, healTimerDelegate, 1.0f, true);
+		newAbilityInfo.TimerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), 1.0f, true, NewAbilityType);
+		OwnerCharacterRef->GetWorldTimerManager().SetTimer(newAbilityInfo.TimerHandle, newAbilityInfo.TimerDelegate, 1.0f, true);
 		break;
-		//----스탯 조정 버프-------------------
+	//----스탯 조정 버프-------------------
 	case ECharacterAbilityType::E_AttackUp:
 		characterStat.CharacterAtkMultiplier *= 1.25f;
 		break;
@@ -51,17 +58,85 @@ bool UAbilityManagerBase::TryAddNewAbility(ECharacterAbilityType NewAbilityType)
 	}
 	OwnerCharacterRef->UpdateCharacterStat(characterStat);
 	OwnerCharacterRef->UpdateCharacterState(characterState);
+	ActiveAbilityList.Add(newAbilityInfo);
 
-	return false;
+	return true;
 }
 
-bool UAbilityManagerBase::RemoveAbility(ECharacterAbilityType TargetAbilityType)
+bool UAbilityManagerBase::TryRemoveAbility(const ECharacterAbilityType TargetAbilityType)
 {
-	CharacterAbilityState &= ~(1 << (int)TargetAbilityType);
-	return false;
+	if (!IsValid(OwnerCharacterRef)) return false;
+	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
+	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
+
+	if (!GetIsAbilityActive(TargetAbilityType)) return false;
+	if (ActiveAbilityList.Num() >= MaxAbilityCount) return false;
+
+	FAbilityInfoStruct targetAbilityInfo = GetAbilityInfo(TargetAbilityType);
+	targetAbilityInfo.AbilityId = (uint8)TargetAbilityType;
+	if (targetAbilityInfo.AbilityId == -1) return false;
+	
+	for (int idx = 0; idx < ActiveAbilityList.Num(); idx++)
+	{
+		const FAbilityInfoStruct& abilityInfo = ActiveAbilityList[idx];
+		if (abilityInfo.AbilityId == (uint8)TargetAbilityType)
+			ActiveAbilityList.RemoveAt(idx);
+	}
+
+	//레거시 코드(...)
+	switch (TargetAbilityType)
+	{
+	case ECharacterAbilityType::E_Healing:
+		OwnerCharacterRef->GetWorldTimerManager().ClearTimer(
+			targetAbilityInfo.TimerHandle
+		);
+		break;
+	case ECharacterAbilityType::E_DefenseUp:
+		characterStat.CharacterDefense /= 1.25f;
+		break;
+	case ECharacterAbilityType::E_AttackUp:
+		characterStat.CharacterAtkMultiplier /= 1.25f;
+		break;
+	case ECharacterAbilityType::E_SpeedUp:
+		characterStat.CharacterMoveSpeed /= 1.25f;
+		characterStat.CharacterAtkSpeed /= 1.25f;
+		break;
+	case ECharacterAbilityType::E_Invincibility:
+		characterStat.bIsInvincibility = false;
+		break;
+	case ECharacterAbilityType::E_Infinite:
+		characterStat.bInfinite = false;
+		break;
+	}
+
+	return true;
 }
 
 void UAbilityManagerBase::ClearAllAbility()
 {
-	CharacterAbilityState = (1 << 10);
+	ActiveAbilityList.Empty();
+}
+
+bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType NewAbilityType)
+{
+	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	{
+		if (abilityInfo.AbilityId == (uint8)NewAbilityType)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+FAbilityInfoStruct UAbilityManagerBase::GetAbilityInfo(const ECharacterAbilityType AbilityType)
+{
+	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	{
+		if (abilityInfo.AbilityId == (uint8)AbilityType)
+		{
+			return abilityInfo;
+		}
+	}
+	return FAbilityInfoStruct();
 }

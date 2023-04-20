@@ -145,10 +145,7 @@ void UDebuffManager::ClearAllDebuffTimer()
 
 void UDebuffManager::InitDebuffManager(ABackStreetGameModeBase* NewGamemodeRef)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TryActivate BuffManager #2"));
 	if (!IsValid(NewGamemodeRef)) return;
-
-	UE_LOG(LogTemp, Warning, TEXT("TryActivate BuffManager #3"));
 
 	for (int newTimerIdx = 0; newTimerIdx <= MAX_DEBUFF_IDX; newTimerIdx += 1)
 	{
