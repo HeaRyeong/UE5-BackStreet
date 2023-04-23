@@ -3,7 +3,13 @@
 UENUM(BlueprintType)
 enum class ECharacterAbilityType : uint8
 {
-	E_None		UMETA(DisplayName = "None")
+	E_None		UMETA(DisplayName = "None"),
+	E_Healing			UMETA(DisplayName = "Healing"),
+	E_AttackUp			UMETA(DisplayName = "AttackUp"),
+	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
+	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
+	E_Invincibility		UMETA(DisplayName = "Invincibility"),
+	E_Infinite			UMETA(DisplayName = "Infinite")
 };
 
 UENUM(BlueprintType)
@@ -18,16 +24,11 @@ enum class ECharacterDebuffType : uint8
 	E_Stun				UMETA(DisplayName = "Stun"),
 };
 
+// Legacy Code!! - @ljh
 UENUM(BlueprintType)
 enum class ECharacterBuffType : uint8
 {
-	E_None				UMETA(DisplayName = "None"),
-	E_Healing			UMETA(DisplayName = "Healing"),
-	E_AttackUp			UMETA(DisplayName = "AttackUp"),
-	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
-	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
-	E_Invincibility		UMETA(DisplayName = "Invincibility"),
-	E_Infinite			UMETA(DisplayName = "Infinite")
+	E_None				UMETA(DisplayName = "None")
 };
 
 UENUM(BlueprintType)

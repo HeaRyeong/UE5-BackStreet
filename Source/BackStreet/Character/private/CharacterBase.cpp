@@ -1,5 +1,5 @@
 #include "../public/CharacterBase.h"
-#include "../../Global/public/BuffDebuffManager.h"
+#include "../../Global/public/DebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
@@ -57,36 +57,20 @@ void ACharacterBase::InitCharacterState()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 }
 
-bool ACharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool ACharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Value)
 {
 	if (!IsValid(GamemodeRef)) return false;
-	if(!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
+	if(!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
 
-	if (!bIsDebuff)
-	{
-		GamemodeRef->GetGlobalBuffDebuffManagerRef()->SetBuffTimer((ECharacterBuffType)BuffDebuffType, this, Causer, TotalTime, Value);
-	}
-	else
-	{
-		GamemodeRef->GetGlobalBuffDebuffManagerRef()->SetDebuffTimer((ECharacterDebuffType)BuffDebuffType, this, Causer, TotalTime, Value);
-	}
-
+	GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(DebuffType, this, Causer, TotalTime, Value);
 	return true;
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
 {
 	if (!IsValid(GamemodeRef)) return false;
-	if (!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
-	return	GamemodeRef->GetGlobalBuffDebuffManagerRef()->GetDebuffIsActive(DebuffType, this);
-}
-
-bool ACharacterBase::GetBuffIsActive(ECharacterBuffType BuffType)
-{
-	if (!IsValid(GamemodeRef)) return false;
-	if (!IsValid(GamemodeRef->GetGlobalBuffDebuffManagerRef())) return false;
-	GamemodeRef->GetGlobalBuffDebuffManagerRef()->GetBuffIsActive(BuffType, this);
-	return false;
+	if (!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
+	return	GamemodeRef->GetGlobalDebuffManagerRef()->GetDebuffIsActive(DebuffType, this);
 }
 
 void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
@@ -143,7 +127,7 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	return DamageAmount;
 }
 
-float ACharacterBase::TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer)
+float ACharacterBase::TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer)
 {
 	if (!IsValid(Causer)) return 0.0f;
 	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
