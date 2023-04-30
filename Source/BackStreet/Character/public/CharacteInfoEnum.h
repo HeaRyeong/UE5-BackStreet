@@ -9,7 +9,9 @@ enum class ECharacterAbilityType : uint8
 	E_DefenseUp			UMETA(DisplayName = "DefenseUp"),
 	E_SpeedUp			UMETA(DisplayName = "SpeedUp"),
 	E_Invincibility		UMETA(DisplayName = "Invincibility"),
-	E_Infinite			UMETA(DisplayName = "Infinite")
+	E_Infinite			UMETA(DisplayName = "Infinite"),
+	E_DoubleShot		UMETA(DisplayName = "DoubleShot"),
+	E_TripleShot		UMETA(DisplayName = "TripleShot")
 };
 
 UENUM(BlueprintType)

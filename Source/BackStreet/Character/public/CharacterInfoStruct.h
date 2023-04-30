@@ -40,6 +40,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = -1.0f, UIMax = 1.0f))
 		float CharacterDefense = 0.0f;
+
+	//한번에 발사할 발사체 개수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 1, UIMax = 3))
+		uint8 MaxProjectileCount = 3;
 };
 
 USTRUCT(BlueprintType)

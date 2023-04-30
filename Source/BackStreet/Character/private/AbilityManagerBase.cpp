@@ -55,6 +55,12 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 	case ECharacterAbilityType::E_Infinite:
 		characterStat.bInfinite = true;
 		break;
+	case ECharacterAbilityType::E_DoubleShot:
+		characterStat.MaxProjectileCount = 3;
+		break;
+	case ECharacterAbilityType::E_TripleShot:
+		characterStat.MaxProjectileCount = 3;
+		break;
 	}
 	OwnerCharacterRef->UpdateCharacterStat(characterStat);
 	OwnerCharacterRef->UpdateCharacterState(characterState);
@@ -107,6 +113,10 @@ bool UAbilityManagerBase::TryRemoveAbility(const ECharacterAbilityType TargetAbi
 	case ECharacterAbilityType::E_Infinite:
 		characterStat.bInfinite = false;
 		break;
+	case ECharacterAbilityType::E_DoubleShot:
+	case ECharacterAbilityType::E_TripleShot:
+		characterStat.MaxProjectileCount = 1;
+		break; 
 	}
 
 	return true;
