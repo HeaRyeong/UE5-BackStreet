@@ -198,19 +198,23 @@ bool AWeaponBase::TryFireProjectile()
 		return false;
 	}
 
-	AProjectileBase* newProjectile = CreateProjectile();
-
-	//스폰한 발사체가 Valid 하다면 발사
-	if (IsValid(newProjectile))
+	for (int idx = 1; idx <= OwnerCharacterRef->GetCharacterStat().MaxProjectileCount; idx++)
 	{
-		if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
-		{
-			WeaponState.CurrentAmmoCount -= 1;
-		}
-		newProjectile->ActivateProjectileMovement();
-		return true;
+		FTimerHandle delayHandle;
+		GetWorld()->GetTimerManager().SetTimer(delayHandle, FTimerDelegate::CreateLambda([&](){
+			AProjectileBase* newProjectile = CreateProjectile();
+			//스폰한 발사체가 Valid 하다면 발사
+			if (IsValid(newProjectile))
+			{
+				if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
+				{
+					WeaponState.CurrentAmmoCount -= 1;
+				}
+				newProjectile->ActivateProjectileMovement();
+			}
+		}), 0.1f * (float)idx, false);
 	}
-	return false;
+	return true;
 }
 
 float AWeaponBase::GetAttackRange()

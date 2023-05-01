@@ -16,6 +16,10 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 10))
 		uint8 AbilityId;
 
+	//어빌리티명
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+		FName AbilityName;
+
 	//반복적인 연산이 필요한지? (도트 힐) , 현재 미사용
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		bool bIsRepetitive;
@@ -61,8 +65,8 @@ public:
 	UFUNCTION()
 		void ClearAllAbility();
 
-protected
-	//해당 Ability가 Activa한지 반환
+protected:
+	//해당 Ability가 Active한지 반환
 	UFUNCTION()
 		bool GetIsAbilityActive(const ECharacterAbilityType NewAbilityType);
 
