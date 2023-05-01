@@ -16,6 +16,7 @@
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
+#include "../../StageSystem/public/RewardBox.h"
 #define MAX_CAMERA_BOOM_LENGTH 1450.0f
 #define MIN_CAMERA_BOOM_LENGTH 250.0f
 
@@ -95,6 +96,8 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
 	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryInvestigate);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
+
+	
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -146,19 +149,22 @@ void AMainCharacterBase::ZoomIn(float Value)
 void AMainCharacterBase::TryInvestigate()
 {
 	TArray<AActor*> nearActorList = GetNearInteractionActorList();
-	
+
 	if (nearActorList.Num())
 	{
 		PlayAnimMontage(InvestigateAnimation);
 		Investigate(nearActorList[0]);
+		FString s = nearActorList[0]->GetName();
 		ResetActionState();
+
 	}
+
 }
 
 void AMainCharacterBase::Investigate(AActor* TargetActor)
 {
 	if (!IsValid(TargetActor)) return;
-
+	UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
 	if (TargetActor->ActorHasTag("Item"))
 	{
 		Cast<AItemBase>(TargetActor)->OnPlayerBeginPickUp.ExecuteIfBound(this);
@@ -166,6 +172,11 @@ void AMainCharacterBase::Investigate(AActor* TargetActor)
 	else if (TargetActor->ActorHasTag("ItemBox"))
 	{
 		Cast<AItemBoxBase>(TargetActor)->OnPlayerOpenBegin.Broadcast(this);
+	}
+	else if (TargetActor->ActorHasTag("RewardBox"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
+		Cast<ARewardBox>(TargetActor)->OpenUIDelegate.Broadcast();
 	}
 }
 
@@ -270,7 +281,7 @@ void AMainCharacterBase::RotateToCursor()
 TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 {
 	TArray<AActor*> totalItemList;
-	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass()};
+	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass(),ARewardBox::StaticClass()};
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	

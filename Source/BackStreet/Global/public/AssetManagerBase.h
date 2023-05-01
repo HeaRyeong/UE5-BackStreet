@@ -46,6 +46,10 @@ public:
 		TArray<TSubclassOf<class AWeaponBase>> WeaponAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<TSubclassOf<class ARewardBox>> RewardBoxAssets;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<TSubclassOf<class AProjectileBase>> ProjectileAssets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

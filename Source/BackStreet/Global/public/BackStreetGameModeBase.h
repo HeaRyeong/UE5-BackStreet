@@ -46,9 +46,6 @@ public:
 		void FinishChapter(bool bGameIsOver);
 
 	UFUNCTION(BlueprintCallable)
-		void RewardStageClear(EStatUpCategoryInfo RewardType);
-
-	UFUNCTION(BlueprintCallable)
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
 
 	UFUNCTION()

@@ -26,6 +26,8 @@ public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateNoParam FinishTileDelegate;
 
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateNoParam StageClearDelegate;
 
 public:
 	ATileBase();
@@ -78,6 +80,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		ULevelStreaming* LevelRef;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class ARewardBox* RewardBoxRef;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class ALevelScriptBase* ScriptRef;
@@ -102,6 +107,9 @@ private:
 
 	UFUNCTION()
 		void SpawnMission();
+
+	UFUNCTION()
+		void SpawnRewardBox();
 
 	UFUNCTION(BlueprintCallable)
 		void BindDelegate();
@@ -133,6 +141,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<AActor*> CharacterSpawnPoint;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		TArray<AActor*> RewardBoxSpawnPoint;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;

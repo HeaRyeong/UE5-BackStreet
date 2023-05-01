@@ -11,10 +11,12 @@
 #define MAX_MISSION_COUNT 2
 #define MAX_MISSION_ITEM_COUNT 10
 
+
 UCLASS()
 class BACKSTREET_API AChapterManagerBase : public AActor
 {
 	GENERATED_BODY()
+
 
 public:
 	// Sets default values for this actor's properties
@@ -64,6 +66,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		TArray<class UMissionBase*> GetMissions() { return Missions; }
+
 
 private:
 	UFUNCTION()

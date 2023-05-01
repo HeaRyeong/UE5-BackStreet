@@ -206,3 +206,4 @@ void AChapterManagerBase::CleanChapterManager()
 	StageManager->CleanManager();
 	CurrentChapter->RemoveChapter();
 }
+
