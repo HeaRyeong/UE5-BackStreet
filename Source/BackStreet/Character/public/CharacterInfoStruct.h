@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/DataTable.h"
-#include "CharacteInfoEnum.h"
+#include "CharacterInfoEnum.h"
 #include "CharacterInfoStruct.generated.h"
 
 UENUM(BlueprintType)
@@ -40,6 +40,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = -1.0f, UIMax = 1.0f))
 		float CharacterDefense = 0.0f;
+
+	//한번에 발사할 발사체 개수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 1, UIMax = 3))
+		uint8 MaxProjectileCount = 3;
 };
 
 USTRUCT(BlueprintType)
@@ -50,11 +54,7 @@ public:
 
 	//캐릭터의 디버프 상태 (Bit-Field로 표현)
 	UPROPERTY(BlueprintReadOnly)
-		int32 CharacterDebuffState = (1<<10);
-
-	//캐릭터의 버프 상태
-	UPROPERTY(BlueprintReadOnly)
-		int32 CharacterBuffState = (1 << 10);
+		int32 CharacterDebuffState = (1 << 10);
 
 	//공격을 할 수 있는 상태인지?
 	UPROPERTY(BlueprintReadOnly)

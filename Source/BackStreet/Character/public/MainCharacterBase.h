@@ -20,6 +20,12 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	//테스트용 코드
+	UFUNCTION(BlueprintCallable)
+		void ActivateHealAbility();
+	UFUNCTION(BlueprintCallable)
+		void DeactivateHealAbility();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -93,7 +99,7 @@ public:
 protected: 
 	//버프 or 디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+		virtual	bool AddNewDebuff(ECharacterDebuffType BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 // -------- VFX -----------
 protected:
@@ -161,6 +167,9 @@ public:
 	virtual void ClearAllTimerHandle() override;
 
 private:
+	UPROPERTY()
+		class UAbilityManagerBase* AbilityManagerRef;
+
 	UPROPERTY()
 		class AMainCharacterController* PlayerControllerRef;
 
