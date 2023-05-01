@@ -76,7 +76,7 @@ public:
 		FStageEnemyTypeStruct GetStageTypeInfoWithRow(uint16 rowName);
 
 	UFUNCTION()
-		class UBuffDebuffManager* GetGlobalBuffDebuffManagerRef() { return BuffDebuffManager; }
+		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
 
 
 // ------ Data Table -----------------------------
@@ -110,7 +110,7 @@ private:
 		class AMainCharacterBase* PlayerCharacterRef;
 
 	UPROPERTY()
-		class UBuffDebuffManager* BuffDebuffManager;
+		class UDebuffManager* DebuffManager;
 
 protected: 
 	//게임 일시정지 여부
