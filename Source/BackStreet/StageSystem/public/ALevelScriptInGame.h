@@ -84,5 +84,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class ABackStreetGameModeBase* GameModeRef;
 
+public:
+	UFUNCTION()
+		void PerformanceTest();
+
 	
 };

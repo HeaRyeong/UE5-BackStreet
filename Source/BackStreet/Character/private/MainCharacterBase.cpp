@@ -3,7 +3,8 @@
 
 #include "../public/MainCharacterBase.h"
 #include "../public/MainCharacterController.h"
-#include "../public/CharacterBuffManager.h"
+#include "../public/AbilityManagerBase.h"
+#include "../../Global/public/DebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Item/public/ItemBase.h"
@@ -16,6 +17,7 @@
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
+#include "../../StageSystem/public/RewardBox.h"
 #define MAX_CAMERA_BOOM_LENGTH 1450.0f
 #define MIN_CAMERA_BOOM_LENGTH 250.0f
 
@@ -68,7 +70,39 @@ void AMainCharacterBase::BeginPlay()
 	PlayerControllerRef = Cast<AMainCharacterController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 	InitDynamicMeshMaterial(NormalMaterial);
-	
+
+	AbilityManagerRef = NewObject<UAbilityManagerBase>(this, UAbilityManagerBase::StaticClass(), FName("AbilityfManager"));
+	AbilityManagerRef->InitAbilityManager(this);
+}
+
+void AMainCharacterBase::ActivateHealAbility()
+{
+	if (!IsValid(AbilityManagerRef))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AbilityManagerRef Invalid"));
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("TryAddAbility"));
+	bool result = AbilityManagerRef->TryAddNewAbility(ECharacterAbilityType::E_Healing);
+	if (!result)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ㄴ> failed"));
+	}
+}
+
+void AMainCharacterBase::DeactivateHealAbility()
+{
+	if (!IsValid(AbilityManagerRef))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("AbilityManagerRef Invalid"));
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("TryRemoveAbility"));
+	bool result = AbilityManagerRef->TryRemoveAbility(ECharacterAbilityType::E_Healing);
+	if (!result)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ㄴ> failed"));
+	}
 }
 
 // Called every frame
@@ -95,6 +129,8 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
 	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryInvestigate);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
+
+	
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -146,19 +182,22 @@ void AMainCharacterBase::ZoomIn(float Value)
 void AMainCharacterBase::TryInvestigate()
 {
 	TArray<AActor*> nearActorList = GetNearInteractionActorList();
-	
+
 	if (nearActorList.Num())
 	{
 		PlayAnimMontage(InvestigateAnimation);
 		Investigate(nearActorList[0]);
+		FString s = nearActorList[0]->GetName();
 		ResetActionState();
+
 	}
+
 }
 
 void AMainCharacterBase::Investigate(AActor* TargetActor)
 {
 	if (!IsValid(TargetActor)) return;
-
+	UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
 	if (TargetActor->ActorHasTag("Item"))
 	{
 		Cast<AItemBase>(TargetActor)->OnPlayerBeginPickUp.ExecuteIfBound(this);
@@ -166,6 +205,11 @@ void AMainCharacterBase::Investigate(AActor* TargetActor)
 	else if (TargetActor->ActorHasTag("ItemBox"))
 	{
 		Cast<AItemBoxBase>(TargetActor)->OnPlayerOpenBegin.Broadcast(this);
+	}
+	else if (TargetActor->ActorHasTag("RewardBox"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
+		Cast<ARewardBox>(TargetActor)->OpenUIDelegate.Broadcast();
 	}
 }
 
@@ -270,7 +314,7 @@ void AMainCharacterBase::RotateToCursor()
 TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 {
 	TArray<AActor*> totalItemList;
-	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass()};
+	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass(),ARewardBox::StaticClass()};
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
@@ -308,16 +352,15 @@ void AMainCharacterBase::DropWeapon()
 	Super::DropWeapon();
 }
 
-bool AMainCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
+bool AMainCharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	if (!Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value)) return false;
+	if (!Super::AddNewDebuff(DebuffType, Causer, TotalTime, Value)) return false;
 
 	if (DebuffSound && BuffSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, bIsDebuff ? DebuffSound : BuffSound, GetActorLocation());
-		UE_LOG(LogTemp, Warning, TEXT("BUFF / DEBUFF ACTIVATED"));
+		UGameplayStatics::PlaySoundAtLocation(this, DebuffSound, GetActorLocation());
 	}
-	ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
+	//ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 
 	GetWorld()->GetTimerManager().ClearTimer(BuffEffectResetTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(BuffEffectResetTimerHandle, FTimerDelegate::CreateLambda([&]() {

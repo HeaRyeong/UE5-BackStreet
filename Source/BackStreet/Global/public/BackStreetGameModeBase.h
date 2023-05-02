@@ -46,9 +46,6 @@ public:
 		void FinishChapter(bool bGameIsOver);
 
 	UFUNCTION(BlueprintCallable)
-		void RewardStageClear(EStatUpCategoryInfo RewardType);
-
-	UFUNCTION(BlueprintCallable)
 		void PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius = 100.0f);
 
 	UFUNCTION()
@@ -74,6 +71,10 @@ public:
 
 	UFUNCTION()
 		FStageEnemyTypeStruct GetStageTypeInfoWithRow(uint16 rowName);
+
+	UFUNCTION()
+		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
+
 
 // ------ Data Table -----------------------------
 protected:
@@ -104,6 +105,9 @@ protected:
 private:
 	UPROPERTY()
 		class AMainCharacterBase* PlayerCharacterRef;
+
+	UPROPERTY()
+		class UDebuffManager* DebuffManager;
 
 protected: 
 	//게임 일시정지 여부

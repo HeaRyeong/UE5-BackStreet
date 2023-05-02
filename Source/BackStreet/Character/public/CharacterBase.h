@@ -31,6 +31,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 		UChildActorComponent* BuffManagerComponent;
 
+
 // ------- Character Action 기본 ------- 
 public:
 	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
@@ -58,7 +59,7 @@ public:
 
 	//디버프 데미지를 입힘 (일회성)
 	UFUNCTION(BlueprintCallable)
-		float TakeDebuffDamage(float DamageAmount, uint8 DebuffType, AActor* Causer);
+		float TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer);
 
 	//플레이어가 체력을 회복함 (일회성)
 	UFUNCTION()
@@ -71,15 +72,11 @@ public:
 		void InitCharacterState();
 
 	//캐릭터의 버프/디버프 정보를 업데이트
-	virtual	bool AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+	virtual	bool AddNewDebuff(ECharacterDebuffType BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetDebuffIsActive(ECharacterDebuffType DebuffType);
-
-	//버프가 활성화 되어있는지 반환
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		bool GetBuffIsActive(ECharacterBuffType BuffType);
 
 	//캐릭터의 스탯을 업데이트
 	UFUNCTION(BlueprintCallable)
@@ -96,9 +93,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FCharacterStateStruct GetCharacterState() { return CharacterState; }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-		class ACharacterBuffManager* GetBuffManagerRef() { return BuffManagerRef; };
 
 // ------ 무기 관련 -------------------------------------------
 public:
@@ -169,9 +163,6 @@ protected:
 
 	UPROPERTY()
 		class AWeaponInventoryBase* InventoryRef;
-
-	UPROPERTY()
-		class ACharacterBuffManager* BuffManagerRef;
 
 // ----- 타이머 관련 ---------------------------------
 protected:

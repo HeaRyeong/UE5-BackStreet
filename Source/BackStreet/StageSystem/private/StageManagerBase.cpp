@@ -53,6 +53,8 @@ void AStageManagerBase::SetStage(AGridBase* Chapter)
 		for (ATileBase* tile : Chapter->StageArray)
 		{
 			Stages.Add(tile);
+		
+			tile->StageClearDelegate.AddDynamic(this, &AStageManagerBase::ClearStageReward);
 		}
 	}
 	else
@@ -231,6 +233,65 @@ void AStageManagerBase::UnLoadStage()
 
 
 }
+
+
+void AStageManagerBase::ClearStageReward()
+{
+
+	//if (!IsValid(PlayerCharacterRef)) return;
+
+	//FCharacterStatStruct NewStat = PlayerCharacterRef->GetCharacterStat();
+	//float RewardValue;
+
+	//if (CurrentTile->ClearTime < 1.0f) // A등급
+	//{
+	//	RewardValue = ChapterManager->GetChapterWeight() + 0.3f;
+	//	UE_LOG(LogTemp, Log, TEXT("A Rank %f"), RewardValue);
+	//}
+	//else if (CurrentTile->ClearTime < 3.0f) // B등급
+	//{
+	//	RewardValue = ChapterManager->GetChapterWeight() + 0.2f;
+	//	UE_LOG(LogTemp, Log, TEXT("B Rank %f"), RewardValue);
+	//}
+	//else // C등급
+	//{
+	//	RewardValue = ChapterManager->GetChapterWeight() + 0.1f;
+	//	UE_LOG(LogTemp, Log, TEXT("C Rank %f"), RewardValue);
+	//}
+
+	//switch (RewardType)
+	//{
+	//case EStatUpCategoryInfo::E_None:
+	//	break;
+	//case EStatUpCategoryInfo::E_MaxHp:
+	//	UE_LOG(LogTemp, Log, TEXT("MaxHp"));
+	//	NewStat.CharacterMaxHP += 0.1f + RewardValue;
+	//	break;
+	//case EStatUpCategoryInfo::E_ATK:
+	//	UE_LOG(LogTemp, Log, TEXT("ATK"));
+	//	NewStat.CharacterAtkMultiplier += 0.1f + RewardValue;
+	//	break;
+	//case EStatUpCategoryInfo::E_ATKSpeed:
+	//	UE_LOG(LogTemp, Log, TEXT("ATKSpeed"));
+	//	NewStat.CharacterAtkSpeed += 0.05f + (RewardValue * 0.1);
+	//	break;
+	//case EStatUpCategoryInfo::E_MoveSpeed:
+	//	UE_LOG(LogTemp, Log, TEXT("MoveSpeed"));
+	//	NewStat.CharacterMoveSpeed += 20.0f + (RewardValue * 10);
+	//	break;
+	//case EStatUpCategoryInfo::E_Defense:
+	//	UE_LOG(LogTemp, Log, TEXT("Defense"));
+	//	NewStat.CharacterDefense += 0.1f + RewardValue;
+	//	break;
+	//default:
+	//	break;
+	//}
+	//UpdateCharacterStat(PlayerCharacterRef, NewStat);
+
+	UE_LOG(LogTemp, Log, TEXT("Call RewardStageClear"));
+}
+
+
 
 void AStageManagerBase::CompleteLoad()
 {

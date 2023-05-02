@@ -4,7 +4,7 @@
 #include "../public/ProjectileBase.h"
 #include "../public/WeaponBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "../../Character/public/CharacterBuffManager.h"
+#include "../../Global/public/DebuffManager.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -93,7 +93,7 @@ void AProjectileBase::OnProjectileBeginOverlap(UPrimitiveComponent* OverlappedCo
 			UGameplayStatics::ApplyDamage(OtherActor, totalDamage,SpawnInstigator, OwnerCharacterRef, nullptr);
 			GamemodeRef->PlayCameraShakeEffect(ECameraShakeType::E_Hit, SweepResult.Location, 100.0f);
 		}
-		Cast<ACharacterBase>(OtherActor)->AddNewBuffDebuff(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, ProjectileStat.DebuffTotalTime, ProjectileStat.DebuffVariable);
+		//Cast<ACharacterBase>(OtherActor)->AddNewBuffDebuff(true, (uint8)ProjectileStat.DebuffType, OwnerCharacterRef, ProjectileStat.DebuffTotalTime, ProjectileStat.DebuffVariable);
 	}
 
 	FTransform TargetTransform = { FRotator(), SweepResult.Location, {1.0f, 1.0f, 1.0f} };
