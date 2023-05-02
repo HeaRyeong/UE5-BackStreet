@@ -42,8 +42,6 @@ void AEnemyCharacterBase::BeginPlay()
 	SetDefaultWeapon();
 
 	InitDynamicMeshMaterial(GetMesh()->GetMaterial(0));
-
-	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &AEnemyCharacterBase::ClearAllTimerHandle);
 }
 
 void AEnemyCharacterBase::InitEnemyStat()
@@ -54,11 +52,6 @@ void AEnemyCharacterBase::InitEnemyStat()
 	SetDefaultStat();
 }
 
-bool AEnemyCharacterBase::AddNewBuffDebuff(bool bIsDebuff, uint8 BuffDebuffType, AActor* Causer, float TotalTime, float Value)
-{
-	return Super::AddNewBuffDebuff(bIsDebuff, BuffDebuffType, Causer, TotalTime, Value);
-}
-
 float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float damageAmount = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -66,6 +59,14 @@ float AEnemyCharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& Da
 	if (!IsValid(DamageCauser) || !DamageCauser->ActorHasTag("Player") || damageAmount <= 0.0f) return 0.0f;
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitImpactSound, GetActorLocation());
 	EnemyDamageDelegate.ExecuteIfBound(DamageCauser);
+
+	const float knockBackStrength = 500000.0f;
+	FVector knockBackDirection = GetActorLocation() - DamageCauser->GetActorLocation();
+	knockBackDirection = knockBackDirection.GetSafeNormal();
+	knockBackDirection *= knockBackStrength;
+	knockBackDirection.Z = 0.0f;
+
+	GetCharacterMovement()->AddImpulse(knockBackDirection);
 
 	return damageAmount;
 }

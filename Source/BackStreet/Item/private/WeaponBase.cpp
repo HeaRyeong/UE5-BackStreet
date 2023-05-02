@@ -3,7 +3,7 @@
 #include "../public/WeaponBase.h"
 #include "../public/ProjectileBase.h"
 #include "../../Character/public/CharacterBase.h"
-#include "../../Character/public/CharacterBuffManager.h"
+#include "../../Global/public/DebuffManager.h"
 #include "Components/AudioComponent.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
@@ -198,19 +198,23 @@ bool AWeaponBase::TryFireProjectile()
 		return false;
 	}
 
-	AProjectileBase* newProjectile = CreateProjectile();
-
-	//스폰한 발사체가 Valid 하다면 발사
-	if (IsValid(newProjectile))
+	for (int idx = 1; idx <= OwnerCharacterRef->GetCharacterStat().MaxProjectileCount; idx++)
 	{
-		if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
-		{
-			WeaponState.CurrentAmmoCount -= 1;
-		}
-		newProjectile->ActivateProjectileMovement();
-		return true;
+		FTimerHandle delayHandle;
+		GetWorld()->GetTimerManager().SetTimer(delayHandle, FTimerDelegate::CreateLambda([&](){
+			AProjectileBase* newProjectile = CreateProjectile();
+			//스폰한 발사체가 Valid 하다면 발사
+			if (IsValid(newProjectile))
+			{
+				if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)
+				{
+					WeaponState.CurrentAmmoCount -= 1;
+				}
+				newProjectile->ActivateProjectileMovement();
+			}
+		}), 0.1f * (float)idx, false);
 	}
-	return false;
+	return true;
 }
 
 float AWeaponBase::GetAttackRange()
@@ -285,7 +289,7 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
+		//(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
 
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))

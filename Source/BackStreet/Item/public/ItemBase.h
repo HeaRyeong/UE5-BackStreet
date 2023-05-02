@@ -38,7 +38,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 		class USphereComponent* RootCollisionVolume;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		class UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"), BlueprintReadWrite)

@@ -72,6 +72,10 @@ public:
 	UFUNCTION()
 		FStageEnemyTypeStruct GetStageTypeInfoWithRow(uint16 rowName);
 
+	UFUNCTION()
+		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
+
+
 // ------ Data Table -----------------------------
 protected:
 	//적의 스탯 테이블
@@ -101,6 +105,9 @@ protected:
 private:
 	UPROPERTY()
 		class AMainCharacterBase* PlayerCharacterRef;
+
+	UPROPERTY()
+		class UDebuffManager* DebuffManager;
 
 protected: 
 	//게임 일시정지 여부
