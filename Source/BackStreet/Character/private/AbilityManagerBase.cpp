@@ -96,7 +96,10 @@ bool UAbilityManagerBase::TryUpdateCharacterStat(const FAbilityInfoStruct Target
 		if (bIsReset) targetVariable = 1/targetVariable; //초기화 시 1보다 낮은 값으로 곱함 1.25 vs 0.25
 
 		if (targetStatName == FName("MaxHP"))
+		{
 			characterStat.CharacterMaxHP *= targetVariable;
+			characterState.CharacterCurrHP = FMath::Min(characterStat.CharacterMaxHP, characterState.CharacterCurrHP);
+		}
 		//else if (targetStatName == FName("CurrHP"))
 		//	characterState.CharacterCurrHP = characterStat.CharacterMaxHP;
 		else if (targetStatName == FName("Attack"))
