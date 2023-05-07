@@ -41,12 +41,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		FProjectileItemInfoStruct ProjectileStat;
-
-	// Buff
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
-		FBuffItemInfoStruct BuffStat;
-
 	// DeBuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DeBuff")
 		FDeBuffItemInfoStruct DeBuffStat;
