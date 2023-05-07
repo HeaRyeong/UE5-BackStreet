@@ -74,36 +74,6 @@ void AMainCharacterBase::BeginPlay()
 	AbilityManagerRef->InitAbilityManager(this);
 }
 
-void AMainCharacterBase::ActivateHealAbility()
-{
-	if (!IsValid(AbilityManagerRef))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AbilityManagerRef Invalid"));
-		return;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("TryAddAbility"));
-	bool result = AbilityManagerRef->TryAddNewAbility(ECharacterAbilityType::E_Healing);
-	if (!result)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ㄴ> failed"));
-	}
-}
-
-void AMainCharacterBase::DeactivateHealAbility()
-{
-	if (!IsValid(AbilityManagerRef))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AbilityManagerRef Invalid"));
-		return;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("TryRemoveAbility"));
-	bool result = AbilityManagerRef->TryRemoveAbility(ECharacterAbilityType::E_Healing);
-	if (!result)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ㄴ> failed"));
-	}
-}
-
 // Called every frame
 void AMainCharacterBase::Tick(float DeltaTime)
 {
@@ -341,9 +311,9 @@ void AMainCharacterBase::DropWeapon()
 	Super::DropWeapon();
 }
 
-bool AMainCharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Value)
+bool AMainCharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	if (!Super::AddNewDebuff(DebuffType, Causer, TotalTime, Value)) return false;
+	if (!Super::TryAddNewDebuff(NewDebuffType, Causer, TotalTime, Value)) return false;
 
 	if (DebuffSound && BuffSound)
 	{
@@ -357,6 +327,24 @@ bool AMainCharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* C
 	}), TotalTime, false);
 
 	return true;
+}
+
+bool AMainCharacterBase::TryAddNewAbility(const ECharacterAbilityType NewAbilityType)
+{
+	if(!IsValid(AbilityManagerRef)) return false;
+	return AbilityManagerRef->TryAddNewAbility(NewAbilityType);
+}
+
+bool AMainCharacterBase::TryRemoveAbility(const ECharacterAbilityType TargetAbilityType)
+{
+	if (!IsValid(AbilityManagerRef)) return false;
+	return AbilityManagerRef->TryRemoveAbility(TargetAbilityType);
+}
+
+bool AMainCharacterBase::GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType)
+{
+	if (!IsValid(AbilityManagerRef)) return false;
+	return AbilityManagerRef->GetIsAbilityActive(TargetAbilityType);
 }
 
 void AMainCharacterBase::ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType)
