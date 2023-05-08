@@ -29,6 +29,12 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	int32 PossessAbilityID;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		int32 CharacterAbilityIDA;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		int32 CharacterAbilityIDB;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -44,12 +50,6 @@ public:
 
 public:
 
-	/*UFUNCTION()
-		void OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-		void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);*/
-
 	UFUNCTION(BlueprintImplementableEvent)
 		void EnterUI();
 
@@ -57,11 +57,21 @@ public:
 		void AbilitySelect();
 
 	UFUNCTION(BlueprintCallable)
-		void TrySwapAbility(int32 GetAbility, int32 StoreAbility);
+		bool TrySwapAbility(int32 GetAbility, int32 StoreAbility);
 
 	UFUNCTION(BlueprintCallable)
 		void SwapAbility(int32 GetAbility, int32 StoreAbility);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void UpdateUI();
+
+	UFUNCTION()
+		void SetBelongTile(ATileBase* Target);
+
+	UFUNCTION(BlueprintCallable)
+		void SetCharacterAbilityList();
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class ATileBase* BelongTile;
 };

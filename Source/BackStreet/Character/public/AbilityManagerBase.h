@@ -49,6 +49,11 @@ public:
 	UAbilityManagerBase();
 
 public:
+	// 임시 코드 Active Ability GET 함수
+	UFUNCTION()
+	TArray<ECharacterAbilityType> GetActiveAbilityList();
+
+public:
 	//어빌리티 매니저 초기화, 부모 설정
 	UFUNCTION()
 		void InitAbilityManager(ACharacterBase* NewCharacter);

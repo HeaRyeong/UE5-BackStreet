@@ -25,6 +25,9 @@ public:
 		void ActivateHealAbility();
 	UFUNCTION(BlueprintCallable)
 		void DeactivateHealAbility();
+	// 임시 어빌리티 매니저 getter 함수
+	UFUNCTION(BlueprintCallable)
+		class UAbilityManagerBase* GetAbilityManager() {return AbilityManagerRef;}
 
 protected:
 	virtual void BeginPlay() override;

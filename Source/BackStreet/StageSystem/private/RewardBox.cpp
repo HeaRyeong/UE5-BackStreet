@@ -3,6 +3,12 @@
 
 #include "../public/RewardBox.h"
 #include "Components/SphereComponent.h"
+#include "../public/TileBase.h"
+#include "../../Character/public/MainCharacterBase.h"
+#include "../../Character/public/AbilityManagerBase.h"
+#include "../../Character/public/CharacterInfoEnum.h"
+
+
 // Sets default values
 ARewardBox::ARewardBox()
 {
@@ -36,36 +42,93 @@ void ARewardBox::Tick(float DeltaTime)
 
 }
 
-//void ARewardBox::OnOverlapBegins(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-//{
-//	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
-//
-//	//UI Activate
-//}
-//
-//void ARewardBox::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-//{
-//	if (!IsValid(OtherActor) || OtherActor->ActorHasTag("Player")) return;
-//
-//	//UI Deactivate
-//}
-
 void ARewardBox::AbilitySelect()
 {
 	const TArray<int32> AbilityTypeID = {0,1,2,3,4,5,6,7,8};
-	int32 AbilityIdx = FMath::RandRange(0, AbilityTypeID.Num() - 1);
+	int32 AbilityIdx = FMath::RandRange(1, AbilityTypeID.Num()-1);
 
 	PossessAbilityID = AbilityTypeID[AbilityIdx];
+	CharacterAbilityIDA = CharacterAbilityIDB = 0;
+	SetCharacterAbilityList();
 }
 
-void ARewardBox::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
+bool ARewardBox::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 {
 	// Check Right Swapping
 	// Call SwapAbility
-	SwapAbility(GetAbility, StoreAbility);
+
+	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	UAbilityManagerBase* abilityManagerRef = characterRef->GetAbilityManager();
+	TArray<ECharacterAbilityType> abilityList = abilityManagerRef->GetActiveAbilityList();
+
+	if (GetAbility == StoreAbility)
+		return false;
+
+	for (ECharacterAbilityType type : abilityList)
+	{
+		if (GetAbility == (int32)type)
+			return false;
+	}
+
+	if (StoreAbility != 0 && GetAbility == 0)
+	{
+		PossessAbilityID = StoreAbility;
+		abilityManagerRef->TryRemoveAbility(((ECharacterAbilityType)StoreAbility));
+		SetCharacterAbilityList();
+		UpdateUI();
+		return true;
+	}
+
+	if (abilityList.Num() == 0 || abilityList.Num()==1)
+	{
+		PossessAbilityID = 0;
+		abilityManagerRef->TryAddNewAbility(((ECharacterAbilityType)GetAbility));
+		SetCharacterAbilityList();
+		UpdateUI();
+		return true;
+	}
+	else if (abilityList.Num() == 2)
+	{
+		abilityManagerRef->TryRemoveAbility(((ECharacterAbilityType)StoreAbility));
+		abilityManagerRef->TryAddNewAbility(((ECharacterAbilityType)GetAbility));
+		PossessAbilityID = StoreAbility;
+		SetCharacterAbilityList();
+		UpdateUI();
+		return true;
+	}
+	else
+		return false;
+
 }
 
-void ARewardBox::SwapAbility(int32 GetAbility, int32 StoreAbility)
+
+void ARewardBox::SetBelongTile(ATileBase* Target)
 {
-	// Call MainCharacter Ability Swap Request
+	BelongTile = Target;
+}
+
+void ARewardBox::SetCharacterAbilityList()
+{
+	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	UAbilityManagerBase* abilityManagerRef = characterRef->GetAbilityManager();
+	TArray<ECharacterAbilityType> abilityList = abilityManagerRef->GetActiveAbilityList();
+
+	if (abilityList.Num() == 2)
+	{
+		CharacterAbilityIDA = (int32)abilityList[0];
+		CharacterAbilityIDB = (int32)abilityList[1];
+
+	}
+	else if (abilityList.Num() == 1)
+	{
+		CharacterAbilityIDA = (int32)abilityList[0];
+		CharacterAbilityIDB = 0;
+	}
+	else
+	{
+		CharacterAbilityIDA = CharacterAbilityIDB = 0;
+	}
+	
 }

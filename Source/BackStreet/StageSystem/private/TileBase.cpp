@@ -248,6 +248,7 @@ void ATileBase::SpawnRewardBox()
 	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	ARewardBox* target = GetWorld()->SpawnActor<ARewardBox>(InGameScriptRef->GetAssetManager()->RewardBoxAssets[0], RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0,90,0), actorSpawnParameters);
 	target->Tags.AddUnique("RewardBox");
+	target->SetBelongTile(this);
 }
 
 void ATileBase::MonsterDie(AEnemyCharacterBase* target)
