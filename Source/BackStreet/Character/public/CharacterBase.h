@@ -63,7 +63,7 @@ public:
 
 	//플레이어가 체력을 회복함 (일회성)
 	UFUNCTION()
-		void TakeHeal(float HealAmount, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
+		void TakeHeal(float HealAmountRate, bool bIsTimerEvent = false, uint8 BuffDebuffType = 0);
 
 // ------- Character Stat/State ------------------------------
 public:
@@ -71,8 +71,8 @@ public:
 	UFUNCTION()
 		void InitCharacterState();
 
-	//캐릭터의 버프/디버프 정보를 업데이트
-	virtual	bool AddNewDebuff(ECharacterDebuffType BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+	//캐릭터의 디버프 정보를 업데이트
+	virtual	bool TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
