@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "../public/RewardBox.h"
+#include "../public/RewardBoxBase.h"
 #include "Components/SphereComponent.h"
 #include "../public/TileBase.h"
 #include "../../Character/public/MainCharacterBase.h"
@@ -10,9 +10,9 @@
 
 
 // Sets default values
-ARewardBox::ARewardBox()
+ARewardBoxBase::ARewardBoxBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	RootComponent = OverlapVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
@@ -26,33 +26,33 @@ ARewardBox::ARewardBox()
 }
 
 // Called when the game starts or when spawned
-void ARewardBox::BeginPlay()
+void ARewardBoxBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OpenUIDelegate.AddDynamic(this, &ARewardBox::EnterUI);
-	AbilitySelect();
-	
+	OpenUIDelegate.AddDynamic(this, &ARewardBoxBase::EnterUI);
+	SelectRandomAbilityIdx();
+
 }
 
 // Called every frame
-void ARewardBox::Tick(float DeltaTime)
+void ARewardBoxBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void ARewardBox::AbilitySelect()
+void ARewardBoxBase::SelectRandomAbilityIdx()
 {
-	const TArray<int32> AbilityTypeID = {0,1,2,3,4,5,6,7,8};
-	int32 AbilityIdx = FMath::RandRange(1, AbilityTypeID.Num()-1);
+	const TArray<int32> AbilityTypeID = { 0,1,2,3,4,5,6,7,8 };
+	int32 AbilityIdx = FMath::RandRange(1, AbilityTypeID.Num() - 1);
 
 	PossessAbilityID = AbilityTypeID[AbilityIdx];
 	CharacterAbilityIDA = CharacterAbilityIDB = 0;
 	SetCharacterAbilityList();
 }
 
-bool ARewardBox::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
+bool ARewardBoxBase::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 {
 	// Check Right Swapping
 	// Call SwapAbility
@@ -80,7 +80,7 @@ bool ARewardBox::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 		return true;
 	}
 
-	if (abilityList.Num() == 0 || abilityList.Num()==1)
+	if (abilityList.Num() == 0 || abilityList.Num() == 1)
 	{
 		PossessAbilityID = 0;
 		abilityManagerRef->TryAddNewAbility(((ECharacterAbilityType)GetAbility));
@@ -103,12 +103,12 @@ bool ARewardBox::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 }
 
 
-void ARewardBox::SetBelongTile(ATileBase* Target)
+void ARewardBoxBase::SetBelongTile(ATileBase* Target)
 {
 	BelongTile = Target;
 }
 
-void ARewardBox::SetCharacterAbilityList()
+void ARewardBoxBase::SetCharacterAbilityList()
 {
 	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
@@ -130,5 +130,5 @@ void ARewardBox::SetCharacterAbilityList()
 	{
 		CharacterAbilityIDA = CharacterAbilityIDB = 0;
 	}
-	
+
 }

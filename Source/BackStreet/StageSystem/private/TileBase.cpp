@@ -17,7 +17,7 @@
 #include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
 #include "UObject/SoftObjectPath.h"
-#include "../public/RewardBox.h"
+#include "../public/RewardBoxBase.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -246,7 +246,7 @@ void ATileBase::SpawnRewardBox()
 {
 	FActorSpawnParameters actorSpawnParameters;
 	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	ARewardBox* target = GetWorld()->SpawnActor<ARewardBox>(InGameScriptRef->GetAssetManager()->RewardBoxAssets[0], RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0,90,0), actorSpawnParameters);
+	ARewardBoxBase* target = GetWorld()->SpawnActor<ARewardBoxBase>(InGameScriptRef->GetAssetManager()->RewardBoxAssets[0], RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0,90,0), actorSpawnParameters);
 	target->Tags.AddUnique("RewardBox");
 	target->SetBelongTile(this);
 }
@@ -266,8 +266,6 @@ void ATileBase::MonsterDie(AEnemyCharacterBase* target)
 	{
 		bIsClear = true;
 
-		//// 스테이지 클리어 처리
-		//GamemodeRef->FinishChapterDelegate.Broadcast(false);
 		StageClearDelegate.Broadcast();
 		SpawnRewardBox();
 		PauseTimer();
@@ -391,5 +389,4 @@ void ATileBase::UnPauseTimer()
 void ATileBase::ClearTimer()
 {
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	//GetWorldTimerManager().ClearTimer(StageTimerHandle);
 }

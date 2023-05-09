@@ -8,7 +8,7 @@
 #include "../../StageSystem/public/MissionBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "../../Character/public/EnemyCharacterBase.h"
-#include "../../StageSystem/public/RewardBox.h"
+#include "../../StageSystem/public/RewardBoxBase.h"
 
 AAssetManagerBase::AAssetManagerBase()
 {

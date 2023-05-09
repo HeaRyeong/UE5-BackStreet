@@ -17,7 +17,7 @@
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
-#include "../../StageSystem/public/RewardBox.h"
+#include "../../StageSystem/public/RewardBoxBase.h"
 #define MAX_CAMERA_BOOM_LENGTH 1450.0f
 #define MIN_CAMERA_BOOM_LENGTH 250.0f
 
@@ -187,7 +187,6 @@ void AMainCharacterBase::TryInvestigate()
 	{
 		PlayAnimMontage(InvestigateAnimation);
 		Investigate(nearActorList[0]);
-		FString s = nearActorList[0]->GetName();
 		ResetActionState();
 
 	}
@@ -209,7 +208,7 @@ void AMainCharacterBase::Investigate(AActor* TargetActor)
 	else if (TargetActor->ActorHasTag("RewardBox"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
-		Cast<ARewardBox>(TargetActor)->OpenUIDelegate.Broadcast();
+		Cast<ARewardBoxBase>(TargetActor)->OpenUIDelegate.Broadcast();
 	}
 }
 
@@ -314,7 +313,7 @@ void AMainCharacterBase::RotateToCursor()
 TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 {
 	TArray<AActor*> totalItemList;
-	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass(),ARewardBox::StaticClass()};
+	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass(),ARewardBoxBase::StaticClass()};
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	

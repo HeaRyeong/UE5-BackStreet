@@ -82,7 +82,7 @@ public:
 		ULevelStreaming* LevelRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		class ARewardBox* RewardBoxRef;
+		class ARewardBoxBase* RewardBoxRef;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class ALevelScriptBase* ScriptRef;
