@@ -63,6 +63,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		EDirection GetMoveDir() { return MoveDir; }
 
+	UFUNCTION(BlueprintCallable)
+		void ClearStageReward();
+
 private:
 	UFUNCTION()
 		void SetMissionStages();

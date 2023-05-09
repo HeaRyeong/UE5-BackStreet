@@ -154,3 +154,14 @@ bool UAbilityManagerBase::InitAbilityInfoListFromTable(const UDataTable* Ability
 	}
 	return true;
 }
+
+// 임시 코드
+TArray<ECharacterAbilityType> UAbilityManagerBase::GetActiveAbilityList()
+{
+	TArray<ECharacterAbilityType> returnActiveAbility;
+	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	{
+		returnActiveAbility.Add((const ECharacterAbilityType)abilityInfo.AbilityId);
+	}
+	return returnActiveAbility;
+}
