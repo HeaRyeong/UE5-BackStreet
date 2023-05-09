@@ -198,7 +198,8 @@ bool AWeaponBase::TryFireProjectile()
 		return false;
 	}
 
-	for (int idx = 1; idx <= OwnerCharacterRef->GetCharacterStat().MaxProjectileCount; idx++)
+	const int32 fireProjectileCnt = FMath::Min(WeaponState.CurrentAmmoCount, OwnerCharacterRef->GetCharacterStat().MaxProjectileCount);
+	for (int idx = 1; idx <= fireProjectileCnt; idx++)
 	{
 		FTimerHandle delayHandle;
 		GetWorld()->GetTimerManager().SetTimer(delayHandle, FTimerDelegate::CreateLambda([&](){

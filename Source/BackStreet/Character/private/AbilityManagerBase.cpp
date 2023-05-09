@@ -15,6 +15,13 @@ void UAbilityManagerBase::InitAbilityManager(ACharacterBase* NewCharacter)
 	if (!IsValid(NewCharacter)) return;
 	UE_LOG(LogTemp, Warning, TEXT("Initialize Ability Manager Success"));
 	OwnerCharacterRef = NewCharacter;
+
+	//초기화 시점에 진행
+	UDataTable* abilityInfoTable = LoadObject<UDataTable>(nullptr, TEXT("DataTable'/Game/Character/MainCharacter/Data/D_AbilityInfoDataTable.D_AbilityInfoDataTable'"));
+	if (!InitAbilityInfoListFromTable(abilityInfoTable))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("UAbilityManagerBase::InitAbilityManager) DataTable is not found!"));
+	}
 }
 
 bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilityType)
@@ -24,46 +31,18 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
 
 	if (GetIsAbilityActive(NewAbilityType)) return false;
-	if(ActiveAbilityList.Num() >= MaxAbilityCount) return false;
+	if (ActiveAbilityList.Num() >= MaxAbilityCount) return false;
 
 	FAbilityInfoStruct newAbilityInfo = GetAbilityInfo(NewAbilityType);
-	newAbilityInfo.AbilityId = (uint8)NewAbilityType;
 	if (newAbilityInfo.AbilityId == -1) return false;
 
-	//레거시 코드(...)
-	switch (NewAbilityType)
+	if (newAbilityInfo.bIsRepetitive)
 	{
-	//----힐 버프-------------------
-	case ECharacterAbilityType::E_Healing:
-		newAbilityInfo.TimerDelegate.BindUFunction(OwnerCharacterRef, FName("TakeHeal"), 1.0f, true, NewAbilityType);
+		const float variable = newAbilityInfo.Variable.Num() > 0 ? newAbilityInfo.Variable[0] : 1.0f;
+		newAbilityInfo.TimerDelegate.BindUFunction(OwnerCharacterRef, newAbilityInfo.FuncName, variable, true, (uint8)NewAbilityType);
 		OwnerCharacterRef->GetWorldTimerManager().SetTimer(newAbilityInfo.TimerHandle, newAbilityInfo.TimerDelegate, 1.0f, true);
-		break;
-	//----스탯 조정 버프-------------------
-	case ECharacterAbilityType::E_AttackUp:
-		characterStat.CharacterAtkMultiplier *= 1.25f;
-		break;
-	case ECharacterAbilityType::E_DefenseUp:
-		characterStat.CharacterDefense *= 1.25f;
-		break;
-	case ECharacterAbilityType::E_SpeedUp:
-		characterStat.CharacterMoveSpeed *= 1.25f;
-		characterStat.CharacterAtkSpeed *= 1.25f;
-		break;
-	case ECharacterAbilityType::E_Invincibility:
-		characterStat.bIsInvincibility = true;
-		break;
-	case ECharacterAbilityType::E_Infinite:
-		characterStat.bInfinite = true;
-		break;
-	case ECharacterAbilityType::E_DoubleShot:
-		characterStat.MaxProjectileCount = 3;
-		break;
-	case ECharacterAbilityType::E_TripleShot:
-		characterStat.MaxProjectileCount = 3;
-		break;
 	}
-	OwnerCharacterRef->UpdateCharacterStat(characterStat);
-	OwnerCharacterRef->UpdateCharacterState(characterState);
+	TryUpdateCharacterStat(newAbilityInfo, false);
 	ActiveAbilityList.Add(newAbilityInfo);
 
 	return true;
@@ -72,9 +51,7 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 bool UAbilityManagerBase::TryRemoveAbility(const ECharacterAbilityType TargetAbilityType)
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
-	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
-	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
-
+	
 	if (!GetIsAbilityActive(TargetAbilityType)) return false;
 	if (ActiveAbilityList.Num() >= MaxAbilityCount) return false;
 
@@ -84,42 +61,19 @@ bool UAbilityManagerBase::TryRemoveAbility(const ECharacterAbilityType TargetAbi
 	
 	for (int idx = 0; idx < ActiveAbilityList.Num(); idx++)
 	{
-		const FAbilityInfoStruct& abilityInfo = ActiveAbilityList[idx];
+		FAbilityInfoStruct& abilityInfo = ActiveAbilityList[idx];
 		if (abilityInfo.AbilityId == (uint8)TargetAbilityType)
+		{
+			TryUpdateCharacterStat(abilityInfo, true);
 			ActiveAbilityList.RemoveAt(idx);
+			if (abilityInfo.bIsRepetitive)
+			{
+				OwnerCharacterRef->GetWorldTimerManager().ClearTimer(abilityInfo.TimerHandle);
+			}
+			return true;
+		}
 	}
-
-	//레거시 코드(...)
-	switch (TargetAbilityType)
-	{
-	case ECharacterAbilityType::E_Healing:
-		OwnerCharacterRef->GetWorldTimerManager().ClearTimer(
-			targetAbilityInfo.TimerHandle
-		);
-		break;
-	case ECharacterAbilityType::E_DefenseUp:
-		characterStat.CharacterDefense /= 1.25f;
-		break;
-	case ECharacterAbilityType::E_AttackUp:
-		characterStat.CharacterAtkMultiplier /= 1.25f;
-		break;
-	case ECharacterAbilityType::E_SpeedUp:
-		characterStat.CharacterMoveSpeed /= 1.25f;
-		characterStat.CharacterAtkSpeed /= 1.25f;
-		break;
-	case ECharacterAbilityType::E_Invincibility:
-		characterStat.bIsInvincibility = false;
-		break;
-	case ECharacterAbilityType::E_Infinite:
-		characterStat.bInfinite = false;
-		break;
-	case ECharacterAbilityType::E_DoubleShot:
-	case ECharacterAbilityType::E_TripleShot:
-		characterStat.MaxProjectileCount = 1;
-		break; 
-	}
-
-	return true;
+	return false;
 }
 
 void UAbilityManagerBase::ClearAllAbility()
@@ -127,11 +81,49 @@ void UAbilityManagerBase::ClearAllAbility()
 	ActiveAbilityList.Empty();
 }
 
-bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType NewAbilityType)
+bool UAbilityManagerBase::TryUpdateCharacterStat(const FAbilityInfoStruct TargetAbilityInfo, bool bIsReset)
+{
+	//Validity 체크 (꺼져있는데 제거를 시도하거나, 켜져있는데 추가를 시도한다면?)
+	if (GetIsAbilityActive((ECharacterAbilityType)TargetAbilityInfo.AbilityId) != bIsReset) return false;
+	
+	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
+	FCharacterStateStruct characterState = OwnerCharacterRef->GetCharacterState();
+
+	for (int statIdx = 0; statIdx < TargetAbilityInfo.TargetStatName.Num(); statIdx++)
+	{
+		FName targetStatName = TargetAbilityInfo.TargetStatName[statIdx];
+		float targetVariable = TargetAbilityInfo.Variable[FMath::Min(TargetAbilityInfo.Variable.Num() - 1, statIdx)];
+		if (bIsReset) targetVariable = 1/targetVariable; //초기화 시 1보다 낮은 값으로 곱함 1.25 vs 0.25
+
+		if (targetStatName == FName("MaxHP"))
+		{
+			characterStat.CharacterMaxHP *= targetVariable;
+			characterState.CharacterCurrHP = FMath::Min(characterStat.CharacterMaxHP, characterState.CharacterCurrHP);
+		}
+		//else if (targetStatName == FName("CurrHP"))
+		//	characterState.CharacterCurrHP = characterStat.CharacterMaxHP;
+		else if (targetStatName == FName("Attack"))
+			characterStat.CharacterAtkMultiplier *= targetVariable;
+		else if (targetStatName == FName("Defense"))
+			characterStat.CharacterDefense *= targetVariable;
+		else if (targetStatName == FName("MoveSpeed"))
+			characterStat.CharacterMoveSpeed *= targetVariable;
+		else if (targetStatName == FName("AttackSpeed"))
+			characterStat.CharacterAtkSpeed *= targetVariable;
+		else if (targetStatName == FName("MaxProjectileCount"))
+			characterStat.MaxProjectileCount *= targetVariable;
+	}
+	OwnerCharacterRef->UpdateCharacterStat(characterStat);
+	OwnerCharacterRef->UpdateCharacterState(characterState);
+
+	return true;
+}
+
+bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType)
 {
 	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
 	{
-		if (abilityInfo.AbilityId == (uint8)NewAbilityType)
+		if (abilityInfo.AbilityId == (uint8)TargetAbilityType)
 		{
 			return true;
 		}
@@ -141,14 +133,26 @@ bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType NewAbil
 
 FAbilityInfoStruct UAbilityManagerBase::GetAbilityInfo(const ECharacterAbilityType AbilityType)
 {
-	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	if(!AbilityInfoList.IsValidIndex((uint8)AbilityType)) return FAbilityInfoStruct();
+	return AbilityInfoList[(uint8)AbilityType];
+}
+
+bool UAbilityManagerBase::InitAbilityInfoListFromTable(const UDataTable* AbilityInfoTable)
+{
+	if (AbilityInfoTable == nullptr) return false;
+
+	const TArray<FName> rowNameList = AbilityInfoTable->GetRowNames();
+	AbilityInfoList.Empty();
+	AbilityInfoList.Add(FAbilityInfoStruct());
+	for (const FName& rowName : rowNameList)
 	{
-		if (abilityInfo.AbilityId == (uint8)AbilityType)
+		FAbilityInfoStruct* abilityInfo = AbilityInfoTable->FindRow<FAbilityInfoStruct>(rowName, "");
+		if (abilityInfo != nullptr)
 		{
-			return abilityInfo;
+			AbilityInfoList.Add(*abilityInfo);
 		}
 	}
-	return FAbilityInfoStruct();
+	return true;
 }
 
 // 임시 코드

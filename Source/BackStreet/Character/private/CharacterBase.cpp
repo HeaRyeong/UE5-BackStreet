@@ -57,12 +57,12 @@ void ACharacterBase::InitCharacterState()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 }
 
-bool ACharacterBase::AddNewDebuff(ECharacterDebuffType DebuffType, AActor* Causer, float TotalTime, float Value)
+bool ACharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer, float TotalTime, float Value)
 {
 	if (!IsValid(GamemodeRef)) return false;
 	if(!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
 
-	GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(DebuffType, this, Causer, TotalTime, Value);
+	GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
 	return true;
 }
 
@@ -134,9 +134,9 @@ float ACharacterBase::TakeDebuffDamage(float DamageAmount, ECharacterDebuffType 
 	return DamageAmount;
 }
 
-void ACharacterBase::TakeHeal(float HealAmount, bool bIsTimerEvent, uint8 BuffDebuffType)
+void ACharacterBase::TakeHeal(float HealAmountRate, bool bIsTimerEvent, uint8 BuffDebuffType)
 {
-	CharacterState.CharacterCurrHP += HealAmount;
+	CharacterState.CharacterCurrHP += CharacterStat.CharacterMaxHP * HealAmountRate;
 	CharacterState.CharacterCurrHP = FMath::Min(CharacterStat.CharacterMaxHP, CharacterState.CharacterCurrHP);
 	return;
 }
