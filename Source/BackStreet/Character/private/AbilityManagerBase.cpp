@@ -141,10 +141,10 @@ bool UAbilityManagerBase::InitAbilityInfoListFromTable(const UDataTable* Ability
 {
 	if (AbilityInfoTable == nullptr) return false;
 
-	const TArray<FName> RowNames = AbilityInfoTable->GetRowNames();
+	const TArray<FName> rowNameList = AbilityInfoTable->GetRowNames();
 	AbilityInfoList.Empty();
 	AbilityInfoList.Add(FAbilityInfoStruct());
-	for (const FName& rowName : RowNames)
+	for (const FName& rowName : rowNameList)
 	{
 		FAbilityInfoStruct* abilityInfo = AbilityInfoTable->FindRow<FAbilityInfoStruct>(rowName, "");
 		if (abilityInfo != nullptr)
