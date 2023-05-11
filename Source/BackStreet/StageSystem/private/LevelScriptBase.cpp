@@ -173,6 +173,11 @@ void ALevelScriptBase::SetSpawnPoints(ATileBase* target)
 			target->CharacterSpawnPoint.AddUnique(actor);
 
 		}
+		if (actor->ActorHasTag(FName(TEXT("RewardBoxSpawnPoint"))))
+		{
+			target->RewardBoxSpawnPoint.AddUnique(actor);
+
+		}
 	}
 }
 
