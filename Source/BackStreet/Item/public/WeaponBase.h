@@ -140,8 +140,8 @@ public:
 		void MeleeAttack();
 
 	//Melee Combo √ ±‚»≠
-	UFUNCTION()
-		void ResetCombo();
+	UFUNCTION(BlueprintCallable)
+		void SetResetComboTimer();
 
 	UFUNCTION()
 		TArray<FVector> GetCurrentMeleePointList();

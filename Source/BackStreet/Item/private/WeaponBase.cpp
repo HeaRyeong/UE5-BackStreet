@@ -66,9 +66,7 @@ void AWeaponBase::Attack()
 	if (WeaponStat.bCanMeleeAtk)
 	{
 		PlayEffectSound(AttackSound);
-		GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AWeaponBase::MeleeAttack, 0.01f, true);
-		GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, this, &AWeaponBase::ResetCombo, 1.0f, false, 4.0f - WeaponStat.WeaponAtkSpeedRate);
 		MeleeTrailParticle->Activate();
 	}
 	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
@@ -118,15 +116,9 @@ AProjectileBase* AWeaponBase::CreateProjectile()
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
 	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
 
-	//if (WeaponStat.WeaponType == EWeaponType::E_Shoot)
-	{
-		//SpawnLocation = WeaponMesh->GetSocketLocation(FName("Muzzle"));
-	}
-	//else
-	{
-		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
-		SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
-	}
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetForwardVector() * 20.0f;
+	SpawnLocation = SpawnLocation + OwnerCharacterRef->GetMesh()->GetRightVector() * 50.0f;
+	
 	SpawnRotation.Pitch = SpawnRotation.Roll = 0.0f;
 	SpawnRotation.Yaw += 90.0f;
 
@@ -281,6 +273,12 @@ void AWeaponBase::MeleeAttack()
 	//hitResult가 Valid하다면 아래 조건문에서 데미지를 가함
 	if (bIsMeleeTraceSucceed)
 	{
+		FTimerHandle attackSlowEffectTimerHandle;
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.2f);
+		GetWorldTimerManager().SetTimer(attackSlowEffectTimerHandle, FTimerDelegate::CreateLambda([&]() {
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+		}), 0.02f, false);
+
 		// 사운드
 		if (HitImpactSound != nullptr)
 		{
@@ -290,8 +288,13 @@ void AWeaponBase::MeleeAttack()
 		//데미지를 주고
 		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 										, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
-		//(Cast<ACharacterBase>(hitResult.GetActor())->GetBuffManagerRef())->SetDebuffTimer(WeaponStat.DebuffType, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
-
+		//디버프도 부여
+		if (IsValid(GamemodeRef->GetGlobalDebuffManagerRef()))
+		{
+			GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(WeaponStat.DebuffType, Cast<ACharacterBase>(hitResult.GetActor())
+				, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
+		}
+		
 		//효과 이미터 출력
 		if (IsValid(HitEffectParticle))
 		{
@@ -304,9 +307,12 @@ void AWeaponBase::MeleeAttack()
 	}
 }
 
-void AWeaponBase::ResetCombo()
+void AWeaponBase::SetResetComboTimer()
 {
-	WeaponState.ComboCount = 0;
+	GetWorldTimerManager().ClearTimer(MeleeComboTimerHandle);
+	GetWorldTimerManager().SetTimer(MeleeComboTimerHandle, FTimerDelegate::CreateLambda([&](){
+		WeaponState.ComboCount = 0; 
+	}), 0.75f, false);
 }
 
 TArray<FVector> AWeaponBase::GetCurrentMeleePointList()

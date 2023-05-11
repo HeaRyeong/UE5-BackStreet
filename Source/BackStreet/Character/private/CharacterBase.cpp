@@ -178,11 +178,11 @@ void ACharacterBase::TryAttack()
 
 	if (GetWeaponActorRef()->GetWeaponStat().WeaponType == EWeaponType::E_Shoot)
 	{
-		PlayAnimMontage(ShootAnimMontage, attackSpeed + 1.0f);
+		PlayAnimMontage(ShootAnimMontage, attackSpeed + 0.75f);
 	}
 	else
-	{
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 1.0f);
+	{	
+		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 0.75f);
 	}
 }
 
@@ -192,8 +192,8 @@ void ACharacterBase::Attack()
 	
 	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
-	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
+	//GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
+	//									, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
 	GetWeaponActorRef()->Attack();
 }
  
