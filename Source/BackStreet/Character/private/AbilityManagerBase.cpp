@@ -48,12 +48,11 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 	return true;
 }
 
-bool UAbilityManagerBase::TryRemoveAbility(const ECharacterAbilityType TargetAbilityType)
+bool UAbilityManagerBase::TryRemoveAbility(ECharacterAbilityType TargetAbilityType)
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
-	
 	if (!GetIsAbilityActive(TargetAbilityType)) return false;
-	if (ActiveAbilityList.Num() >= MaxAbilityCount) return false;
+	if (ActiveAbilityList.Num() == 0) return false;
 
 	FAbilityInfoStruct targetAbilityInfo = GetAbilityInfo(TargetAbilityType);
 	targetAbilityInfo.AbilityId = (uint8)TargetAbilityType;
@@ -64,15 +63,18 @@ bool UAbilityManagerBase::TryRemoveAbility(const ECharacterAbilityType TargetAbi
 		FAbilityInfoStruct& abilityInfo = ActiveAbilityList[idx];
 		if (abilityInfo.AbilityId == (uint8)TargetAbilityType)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("--> Found"));
 			TryUpdateCharacterStat(abilityInfo, true);
 			ActiveAbilityList.RemoveAt(idx);
 			if (abilityInfo.bIsRepetitive)
 			{
 				OwnerCharacterRef->GetWorldTimerManager().ClearTimer(abilityInfo.TimerHandle);
 			}
+			AbilityRemoveDelegate.Broadcast((uint8)TargetAbilityType);
 			return true;
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("--> Not Found"));
 	return false;
 }
 
@@ -116,6 +118,8 @@ bool UAbilityManagerBase::TryUpdateCharacterStat(const FAbilityInfoStruct Target
 	OwnerCharacterRef->UpdateCharacterStat(characterStat);
 	OwnerCharacterRef->UpdateCharacterState(characterState);
 
+	AbilityAddDelegate.Broadcast(TargetAbilityInfo);
+
 	return true;
 }
 
@@ -153,4 +157,15 @@ bool UAbilityManagerBase::InitAbilityInfoListFromTable(const UDataTable* Ability
 		}
 	}
 	return true;
+}
+
+// 임시 코드
+TArray<ECharacterAbilityType> UAbilityManagerBase::GetActiveAbilityList()
+{
+	TArray<ECharacterAbilityType> returnActiveAbility;
+	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	{
+		returnActiveAbility.Add((const ECharacterAbilityType)abilityInfo.AbilityId);
+	}
+	return returnActiveAbility;
 }

@@ -7,6 +7,7 @@
 #include "../../Global/public/AssetManagerBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../public/MissionBase.h"
+#include "Engine/LevelStreaming.h"
 
 ALevelScriptInGame::ALevelScriptInGame()
 {
@@ -44,7 +45,7 @@ void ALevelScriptInGame::StartGame()
 	ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
 	ChapterManager->InitChapterManager();
 	
-	//GameModeRef->StartChapter();
+	GameModeRef->StartChapter();
 }
 
 void ALevelScriptInGame::SetGameModeRef()
@@ -56,3 +57,4 @@ void ALevelScriptInGame::CreateAssetManager()
 {
 	AssetManager = GetWorld()->SpawnActor<AAssetManagerBase>(AssetManagerBP, FVector::ZeroVector, FRotator::ZeroRotator);
 }
+

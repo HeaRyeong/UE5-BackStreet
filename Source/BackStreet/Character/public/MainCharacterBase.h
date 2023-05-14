@@ -90,6 +90,10 @@ public:
 		TArray<AActor*> GetNearInteractionActorList();
 
 // ------- 어빌리티 / 디버프 ---------------
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		class UAbilityManagerBase* GetAbilityManagerRef() { return AbilityManagerRef; }
+
 protected: 
 	//디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)

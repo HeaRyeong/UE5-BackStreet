@@ -202,7 +202,7 @@ AWeaponBase* AWeaponInventoryBase::SpawnWeaponActor(int32 WeaponID)
 
 	const FVector spawnLocation = OwnerCharacterRef->GetActorLocation();
 	const FRotator spawnRotation = FRotator();
-	const FVector spawnScale3D = OwnerCharacterRef->ActorHasTag("Player") ? FVector(1.5f) : FVector(1.0f / OwnerCharacterRef->GetCapsuleComponent()->GetComponentScale().X);
+	const FVector spawnScale3D = OwnerCharacterRef->ActorHasTag("Player") ? FVector(2.0f) : FVector(1.0f / OwnerCharacterRef->GetCapsuleComponent()->GetComponentScale().X);
 	FTransform spawnTransform = FTransform(spawnRotation, spawnLocation, spawnScale3D);
 	AWeaponBase* newWeapon = Cast<AWeaponBase>(GetWorld()->SpawnActor(targetClass, &spawnTransform, spawnParams));
 
