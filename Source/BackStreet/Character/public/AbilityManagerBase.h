@@ -42,6 +42,9 @@ public:
 		FTimerDelegate TimerDelegate;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateAbilityID, uint8, AbilityID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateAbilityInfo, FAbilityInfoStruct, AbilityInfo);
+
 UCLASS()
 class BACKSTREET_API UAbilityManagerBase : public UObject
 {
@@ -50,6 +53,12 @@ class BACKSTREET_API UAbilityManagerBase : public UObject
 public:
 	// Sets default values for this character's properties
 	UAbilityManagerBase();
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateAbilityInfo AbilityAddDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateAbilityID AbilityRemoveDelegate;
 
 //--------- Function ----------------------------------------------------
 public:
@@ -68,14 +77,14 @@ public:
 
 	//소유하고 있는 어빌리티를 제거 (실패 시 false)
 	UFUNCTION()
-		bool TryRemoveAbility(const ECharacterAbilityType TargetAbilityType);
+		bool TryRemoveAbility(ECharacterAbilityType TargetAbilityType);
 
 	//모든 어빌리티 초기화
 	UFUNCTION()
 		void ClearAllAbility();
 
 	//해당 Ability가 Active한지 반환
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType);
 
 protected:
