@@ -34,7 +34,6 @@ void ACharacterBase::BeginPlay()
 		GetInventoryRef()->SetOwner(this);
 		GetInventoryRef()->InitInventory();
 	}
-	//GamemodeRef->ClearResourceDelegate.AddDynamic(this, &ACharacterBase::ClearAllTimerHandle);
 }
 
 // Called every frame
@@ -171,7 +170,7 @@ void ACharacterBase::TryAttack()
 	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
 	
-	CharacterState.bCanAttack = false; //°ø°İ°£ Delay,Interval Á¶ÀıÀ» À§ÇØ ¼¼ÆÃ
+	CharacterState.bCanAttack = false; //ê³µê²©ê°„ Delay,Interval ì¡°ì ˆì„ ìœ„í•´ ì„¸íŒ…
 	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
 	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
@@ -179,11 +178,11 @@ void ACharacterBase::TryAttack()
 
 	if (GetWeaponActorRef()->GetWeaponStat().WeaponType == EWeaponType::E_Shoot)
 	{
-		PlayAnimMontage(ShootAnimMontage, attackSpeed + 1.0f);
+		PlayAnimMontage(ShootAnimMontage, attackSpeed + 0.75f);
 	}
 	else
-	{
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 1.0f);
+	{	
+		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 0.75f);
 	}
 }
 
@@ -193,8 +192,8 @@ void ACharacterBase::Attack()
 	
 	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
-	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-										, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
+	//GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
+	//									, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
 	GetWeaponActorRef()->Attack();
 }
  
@@ -269,7 +268,7 @@ void ACharacterBase::DropWeapon()
 	if (!IsValid(GetInventoryRef())) return;
 
 	GetInventoryRef()->RemoveCurrentWeapon();
-	/*---- ÇöÀç ¹«±â¸¦ ¿ùµå¿¡ ¹ö¸®´Â ±â´ÉÀº ¹Ì±¸Çö -----*/
+	/*---- í˜„ì¬ ë¬´ê¸°ë¥¼ ì›”ë“œì— ë²„ë¦¬ëŠ” ê¸°ëŠ¥ì€ ë¯¸êµ¬í˜„ -----*/
 }
 
 AWeaponInventoryBase* ACharacterBase::GetInventoryRef()
