@@ -273,11 +273,18 @@ void AWeaponBase::MeleeAttack()
 	//hitResult가 Valid하다면 아래 조건문에서 데미지를 가함
 	if (bIsMeleeTraceSucceed)
 	{
-		FTimerHandle attackSlowEffectTimerHandle;
-		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.2f);
-		GetWorldTimerManager().SetTimer(attackSlowEffectTimerHandle, FTimerDelegate::CreateLambda([&]() {
-			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
-		}), 0.02f, false);
+		//마지막 콤보 슬로우 효과, 추후 MaxComboCnt 프로퍼티 추가 예정
+		//애니메이션 배열 소유는 캐릭터. OwnerCharacter->GetAnimArray(WeaponType).Num() ) 
+		// ㄴ> 이런식으로 하면 될 거 같은데...
+		if (OwnerCharacterRef->ActorHasTag("Player") && WeaponState.ComboCount % 4 == 0)
+		{
+			FTimerHandle attackSlowEffectTimerHandle;
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.1f);
+			GetWorldTimerManager().SetTimer(attackSlowEffectTimerHandle, FTimerDelegate::CreateLambda([&]() {
+				UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+				}), 0.015f, false);
+		}
+
 
 		// 사운드
 		if (HitImpactSound != nullptr)
