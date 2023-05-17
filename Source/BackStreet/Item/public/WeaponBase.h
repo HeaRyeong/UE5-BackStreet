@@ -143,12 +143,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetResetComboTimer();
 
+private:
+	//검로 Trace, 근접 무기의 각 지점에서 이전 월드 좌표 -> 현재 월드 좌표로 LineTrace를 진행 
 	UFUNCTION()
-		TArray<FVector> GetCurrentMeleePointList();
+		bool CheckMeleeAttackTarget(FHitResult& hitResult, const TArray<FVector>& TracePositionList);
+
+	//사운드, 파티클, 카메라 등의 근접 공격 효과를 출력한다.
+	UFUNCTION()
+		void ActivateMeleeHitEffect(const FVector& Location);
+
+	//마지막 콤보에서의 슬로우 타격 효과 활성화를 시도한다.
+	UFUNCTION()
+		bool TryActivateSlowHitEffect();
 
 private:
-	UPROPERTY()
-		float MeleeAtkComboRemainTime = 1.0f;
+	UFUNCTION()
+		TArray<FVector> GetCurrentMeleePointList();
 
 	UPROPERTY()
 		TArray<FVector> MeleePrevTracePointList;
