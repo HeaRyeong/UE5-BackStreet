@@ -62,9 +62,12 @@ public:
 
 //--------- Function ----------------------------------------------------
 public:
-	// 임시 코드 Active Ability GET 함수
-	UFUNCTION()
-	TArray<ECharacterAbilityType> GetActiveAbilityList();
+	// Active Ability getter 함수
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		TArray<ECharacterAbilityType> GetActiveAbilityList() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		TArray<FAbilityInfoStruct> GetActiveAbilityInfoList() const;
 
 public:
 	//어빌리티 매니저 초기화, 부모 설정
@@ -85,7 +88,10 @@ public:
 
 	//해당 Ability가 Active한지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-		bool GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType);
+		bool GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		int32 GetMaxAbilityCount() const;
 
 protected:
 	UFUNCTION()
@@ -106,14 +112,15 @@ protected:
 		int32 MaxAbilityCount = 3;
 
 private:
-	//현재 플레이어가 소유한 어빌리티의 종류
+	//현재 플레이어가 소유한 어빌리티의 정보
 	UPROPERTY()
-		TArray<FAbilityInfoStruct> ActiveAbilityList;
+		TArray<FAbilityInfoStruct> ActiveAbilityInfoList;
 	
 	//소유자
 	UPROPERTY()
 		class ACharacterBase* OwnerCharacterRef;
 
+	//모든 어빌리티의 정보
 	UPROPERTY()
 		TArray<FAbilityInfoStruct> AbilityInfoList;
 };

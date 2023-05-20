@@ -17,7 +17,7 @@
 #include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
 #include "UObject/SoftObjectPath.h"
-#include "../public/RewardBoxBase.h"
+#include "../../Item/public/RewardBoxBase.h"
 #include "Kismet/GameplayStatics.h"
 
 

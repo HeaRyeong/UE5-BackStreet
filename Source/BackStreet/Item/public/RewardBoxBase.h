@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "../../Global/public/BackStreet.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
 #include "RewardBoxBase.generated.h"
@@ -40,18 +40,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void EnterUI();
-
 	UFUNCTION(BlueprintCallable)
 		void SelectRandomAbilityIdx();
 
 	UFUNCTION(BlueprintCallable)
 		bool TrySwapAbility(int32 GetAbility, int32 StoreAbility);
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void UpdateUI();
 
 	UFUNCTION()
 		void SetBelongTile(ATileBase* Target);
@@ -62,12 +55,6 @@ public:
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		int32 PossessAbilityID;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		int32 CharacterAbilityIDA;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		int32 CharacterAbilityIDB;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

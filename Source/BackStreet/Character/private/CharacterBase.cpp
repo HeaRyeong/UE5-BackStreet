@@ -15,9 +15,6 @@ ACharacterBase::ACharacterBase()
 
 	InventoryComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("INVENTORY"));
 	InventoryComponent->SetupAttachment(GetCapsuleComponent());
-
-	BuffManagerComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("BUFF_MANAGER"));
-	BuffManagerComponent->SetupAttachment(GetCapsuleComponent());
 }
 
 // Called when the game starts or when spawned

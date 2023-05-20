@@ -3,7 +3,7 @@
 
 #include "../public/RewardBoxBase.h"
 #include "Components/SphereComponent.h"
-#include "../public/TileBase.h"
+#include "../../StageSystem/public/TileBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/AbilityManagerBase.h"
 #include "../../Character/public/CharacterInfoEnum.h"
@@ -30,7 +30,7 @@ void ARewardBoxBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OpenUIDelegate.AddDynamic(this, &ARewardBoxBase::EnterUI);
+	//OpenUIDelegate.AddDynamic(this, &ARewardBoxBase::EnterUI);
 	SelectRandomAbilityIdx();
 
 }
@@ -48,7 +48,6 @@ void ARewardBoxBase::SelectRandomAbilityIdx()
 	int32 AbilityIdx = FMath::RandRange(1, AbilityTypeID.Num() - 1);
 
 	PossessAbilityID = AbilityTypeID[AbilityIdx];
-	CharacterAbilityIDA = CharacterAbilityIDB = 0;
 	SetCharacterAbilityList();
 }
 
