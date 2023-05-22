@@ -29,7 +29,8 @@ ARewardBoxBase::ARewardBoxBase()
 void ARewardBoxBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	if (this->ActorHasTag("Sample"))
+		return;
 	OpenUIDelegate.AddDynamic(this, &ARewardBoxBase::EnterUI);
 	SelectRandomAbilityIdx();
 
