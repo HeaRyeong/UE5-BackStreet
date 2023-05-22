@@ -20,15 +20,6 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	//테스트용 코드
-	UFUNCTION(BlueprintCallable)
-		void ActivateHealAbility();
-	UFUNCTION(BlueprintCallable)
-		void DeactivateHealAbility();
-	// 임시 어빌리티 매니저 getter 함수
-	UFUNCTION(BlueprintCallable)
-		class UAbilityManagerBase* GetAbilityManager() {return AbilityManagerRef;}
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -98,11 +89,24 @@ public:
 	UFUNCTION()
 		TArray<AActor*> GetNearInteractionActorList();
 
-// ------- 버프 / 디버프 ---------------
+// ------- 어빌리티 / 디버프 ---------------
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		class UAbilityManagerBase* GetAbilityManagerRef() { return AbilityManagerRef; }
+
 protected: 
-	//버프 or 디버프 상태를 지정
+	//디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
-		virtual	bool AddNewDebuff(ECharacterDebuffType BuffDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+		virtual	bool TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+
+	UFUNCTION(BlueprintCallable)
+		bool TryAddNewAbility(const ECharacterAbilityType NewAbilityType);
+
+	UFUNCTION(BlueprintCallable)
+		bool TryRemoveAbility(const ECharacterAbilityType TargetAbilityType);
+		
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType);
 
 // -------- VFX -----------
 protected:

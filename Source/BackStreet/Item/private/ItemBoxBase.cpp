@@ -13,7 +13,7 @@
 
 // Sets default values
 AItemBoxBase::AItemBoxBase()
-{
+{ 
 	this->Tags.Add(FName("ItemBox"));
 	PrimaryActorTick.bCanEverTick = false;
 	SetActorTickEnabled(false);
@@ -43,7 +43,7 @@ void AItemBoxBase::BeginPlay()
 	Super::BeginPlay();
 
 	OnPlayerOpenBegin.AddDynamic(this, &AItemBoxBase::OnItemBoxOpened);
-	OverlapVolume->OnComponentBeginOverlap.AddDynamic(this, &AItemBoxBase::OnOverlapBegins);
+	//OverlapVolume->OnComponentBeginOverlap.AddDynamic(this, &AItemBoxBase::OnOverlapBegins);
 	MeshComponent->OnComponentHit.AddDynamic(this, &AItemBoxBase::OnMeshHit);
 
 	GamemodeRef = Cast<ABackStreetGameModeBase>(GetWorld()->GetAuthGameMode());

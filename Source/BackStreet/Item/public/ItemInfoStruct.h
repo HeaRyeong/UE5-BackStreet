@@ -12,7 +12,6 @@ enum class EItemCategoryInfo : uint8
 	E_None					UMETA(DisplayName = "None"),
 	E_Weapon				UMETA(DisplayName = "Weapon"),
 	E_Bullet				UMETA(DisplayName = "Bullet"),
-	E_Buff					UMETA(DisplayName = "Buff"),
 	E_DeBuff				UMETA(DisplayName = "DeBuff"),
 	E_StatUp				UMETA(DisplayName = "StatUp"),
 	E_Mission				UMETA(DisplayName = "Mission"),
@@ -45,21 +44,6 @@ public:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FWeaponStateStruct WeaponState;
-};
-
-USTRUCT(BlueprintType)
-struct FBuffItemInfoStruct : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY()
-
-public:
-	UPROPERTY(EditAnywhere)
-		ECharacterBuffType Type;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float Value;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float Time;
-
 };
 
 USTRUCT(BlueprintType)

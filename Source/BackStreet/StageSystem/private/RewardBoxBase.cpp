@@ -57,7 +57,7 @@ bool ARewardBoxBase::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 {
 	// Check Right Swapping
 	// Call SwapAbility
-
+	/*
 	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	UAbilityManagerBase* abilityManagerRef = characterRef->GetAbilityManager();
@@ -100,7 +100,8 @@ bool ARewardBoxBase::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 	}
 	else
 		return false;
-
+	*/
+	return false;
 }
 
 
@@ -111,6 +112,7 @@ void ARewardBoxBase::SetBelongTile(ATileBase* Target)
 
 void ARewardBoxBase::SetCharacterAbilityList()
 {
+	/*
 	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	UAbilityManagerBase* abilityManagerRef = characterRef->GetAbilityManager();
@@ -131,5 +133,6 @@ void ARewardBoxBase::SetCharacterAbilityList()
 	{
 		CharacterAbilityIDA = CharacterAbilityIDB = 0;
 	}
+	*/
 
 }

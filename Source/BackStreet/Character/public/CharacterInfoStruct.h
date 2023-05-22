@@ -33,7 +33,7 @@ public:
 		float CharacterAtkMultiplier = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0.2f, UIMax = 2.0f))
-		float CharacterAtkSpeed = 0.75f;
+		float CharacterAtkSpeed = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 100.0f, UIMax = 1000.0f))
 		float CharacterMoveSpeed = 400.0f;
@@ -42,8 +42,8 @@ public:
 		float CharacterDefense = 0.0f;
 
 	//한번에 발사할 발사체 개수
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 1, UIMax = 3))
-		uint8 MaxProjectileCount = 3;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 1, UIMax = 1))
+		int32 MaxProjectileCount = 1;
 };
 
 USTRUCT(BlueprintType)

@@ -12,7 +12,7 @@ struct FAbilityInfoStruct : public FTableRowBase
 public:
 	GENERATED_USTRUCT_BODY()
 
-	//어빌리티의 ID
+	//어빌리티의 ID, ECharacterAbilityType와 동일한 값을 지님
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 10))
 		uint8 AbilityId;
 
@@ -24,20 +24,26 @@ public:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		bool bIsRepetitive;
 
-	//Callback 함수명 (TFunctionRef를 쓰는건 어떨지..) , 현재 미사용
+	//Callback 함수명
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		FName FuncName; 
 
-	//어빌리티에 사용할 변수 (증가량), 현재 미사용
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
-		float Variable;
+	//반영할 Stat의 이름
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		TArray<FName> TargetStatName;
+
+	//어빌리티에 사용할 변수 (증가량)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		TArray<float> Variable;
 
 	//Repetitive 연산을 위한 TimerHandle
 	UPROPERTY()
 		FTimerHandle TimerHandle; 
-
 		FTimerDelegate TimerDelegate;
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateAbilityID, uint8, AbilityID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateAbilityInfo, FAbilityInfoStruct, AbilityInfo);
 
 UCLASS()
 class BACKSTREET_API UAbilityManagerBase : public UObject
@@ -48,6 +54,13 @@ public:
 	// Sets default values for this character's properties
 	UAbilityManagerBase();
 
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateAbilityInfo AbilityAddDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateAbilityID AbilityRemoveDelegate;
+
+//--------- Function ----------------------------------------------------
 public:
 	// 임시 코드 Active Ability GET 함수
 	UFUNCTION()
@@ -64,21 +77,29 @@ public:
 
 	//소유하고 있는 어빌리티를 제거 (실패 시 false)
 	UFUNCTION()
-		bool TryRemoveAbility(const ECharacterAbilityType TargetAbilityType);
+		bool TryRemoveAbility(ECharacterAbilityType TargetAbilityType);
 
 	//모든 어빌리티 초기화
 	UFUNCTION()
 		void ClearAllAbility();
 
-protected:
 	//해당 Ability가 Active한지 반환
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType);
+
+protected:
 	UFUNCTION()
-		bool GetIsAbilityActive(const ECharacterAbilityType NewAbilityType);
+		bool TryUpdateCharacterStat(const FAbilityInfoStruct TargetAbilityInfo, bool bIsReset = false);
 
 	//배열로부터 AbilityInfo를 불러들임
 	UFUNCTION()
 		FAbilityInfoStruct GetAbilityInfo(const ECharacterAbilityType AbilityType);
 
+private:
+	UFUNCTION()
+		bool InitAbilityInfoListFromTable(const UDataTable* AbilityInfoTable);
+
+//--------- Property ----------------------------------------------------
 protected:
 	//최대 어빌리티 수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 1, UIMax = 5))
@@ -92,4 +113,7 @@ private:
 	//소유자
 	UPROPERTY()
 		class ACharacterBase* OwnerCharacterRef;
+
+	UPROPERTY()
+		TArray<FAbilityInfoStruct> AbilityInfoList;
 };
