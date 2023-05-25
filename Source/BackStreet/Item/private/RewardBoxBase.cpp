@@ -3,6 +3,7 @@
 
 #include "../public/RewardBoxBase.h"
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
 #include "../../StageSystem/public/TileBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/AbilityManagerBase.h"
@@ -23,6 +24,10 @@ ARewardBoxBase::ARewardBoxBase()
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetCollisionProfileName("Item", false);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+	InfoWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("INFO_WIDGET"));
+	InfoWidgetComponent->SetupAttachment(Mesh);
+	InfoWidgetComponent->SetVisibility(false);
 }
 
 // Called when the game starts or when spawned
@@ -30,9 +35,12 @@ void ARewardBoxBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//OpenUIDelegate.AddDynamic(this, &ARewardBoxBase::EnterUI);
 	SelectRandomAbilityIdx();
+	OverlapVolume->OnComponentBeginOverlap.AddDynamic(this, &ARewardBoxBase::OnPlayerBeginOverlap);
+	OverlapVolume->OnComponentEndOverlap.AddDynamic(this, &ARewardBoxBase::OnPlayerEndOverlap);
+	OnPlayerBeginInteract.AddDynamic(this, &ARewardBoxBase::AddAbilityToPlayer);
 
+	InitializeWidgetComponent();
 }
 
 // Called every frame
@@ -42,95 +50,43 @@ void ARewardBoxBase::Tick(float DeltaTime)
 
 }
 
+void ARewardBoxBase::OnPlayerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (!IsValid(OtherActor) || !OtherActor->ActorHasTag("Player")) return;
+
+	ActivateWidgetComponent(false);
+}
+
+void ARewardBoxBase::OnPlayerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (!IsValid(OtherActor) || !OtherActor->ActorHasTag("Player")) return;
+
+	ActivateWidgetComponent(true);
+}
+
+void ARewardBoxBase::AddAbilityToPlayer(AMainCharacterBase* PlayerCharacterRef)
+{
+	if (!IsValid(PlayerCharacterRef)) return;
+
+	const bool result = PlayerCharacterRef->TryAddNewAbility(AbilityType);
+	if (result)
+	{
+		if (DestroyEffectParticle && DestroyEffectSound)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), DestroyEffectParticle, GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), DestroyEffectSound, GetActorLocation());
+		}
+		Destroy();
+	}
+	else
+	{
+		//GetWorld()->GetAuthGameMode<ABackStreetGamemodeBase>()->
+		//시스템 메시지
+	}
+}
+
 void ARewardBoxBase::SelectRandomAbilityIdx()
 {
-	const TArray<int32> AbilityTypeID = { 0,1,2,3,4,5,6,7,8 };
-	int32 AbilityIdx = FMath::RandRange(1, AbilityTypeID.Num() - 1);
-
-	PossessAbilityID = AbilityTypeID[AbilityIdx];
-	SetCharacterAbilityList();
-}
-
-bool ARewardBoxBase::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
-{
-	// Check Right Swapping
-	// Call SwapAbility
-	/*
-	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	UAbilityManagerBase* abilityManagerRef = characterRef->GetAbilityManager();
-	TArray<ECharacterAbilityType> abilityList = abilityManagerRef->GetActiveAbilityList();
-
-	if (GetAbility == StoreAbility)
-		return false;
-
-	for (ECharacterAbilityType type : abilityList)
-	{
-		if (GetAbility == (int32)type)
-			return false;
-	}
-
-	if (StoreAbility != 0 && GetAbility == 0)
-	{
-		PossessAbilityID = StoreAbility;
-		abilityManagerRef->TryRemoveAbility(((ECharacterAbilityType)StoreAbility));
-		SetCharacterAbilityList();
-		UpdateUI();
-		return true;
-	}
-
-	if (abilityList.Num() == 0 || abilityList.Num() == 1)
-	{
-		PossessAbilityID = 0;
-		abilityManagerRef->TryAddNewAbility(((ECharacterAbilityType)GetAbility));
-		SetCharacterAbilityList();
-		UpdateUI();
-		return true;
-	}
-	else if (abilityList.Num() == 2)
-	{
-		abilityManagerRef->TryRemoveAbility(((ECharacterAbilityType)StoreAbility));
-		abilityManagerRef->TryAddNewAbility(((ECharacterAbilityType)GetAbility));
-		PossessAbilityID = StoreAbility;
-		SetCharacterAbilityList();
-		UpdateUI();
-		return true;
-	}
-	else
-		return false;
-	*/
-	return false;
-}
-
-
-void ARewardBoxBase::SetBelongTile(ATileBase* Target)
-{
-	BelongTile = Target;
-}
-
-void ARewardBoxBase::SetCharacterAbilityList()
-{
-	/*
-	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	UAbilityManagerBase* abilityManagerRef = characterRef->GetAbilityManager();
-	TArray<ECharacterAbilityType> abilityList = abilityManagerRef->GetActiveAbilityList();
-
-	if (abilityList.Num() == 2)
-	{
-		CharacterAbilityIDA = (int32)abilityList[0];
-		CharacterAbilityIDB = (int32)abilityList[1];
-
-	}
-	else if (abilityList.Num() == 1)
-	{
-		CharacterAbilityIDA = (int32)abilityList[0];
-		CharacterAbilityIDB = 0;
-	}
-	else
-	{
-		CharacterAbilityIDA = CharacterAbilityIDB = 0;
-	}
-	*/
-
+	//임시코드!!!!!!! 반드시 변경 필요 - @ljh
+	AbilityType = (ECharacterAbilityType)((uint8)FMath::RandRange(1.0f, 7.0f));
 }

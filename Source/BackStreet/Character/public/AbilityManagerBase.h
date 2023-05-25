@@ -13,27 +13,35 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	//어빌리티의 ID, ECharacterAbilityType와 동일한 값을 지님
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 10))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0, UIMax = 10))
 		uint8 AbilityId;
 
 	//어빌리티명
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FName AbilityName;
 
+	//어빌리티 설명
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+		FName AbilityDescription;
+
+	//어빌리티의 아이콘
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		UTexture2D* AbilityIcon;
+		
 	//반복적인 연산이 필요한지? (도트 힐) , 현재 미사용
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		bool bIsRepetitive;
 
 	//Callback 함수명
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 		FName FuncName; 
 
 	//반영할 Stat의 이름
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TArray<FName> TargetStatName;
 
 	//어빌리티에 사용할 변수 (증가량)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TArray<float> Variable;
 
 	//Repetitive 연산을 위한 TimerHandle

@@ -8,17 +8,30 @@
 #include "Components/BoxComponent.h"
 #include "RewardBoxBase.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateOpenUI);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateInteraction, class AMainCharacterBase*, PlayerCharacterRef);
 
 UCLASS()
 class BACKSTREET_API ARewardBoxBase : public AActor
 {
 	GENERATED_BODY()
 
+/*-------- Delegate ----------------------- */
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
-		FDelegateOpenUI OpenUIDelegate;
+		FDelegateInteraction OnPlayerBeginInteract;
+
+/*-------- 공통, 컴포넌트 ----------------------- */
+public:
+	// Sets default values for this actor's properties
+	ARewardBoxBase();
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -27,36 +40,53 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* Mesh;
 
-public:
-	// Sets default values for this actor's properties
-	ARewardBoxBase();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		class UWidgetComponent* InfoWidgetComponent;
 
+/*------- 주요 기능 ---------------------------*/
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	//위젯 컴포넌트 초기화
+	UFUNCTION(BlueprintImplementableEvent)
+		void InitializeWidgetComponent();
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	//위젯 컴포넌트 활성화(비활성화)
+	UFUNCTION(BlueprintImplementableEvent)
+		void ActivateWidgetComponent(bool bDeactivateFlag);
 
-public:
+	//플레이어 오버랩 시, 위젯을 띄움
+	UFUNCTION()
+		void OnPlayerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp
+								, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	//플레이어 오버랩 종료 시, 위젯을 지움
+	UFUNCTION()
+		void OnPlayerEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp
+								, int32 OtherBodyIndex);
+
+	//플레이어에게 어빌리티를 주는 것을 시도한다.
+	UFUNCTION()
+		void AddAbilityToPlayer(class AMainCharacterBase* PlayerCharacterRef);
+
+	//무작위의 어빌리티 타입을 갖고온다.
 	UFUNCTION(BlueprintCallable)
 		void SelectRandomAbilityIdx();
 
-	UFUNCTION(BlueprintCallable)
-		bool TrySwapAbility(int32 GetAbility, int32 StoreAbility);
+// ----- Asset -----------------------------------
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|VFX")
+		class UParticleSystem* DestroyEffectParticle;
 
-	UFUNCTION()
-		void SetBelongTile(ATileBase* Target);
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Sound")
+		class USoundCue* DestroyEffectSound;
 
-	UFUNCTION(BlueprintCallable)
-		void SetCharacterAbilityList();
+/*------- 프로퍼티 ---------------------------*/
+protected:
+	//현재의 보상 타입
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		ECharacterAbilityType AbilityType; 
 
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		int32 PossessAbilityID;
-
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		class ATileBase* BelongTile;
+private:
+	//위젯을 띄운 다음에 true로 바뀌어 상호작용(어빌리티 추가)이 가능
+	UPROPERTY()
+		bool bIsReadyToInteract = false;
 };
