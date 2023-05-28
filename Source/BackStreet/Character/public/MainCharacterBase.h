@@ -94,7 +94,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		class UAbilityManagerBase* GetAbilityManagerRef() { return AbilityManagerRef; }
 
-protected: 
+public: 
 	//디버프 상태를 지정
 	UFUNCTION(BlueprintCallable)
 		virtual	bool TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);

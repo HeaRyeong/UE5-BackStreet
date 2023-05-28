@@ -31,7 +31,7 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 	FCharacterStatStruct characterStat = OwnerCharacterRef->GetCharacterStat();
 
 	if (GetIsAbilityActive(NewAbilityType)) return false;
-	if (ActiveAbilityList.Num() >= MaxAbilityCount) return false;
+	if (ActiveAbilityInfoList.Num() >= MaxAbilityCount) return false;
 
 	FAbilityInfoStruct newAbilityInfo = GetAbilityInfo(NewAbilityType);
 	if (newAbilityInfo.AbilityId == -1) return false;
@@ -43,7 +43,7 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 		OwnerCharacterRef->GetWorldTimerManager().SetTimer(newAbilityInfo.TimerHandle, newAbilityInfo.TimerDelegate, 1.0f, true);
 	}
 	TryUpdateCharacterStat(newAbilityInfo, false);
-	ActiveAbilityList.Add(newAbilityInfo);
+	ActiveAbilityInfoList.Add(newAbilityInfo);
 
 	return true;
 }
@@ -52,20 +52,19 @@ bool UAbilityManagerBase::TryRemoveAbility(ECharacterAbilityType TargetAbilityTy
 {
 	if (!IsValid(OwnerCharacterRef)) return false;
 	if (!GetIsAbilityActive(TargetAbilityType)) return false;
-	if (ActiveAbilityList.Num() == 0) return false;
+	if (ActiveAbilityInfoList.Num() == 0) return false;
 
 	FAbilityInfoStruct targetAbilityInfo = GetAbilityInfo(TargetAbilityType);
 	targetAbilityInfo.AbilityId = (uint8)TargetAbilityType;
 	if (targetAbilityInfo.AbilityId == -1) return false;
 	
-	for (int idx = 0; idx < ActiveAbilityList.Num(); idx++)
+	for (int idx = 0; idx < ActiveAbilityInfoList.Num(); idx++)
 	{
-		FAbilityInfoStruct& abilityInfo = ActiveAbilityList[idx];
+		FAbilityInfoStruct& abilityInfo = ActiveAbilityInfoList[idx];
 		if (abilityInfo.AbilityId == (uint8)TargetAbilityType)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("--> Found"));
 			TryUpdateCharacterStat(abilityInfo, true);
-			ActiveAbilityList.RemoveAt(idx);
+			ActiveAbilityInfoList.RemoveAt(idx);
 			if (abilityInfo.bIsRepetitive)
 			{
 				OwnerCharacterRef->GetWorldTimerManager().ClearTimer(abilityInfo.TimerHandle);
@@ -74,13 +73,12 @@ bool UAbilityManagerBase::TryRemoveAbility(ECharacterAbilityType TargetAbilityTy
 			return true;
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("--> Not Found"));
 	return false;
 }
 
 void UAbilityManagerBase::ClearAllAbility()
 {
-	ActiveAbilityList.Empty();
+	ActiveAbilityInfoList.Empty();
 }
 
 bool UAbilityManagerBase::TryUpdateCharacterStat(const FAbilityInfoStruct TargetAbilityInfo, bool bIsReset)
@@ -123,9 +121,9 @@ bool UAbilityManagerBase::TryUpdateCharacterStat(const FAbilityInfoStruct Target
 	return true;
 }
 
-bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType)
+bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType TargetAbilityType) const
 {
-	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	for (const FAbilityInfoStruct& abilityInfo : ActiveAbilityInfoList)
 	{
 		if (abilityInfo.AbilityId == (uint8)TargetAbilityType)
 		{
@@ -133,6 +131,11 @@ bool UAbilityManagerBase::GetIsAbilityActive(const ECharacterAbilityType TargetA
 		}
 	}
 	return false;
+}
+
+int32 UAbilityManagerBase::GetMaxAbilityCount() const
+{
+	return MaxAbilityCount; 
 }
 
 FAbilityInfoStruct UAbilityManagerBase::GetAbilityInfo(const ECharacterAbilityType AbilityType)
@@ -159,13 +162,17 @@ bool UAbilityManagerBase::InitAbilityInfoListFromTable(const UDataTable* Ability
 	return true;
 }
 
-// 임시 코드
-TArray<ECharacterAbilityType> UAbilityManagerBase::GetActiveAbilityList()
+TArray<ECharacterAbilityType> UAbilityManagerBase::GetActiveAbilityList() const
 {
 	TArray<ECharacterAbilityType> returnActiveAbility;
-	for (FAbilityInfoStruct& abilityInfo : ActiveAbilityList)
+	for (const FAbilityInfoStruct& abilityInfo : ActiveAbilityInfoList)
 	{
 		returnActiveAbility.Add((const ECharacterAbilityType)abilityInfo.AbilityId);
 	}
 	return returnActiveAbility;
+}
+
+TArray<FAbilityInfoStruct> UAbilityManagerBase::GetActiveAbilityInfoList() const
+{
+	return ActiveAbilityInfoList;
 }
