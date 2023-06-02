@@ -44,6 +44,7 @@ bool UAbilityManagerBase::TryAddNewAbility(const ECharacterAbilityType NewAbilit
 	}
 	TryUpdateCharacterStat(newAbilityInfo, false);
 	ActiveAbilityInfoList.Add(newAbilityInfo);
+	AbilityAddDelegate.Broadcast(newAbilityInfo);
 
 	return true;
 }
@@ -115,8 +116,6 @@ bool UAbilityManagerBase::TryUpdateCharacterStat(const FAbilityInfoStruct Target
 	}
 	OwnerCharacterRef->UpdateCharacterStat(characterStat);
 	OwnerCharacterRef->UpdateCharacterState(characterState);
-
-	AbilityAddDelegate.Broadcast(TargetAbilityInfo);
 
 	return true;
 }

@@ -13,7 +13,7 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	//어빌리티의 ID, ECharacterAbilityType와 동일한 값을 지님
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 0, UIMax = 10))
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, meta = (UIMin = 0, UIMax = 10))
 		uint8 AbilityId;
 
 	//어빌리티명
@@ -48,6 +48,12 @@ public:
 	UPROPERTY()
 		FTimerHandle TimerHandle; 
 		FTimerDelegate TimerDelegate;
+
+public:
+	inline bool operator==(const FAbilityInfoStruct& other) const
+	{
+		return AbilityId == other.AbilityId;
+	}
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateAbilityID, uint8, AbilityID);
