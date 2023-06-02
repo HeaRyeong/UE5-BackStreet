@@ -1,6 +1,7 @@
 #include "../public/CharacterBase.h"
 #include "../../Global/public/DebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/RangedWeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Global/public/AssetManagerBase.h"
@@ -203,7 +204,8 @@ void ACharacterBase::StopAttack()
 void ACharacterBase::TryReload()
 {
 	if (!IsValid(GetWeaponActorRef())) return;
-	if (!GetWeaponActorRef()->GetCanReload())
+	if (GetWeaponActorRef()->GetWeaponStat().WeaponType != EWeaponType::E_Shoot) return;
+	if (!Cast<ARangedWeaponBase>(GetWeaponActorRef())->GetCanReload())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
 		return;
@@ -217,7 +219,7 @@ void ACharacterBase::TryReload()
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
-		GetWeaponActorRef()->TryReload();
+		Cast<ARangedWeaponBase>(GetWeaponActorRef())->TryReload();
 		CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	}), 1.0f, false, reloadTime);
 }
