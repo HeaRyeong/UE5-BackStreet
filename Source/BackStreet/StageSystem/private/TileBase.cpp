@@ -17,7 +17,7 @@
 #include "../public/ALevelScriptInGame.h"
 #include "../public/LevelScriptBase.h"
 #include "UObject/SoftObjectPath.h"
-#include "../public/RewardBoxBase.h"
+#include "../../Item/public/RewardBoxBase.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -248,7 +248,7 @@ void ATileBase::SpawnRewardBox()
 	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	ARewardBoxBase* target = GetWorld()->SpawnActor<ARewardBoxBase>(InGameScriptRef->GetAssetManager()->RewardBoxAssets[0], RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0,90,0), actorSpawnParameters);
 	target->Tags.AddUnique("RewardBox");
-	target->SetBelongTile(this);
+	//target->SetBelongTile(this);
 }
 
 void ATileBase::MonsterDie(AEnemyCharacterBase* target)

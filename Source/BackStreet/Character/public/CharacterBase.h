@@ -26,10 +26,7 @@ protected:
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-		UChildActorComponent* InventoryComponent; 
-
-	UPROPERTY(EditDefaultsOnly)
-		UChildActorComponent* BuffManagerComponent;
+		UChildActorComponent* InventoryComponent;	
 
 
 // ------- Character Action ±âº» ------- 
