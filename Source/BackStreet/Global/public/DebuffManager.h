@@ -60,12 +60,15 @@ public:
 		int16 GetDebuffInfoListIndex(ECharacterDebuffType DebuffType);
 
 private:
+	//TimerInfoMap에 Key가 Target.id에 대응하는 Timer Handle List를 Get
 	UFUNCTION()
 		TArray<FTimerHandle>& GetTimerHandleListRef(class ACharacterBase* Target);
 
+	//Target.id에 대응하는 디버프 이전 초기화 값 배열을 Get
 	UFUNCTION()
 		TArray<float>& GetResetValueListRef(class ACharacterBase* Target);
 
+	//Target Pawn에 대응하는 디버프 타이머 리스트 생성
 	UFUNCTION()
 		void AddNewTimerList(class ACharacterBase* Target);
 
@@ -73,6 +76,7 @@ private:
 	UPROPERTY()
 		class ABackStreetGameModeBase* GamemodeRef;
 
+	//캐릭터의 Actor id - 디버프 타이머(+ 초기화 값) 정보를 저장
 	UPROPERTY()
 		TMap<int32, FDebuffTimerInfoStruct> TimerInfoMap;
 };

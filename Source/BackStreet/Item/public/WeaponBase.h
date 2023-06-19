@@ -96,7 +96,8 @@ protected:
 //-------- 콤보 관련 ------------------------------------
 public:
 	//Melee Combo 초기화
-	virtual void SetResetComboTimer();
+	UFUNCTION(BlueprintCallable)
+		virtual void SetResetComboTimer();
 
 	//현재 Combo 수를 반환 
 	UFUNCTION(BlueprintCallable, BlueprintPure)

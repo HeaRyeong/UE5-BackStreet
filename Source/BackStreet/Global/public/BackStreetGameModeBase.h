@@ -39,6 +39,9 @@ protected:
 
 // ----- Gameplay Manager -------------------
 public:
+	UFUNCTION(BlueprintImplementableEvent)
+		void PrintDebugMessage();
+
 	UFUNCTION()
 		void StartChapter();
 
