@@ -78,6 +78,7 @@ void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
 
 void ACharacterBase::UpdateCharacterState(FCharacterStateStruct NewState)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Debuff State : %d"), NewState.CharacterDebuffState);
 	CharacterState = NewState;
 }
 

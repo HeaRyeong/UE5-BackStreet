@@ -56,8 +56,13 @@ public:
 	UFUNCTION()
 		FTimerHandle& GetDebuffTimerHandleRef(ECharacterDebuffType DebuffType, class ACharacterBase* Target);
 
+	//ECharacterDebuffType를 uint16으로 변환
 	UFUNCTION()
-		int16 GetDebuffInfoListIndex(ECharacterDebuffType DebuffType);
+		uint16 GetDebuffInfoListIndex(ECharacterDebuffType DebuffType);
+
+	//GetResetValueListRef의 단점 (Invalid List)를 보완하는 함수
+	UFUNCTION()
+		float& GetDebuffResetValueRef(ECharacterDebuffType DebuffType, ACharacterBase* Target);
 
 private:
 	//TimerInfoMap에 Key가 Target.id에 대응하는 Timer Handle List를 Get
