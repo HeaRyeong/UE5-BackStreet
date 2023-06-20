@@ -274,6 +274,7 @@ void AMainCharacterBase::RotateToCursor()
 	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(RotationResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
 		ResetRotationToMovement();
+		AddMovementInput(newRotation.Vector(), 0.01f, true);
 	}), 1.0f, false);
 }
 

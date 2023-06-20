@@ -59,8 +59,8 @@ bool ACharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor*
 	if (!IsValid(GamemodeRef)) return false;
 	if(!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
 
-	GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
-	return true;
+	bool result = GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
+	return result;
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
