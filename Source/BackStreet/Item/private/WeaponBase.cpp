@@ -54,7 +54,7 @@ void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponState
 
 void AWeaponBase::Attack()
 {
-	WeaponState.ComboCount = (WeaponState.ComboCount + 1); //UpdateComboState()? 
+	
 }
 
 void AWeaponBase::StopAttack()
@@ -65,6 +65,11 @@ void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
 {
 	if (NewStat.MaxDurability == 0) return;
 	WeaponStat = NewStat;
+}
+
+void AWeaponBase::UpdateComboState()
+{
+	WeaponState.ComboCount = (WeaponState.ComboCount + 1); 
 }
 
 void AWeaponBase::SetResetComboTimer()

@@ -166,7 +166,6 @@ protected:
 protected:
 	virtual void ClearAllTimerHandle();
 
-private:
 	//공격 간 딜레이 핸들
 	UPROPERTY()
 		FTimerHandle AtkIntervalHandle;
