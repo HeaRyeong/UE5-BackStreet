@@ -17,7 +17,7 @@
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
-#include "../../StageSystem/public/RewardBoxBase.h"
+#include "../../Item/public/RewardBoxBase.h"
 #define MAX_CAMERA_BOOM_LENGTH 1450.0f
 #define MIN_CAMERA_BOOM_LENGTH 250.0f
 
@@ -99,8 +99,6 @@ void AMainCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AMainCharacterBase::SwitchToNextWeapon);
 	PlayerInputComponent->BindAction("PickItem", IE_Pressed, this, &AMainCharacterBase::TryInvestigate);
 	PlayerInputComponent->BindAction("DropWeapon", IE_Pressed, this, &AMainCharacterBase::DropWeapon);
-
-	
 }
 
 void AMainCharacterBase::MoveForward(float Value)
@@ -133,7 +131,6 @@ void AMainCharacterBase::Roll()
 	}
 
 	GetMesh()->SetWorldRotation(newRotation);
-	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle); //Roll 도중에 Rotation이 바뀌는 현상 방지
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 	PlayAnimMontage(RollAnimMontage, FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 450.0f));
@@ -166,7 +163,7 @@ void AMainCharacterBase::TryInvestigate()
 void AMainCharacterBase::Investigate(AActor* TargetActor)
 {
 	if (!IsValid(TargetActor)) return;
-	UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
+	
 	if (TargetActor->ActorHasTag("Item"))
 	{
 		Cast<AItemBase>(TargetActor)->OnPlayerBeginPickUp.ExecuteIfBound(this);
@@ -177,8 +174,7 @@ void AMainCharacterBase::Investigate(AActor* TargetActor)
 	}
 	else if (TargetActor->ActorHasTag("RewardBox"))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Check RewardBox"));
-		Cast<ARewardBoxBase>(TargetActor)->OpenUIDelegate.Broadcast();
+		Cast<ARewardBoxBase>(TargetActor)->OnPlayerBeginInteract.Broadcast(this);
 	}
 }
 
@@ -274,16 +270,15 @@ void AMainCharacterBase::RotateToCursor()
 	}
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
-	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle);
-	GetWorld()->GetTimerManager().SetTimer(RotationResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
-		ResetRotationToMovement();
-	}), 1.0f, false);
+	ResetRotationToMovement();
+	newRotation.Yaw += (-270.0f);
+	SetActorRotation(newRotation.Quaternion(), ETeleportType::TeleportPhysics);
 }
 
 TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 {
 	TArray<AActor*> totalItemList;
-	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass(),ARewardBoxBase::StaticClass()};
+	TArray<UClass*> targetClassList = {AItemBase::StaticClass(), AItemBoxBase::StaticClass(), ARewardBoxBase::StaticClass()};
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
@@ -295,7 +290,6 @@ TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 		{
 			result = (result || UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius
 														, { itemObjectType }, targetClass, {}, totalItemList));
-
 			if (totalItemList.Num() > 0) return totalItemList; //찾는 즉시 반환
 		}
 	}
@@ -416,7 +410,6 @@ void AMainCharacterBase::ClearAllTimerHandle()
 
 	GetWorldTimerManager().ClearTimer(BuffEffectResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(FacialEffectResetTimerHandle);
-	GetWorldTimerManager().ClearTimer(RotationResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(RollTimerHandle); 
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
 }
