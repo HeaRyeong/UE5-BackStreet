@@ -21,7 +21,7 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 		EnemyStatTable = DataTable.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> StageTypeDataTable(TEXT("/Game/Map/Stages/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> StageTypeDataTable(TEXT("/Game/System/StageManager/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
 	if (StageTypeDataTable.Succeeded())
 	{
 		StageTypeTable = StageTypeDataTable.Object;
@@ -49,7 +49,6 @@ void ABackStreetGameModeBase::StartChapter()
 	//	{
 	//		StartTileDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
 	//	}), 0.1f, false, 0.5f);
-
 }
 
 

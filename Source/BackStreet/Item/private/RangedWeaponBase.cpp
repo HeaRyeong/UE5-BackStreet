@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "../public/RangedWeaponBase.h"
@@ -27,14 +27,14 @@ void ARangedWeaponBase::StopAttack()
 }
 
 void ARangedWeaponBase::ClearAllTimerHandle()
-{
+{	
 	Super::ClearAllTimerHandle();
-}
-
+}	
+	
 AProjectileBase* ARangedWeaponBase::CreateProjectile()
-{
+{	
 	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this; //ProjectileÀÇ ¼ÒÀ¯ÀÚ´Â Player
+	SpawnParams.Owner = this; //Projectileì˜ ì†Œìœ ìžëŠ” Player
 	SpawnParams.Instigator = GetInstigator();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -54,13 +54,13 @@ AProjectileBase* ARangedWeaponBase::CreateProjectile()
 	{
 		newProjectile->SetOwner(this);
 		newProjectile->InitProjectile(OwnerCharacterRef);
-		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //¹öÇÁ/µð¹öÇÁ·Î ÀÎÇØ °­È­/³ÊÇÁµÈ °ªÀ» ¹Ý¿µ
+		newProjectile->ProjectileStat.ProjectileDamage *= WeaponStat.WeaponDamageRate; //ë²„í”„/ë””ë²„í”„ë¡œ ì¸í•´ ê°•í™”/ë„ˆí”„ëœ ê°’ì„ ë°˜ì˜
 		newProjectile->ProjectileStat.ProjectileSpeed *= WeaponStat.WeaponAtkSpeedRate;
 		return newProjectile;
 	}
 	return nullptr;
-}
-
+}	
+	
 bool ARangedWeaponBase::TryReload()
 {
 	if (!GetCanReload()) return false;
@@ -74,14 +74,14 @@ bool ARangedWeaponBase::TryReload()
 	WeaponState.TotalAmmoCount -= addAmmoCnt;
 
 	return true;
-}
-
+}	
+	
 bool ARangedWeaponBase::GetCanReload()
-{
+{	
 	if (WeaponStat.bIsInfiniteAmmo || !WeaponStat.bHasProjectile) return false;
 	if (WeaponState.TotalAmmoCount == 0 || WeaponState.CurrentAmmoCount == WeaponStat.MaxAmmoPerMagazine) return false;
 	return true;
-}
+}	
 
 void ARangedWeaponBase::AddAmmo(int32 Count)
 {
@@ -102,12 +102,12 @@ bool ARangedWeaponBase::TryFireProjectile()
 	{
 		if (OwnerCharacterRef->ActorHasTag("Player"))
 		{
-			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("ÅºÈ¯ÀÌ ºÎÁ·ÇÕ´Ï´Ù.")), FColor::White);
+			GamemodeRef->PrintSystemMessageDelegate.Broadcast(FName(TEXT("íƒ„í™˜ì´ ë¶€ì¡±í•©ë‹ˆë‹¤.")), FColor::White);
 			UE_LOG(LogTemp, Warning, TEXT("No Ammo"));
 		}
 
-		//StopAttackÀÇ ResetActionState·Î ÀÎÇØ ½ÇÇàÀÌ µÇÁö ¾Ê´Â Çö»ó ¹æÁö¸¦ À§ÇØ
-		//Å¸ÀÌ¸Ó¸¦ ÅëÇØ ÀÏÁ¤ ½Ã°£ÀÌ Áö³­ ÈÄ¿¡ Reload¸¦ ½Ãµµ.
+		//StopAttackì˜ ResetActionStateë¡œ ì¸í•´ ì‹¤í–‰ì´ ë˜ì§€ ì•ŠëŠ” í˜„ìƒ ë°©ì§€ë¥¼ ìœ„í•´
+		//íƒ€ì´ë¨¸ë¥¼ í†µí•´ ì¼ì • ì‹œê°„ì´ ì§€ë‚œ í›„ì— Reloadë¥¼ ì‹œë„.
 		GetWorldTimerManager().SetTimer(AutoReloadTimerHandle, FTimerDelegate::CreateLambda([&]() {
 			OwnerCharacterRef->TryReload();
 		}), 1.0f, false, AUTO_RELOAD_DELAY_VALUE);
@@ -120,7 +120,7 @@ bool ARangedWeaponBase::TryFireProjectile()
 		FTimerHandle delayHandle;
 		GetWorld()->GetTimerManager().SetTimer(delayHandle, FTimerDelegate::CreateLambda([&]() {
 			AProjectileBase* newProjectile = CreateProjectile();
-		//½ºÆùÇÑ ¹ß»çÃ¼°¡ Valid ÇÏ´Ù¸é ¹ß»ç
+		//ìŠ¤í°í•œ ë°œì‚¬ì²´ê°€ Valid í•˜ë‹¤ë©´ ë°œì‚¬
 		if (IsValid(newProjectile))
 		{
 			if (!WeaponStat.bIsInfiniteAmmo && !OwnerCharacterRef->GetCharacterStat().bInfinite)

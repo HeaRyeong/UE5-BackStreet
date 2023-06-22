@@ -323,6 +323,7 @@ bool AMainCharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AAc
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, DebuffSound, GetActorLocation());
 	}
+	//230621 임시 제거
 	//ActivateBuffNiagara(bIsDebuff, BuffDebuffType);
 
 	GetWorld()->GetTimerManager().ClearTimer(BuffEffectResetTimerHandle);
@@ -351,15 +352,15 @@ bool AMainCharacterBase::GetIsAbilityActive(const ECharacterAbilityType TargetAb
 	return AbilityManagerRef->GetIsAbilityActive(TargetAbilityType);
 }
 
-void AMainCharacterBase::ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType)
+void AMainCharacterBase::ActivateDebuffNiagara(uint8 DebuffType)
 {
-	TArray<UNiagaraSystem*>* targetEmitterList = (bIsDebuff ? &DebuffNiagaraEffectList : &BuffNiagaraEffectList);
+	TArray<UNiagaraSystem*>* targetEmitterList = &DebuffNiagaraEffectList;
 
-	if (targetEmitterList->IsValidIndex(BuffDebuffType) && (*targetEmitterList)[BuffDebuffType] != nullptr)
+	if (targetEmitterList->IsValidIndex(DebuffType) && (*targetEmitterList)[DebuffType] != nullptr)
 	{
-		BuffNiagaraEmitter->SetRelativeLocation(bIsDebuff ? FVector(0.0f, 0.0f, 125.0f) : FVector(0.0f));
+		BuffNiagaraEmitter->SetRelativeLocation(FVector(0.0f, 0.0f, 125.0f));
 		BuffNiagaraEmitter->Deactivate();
-		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[BuffDebuffType], false);
+		BuffNiagaraEmitter->SetAsset((*targetEmitterList)[DebuffType], false);
 		BuffNiagaraEmitter->Activate();
 	}
 }

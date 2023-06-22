@@ -116,9 +116,6 @@ protected:
 		class UNiagaraComponent* DirectionNiagaraEmitter;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
-		TArray<class UNiagaraSystem*> BuffNiagaraEffectList;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|VFX")
 		TArray<class UNiagaraSystem*> DebuffNiagaraEffectList;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Material")
@@ -135,7 +132,7 @@ private:
 		bool bIsWallThroughEffectActivated = false;
 
 	UFUNCTION()
-		void ActivateBuffNiagara(bool bIsDebuff, uint8 BuffDebuffType);
+		void ActivateDebuffNiagara(uint8 DebuffType);
 
 	UFUNCTION()
 		void DeactivateBuffEffect();
