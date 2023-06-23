@@ -69,7 +69,8 @@ public:
 		void InitCharacterState();
 
 	//캐릭터의 디버프 정보를 업데이트
-	virtual	bool TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
+	UFUNCTION(BlueprintCallable)
+		virtual	bool TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer = nullptr, float TotalTime = 0.0f, float Value = 0.0f);
 
 	//디버프가 활성화 되어있는지 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -165,7 +166,6 @@ protected:
 protected:
 	virtual void ClearAllTimerHandle();
 
-private:
 	//공격 간 딜레이 핸들
 	UPROPERTY()
 		FTimerHandle AtkIntervalHandle;

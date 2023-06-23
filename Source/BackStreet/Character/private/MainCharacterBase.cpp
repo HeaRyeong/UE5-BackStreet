@@ -131,7 +131,6 @@ void AMainCharacterBase::Roll()
 	}
 
 	GetMesh()->SetWorldRotation(newRotation);
-	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle); //Roll 도중에 Rotation이 바뀌는 현상 방지
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
 	PlayAnimMontage(RollAnimMontage, FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 450.0f));
@@ -271,10 +270,9 @@ void AMainCharacterBase::RotateToCursor()
 	}
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
-	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle);
-	GetWorld()->GetTimerManager().SetTimer(RotationResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
-		ResetRotationToMovement();
-	}), 1.0f, false);
+	ResetRotationToMovement();
+	newRotation.Yaw += (-270.0f);
+	SetActorRotation(newRotation.Quaternion(), ETeleportType::TeleportPhysics);
 }
 
 TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
@@ -292,7 +290,6 @@ TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 		{
 			result = (result || UKismetSystemLibrary::SphereOverlapActors(GetWorld(), overlapBeginPos, sphereRadius
 														, { itemObjectType }, targetClass, {}, totalItemList));
-
 			if (totalItemList.Num() > 0) return totalItemList; //찾는 즉시 반환
 		}
 	}
@@ -413,7 +410,6 @@ void AMainCharacterBase::ClearAllTimerHandle()
 
 	GetWorldTimerManager().ClearTimer(BuffEffectResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(FacialEffectResetTimerHandle);
-	GetWorldTimerManager().ClearTimer(RotationResetTimerHandle);
 	GetWorldTimerManager().ClearTimer(RollTimerHandle); 
 	GetWorldTimerManager().ClearTimer(AttackLoopTimerHandle);
 }
