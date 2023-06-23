@@ -115,7 +115,7 @@ void AMainCharacterBase::MoveRight(float Value)
 
 void AMainCharacterBase::Roll()
 {
-	if (!IsValid(RollAnimMontage) || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
+	if (!GetIsActionActive(ECharacterActionType::E_Idle)) return;
 	
 	FVector newDirection(0.0f);
 	newDirection.X = GetInputAxisValue(FName("MoveForward"));
@@ -133,7 +133,13 @@ void AMainCharacterBase::Roll()
 	GetMesh()->SetWorldRotation(newRotation);
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
-	PlayAnimMontage(RollAnimMontage, FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 450.0f));
+
+	if (AnimAssetData.RollAnimMontageList.Num() > 0
+		&& IsValid(AnimAssetData.RollAnimMontageList[0]))
+	{
+		PlayAnimMontage(AnimAssetData.RollAnimMontageList[0], FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 450.0f));
+	}
+	
 }
 
 void AMainCharacterBase::ZoomIn(float Value)
@@ -152,7 +158,11 @@ void AMainCharacterBase::TryInvestigate()
 
 	if (nearActorList.Num())
 	{
-		PlayAnimMontage(InvestigateAnimation);
+		if (AnimAssetData.InvestigateAnimMontageList.Num() > 0
+			&& IsValid(AnimAssetData.InvestigateAnimMontageList[0]))
+		{
+			PlayAnimMontage(AnimAssetData.InvestigateAnimMontageList[0]);
+		}
 		Investigate(nearActorList[0]);
 		ResetActionState();
 

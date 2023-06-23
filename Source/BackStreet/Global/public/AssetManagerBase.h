@@ -5,11 +5,16 @@
 #include "AssetManagerBase.generated.h"
 #define MAX_STAGE_CNT 5
 
+//캐릭터의 애니메이션 에셋 경로를 저장하는 데이터 테이블 구조체
 USTRUCT(BlueprintType)
-struct FCharacterAnimAssetInfoStruct
+struct FCharacterAnimAssetInfoStruct : public FTableRowBase
 {
 public:
 	GENERATED_USTRUCT_BODY()
+
+	//캐릭터의 ID
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 CharacterID;
 
 	//근접 공격 애니메이션 / List로 관리 -> 랜덤하게 출력
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -31,25 +36,45 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TArray<UAnimMontage*> HitAnimMontageList;
 
+	//구르기 애니메이션 / List로 관리 -> 랜덤하게 출력
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		TArray<UAnimMontage*> RollAnimMontageList;
+
+	//상호작용 애니메이션 / List로 관리 -> 랜덤하게 출력
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		TArray<UAnimMontage*> InvestigateAnimMontageList;
+
 	//사망 애니메이션 / List로 관리 -> 랜덤하게 출력
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TArray<UAnimMontage*> DieAnimMontageList;
 };
 
+//캐릭터의 VFX 에셋 경로를 저장하는 데이터 테이블 구조체
 USTRUCT(BlueprintType)
-struct FCharacterAssetInfoStruct : public FTableRowBase
+struct FCharacterVFXAssetInfoStruct : public FTableRowBase
 {
 public:
 	GENERATED_USTRUCT_BODY()
 
-	//캐릭터 애니메이션의 배열을 관리하는 Map
-	//Key : 캐릭터의 ID, Value : TArray<UAnimMontage>
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		TMap<int32, FCharacterAnimAssetInfoStruct> AnimMontageInfoMap;
-
 	//캐릭터의 디버프 나이아가라 리스트
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		TArray<class UNiagaraSystem*> DebuffNiagaraEffectLis;
+};
+
+//캐릭터의 에셋 경로를 저장하는 데이터 테이블 구조체
+USTRUCT(BlueprintType)
+struct FCharacterAssetInfoStruct
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+	//캐릭터 애니메이션 에셋 경로 정보
+	UPROPERTY()
+		TMap<int32, FCharacterAnimAssetInfoStruct> AnimAssetInfoMap;
+
+	//캐릭터 VFX 에셋 경로 정보
+	UPROPERTY()
+		TMap<int32, FCharacterVFXAssetInfoStruct> VFXAssetInfoMap;
 };
 
 UCLASS()

@@ -78,6 +78,25 @@ public:
 	UFUNCTION()
 		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
 
+// ------ Asset Info ----------------------------
+public:
+	//캐릭터의 애니메이션 에셋 데이터를 읽어들임
+	UFUNCTION()
+		FCharacterAnimAssetInfoStruct GetCharacterAnimAssetInfoData(const int32 CharacterID);
+
+protected:
+	//애니메이션 에셋 경로 저장 데이터 테이블
+	UPROPERTY(EditDefaultsOnly, Category = "Asset|Data")
+		UDataTable* AnimAssetInfoTable;
+	
+	//VFX 에셋 경로 저장 데이터 테이블
+	UPROPERTY(EditDefaultsOnly, Category = "Asset|Data")
+		UDataTable* VFXssetInfoTable;
+
+private:
+	//추후 따로 뺄 예정
+	UPROPERTY()
+		FCharacterAssetInfoStruct CachedCharacterAssetInfoData;
 
 // ------ Data Table -----------------------------
 protected:
@@ -111,6 +130,8 @@ private:
 
 	UPROPERTY()
 		class UDebuffManager* DebuffManager;
+
+	
 
 protected: 
 	//게임 일시정지 여부

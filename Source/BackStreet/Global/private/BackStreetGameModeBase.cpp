@@ -161,3 +161,27 @@ FStageEnemyTypeStruct ABackStreetGameModeBase::GetStageTypeInfoWithRow(uint16 ro
 	return *newStat;
 }
 
+FCharacterAnimAssetInfoStruct ABackStreetGameModeBase::GetCharacterAnimAssetInfoData(const int32 CharacterID)
+{
+	// 캐시된 데이터 확인
+	if (CachedCharacterAssetInfoData.AnimAssetInfoMap.Contains(CharacterID))
+	{
+		return CachedCharacterAssetInfoData.AnimAssetInfoMap[CharacterID];
+	}
+
+	// AssetInfoTable에서 데이터 가져오기
+	if (AnimAssetInfoTable)
+	{
+		FCharacterAnimAssetInfoStruct* assetInfoRow = AnimAssetInfoTable->FindRow<FCharacterAnimAssetInfoStruct>(FName(*FString::FromInt(CharacterID)), FString(""));
+		if (assetInfoRow)
+		{
+			// 데이터를 캐시에 저장
+			CachedCharacterAssetInfoData.AnimAssetInfoMap.Add(CharacterID, *assetInfoRow);
+			return *assetInfoRow;
+		}
+	}
+
+	// 데이터가 없을 경우 기본값 반환
+	return FCharacterAnimAssetInfoStruct();
+}
+
