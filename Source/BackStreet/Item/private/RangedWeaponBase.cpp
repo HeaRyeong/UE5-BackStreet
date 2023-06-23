@@ -32,11 +32,11 @@ void ARangedWeaponBase::ClearAllTimerHandle()
 }	
 	
 AProjectileBase* ARangedWeaponBase::CreateProjectile()
-{	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this; //Projectile의 소유자는 Player
-	SpawnParams.Instigator = GetInstigator();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+{
+	FActorSpawnParameters spawmParams;
+	spawmParams.Owner = this; //Projectile의 소유자는 Player
+	spawmParams.Instigator = GetInstigator();
+	spawmParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	FVector SpawnLocation = OwnerCharacterRef->GetActorLocation();
 	FRotator SpawnRotation = OwnerCharacterRef->GetMesh()->GetComponentRotation();
@@ -48,7 +48,7 @@ AProjectileBase* ARangedWeaponBase::CreateProjectile()
 	SpawnRotation.Yaw += 90.0f;
 
 	FTransform SpawnTransform = { SpawnRotation, SpawnLocation, {1.0f, 1.0f, 1.0f} };
-	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, SpawnParams));
+	AProjectileBase* newProjectile = Cast<AProjectileBase>(GetWorld()->SpawnActor(ProjectileClass, &SpawnTransform, spawmParams));
 
 	if (IsValid(newProjectile))
 	{
