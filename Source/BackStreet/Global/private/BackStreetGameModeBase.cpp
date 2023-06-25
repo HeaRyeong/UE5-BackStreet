@@ -8,6 +8,8 @@
 #include "../../StageSystem/public/StageManagerBase.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/RangedWeaponBase.h"
+#include "../../Item/public/MeleeWeaponBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
@@ -121,7 +123,6 @@ void ABackStreetGameModeBase::UpdateWeaponStat(AWeaponBase* TargetWeapon, FWeapo
 		TargetWeapon->UpdateWeaponStat(NewStat);
 	}
 }
-
 void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, const uint8 WeaponID)
 {
 	if (IsValid(TargetWeapon) && IsValid(WeaponStatTable))
@@ -168,7 +169,6 @@ FCharacterAnimAssetInfoStruct ABackStreetGameModeBase::GetCharacterAnimAssetInfo
 	{
 		return CachedCharacterAssetInfoData.AnimAssetInfoMap[CharacterID];
 	}
-
 	// AssetInfoTable에서 데이터 가져오기
 	if (AnimAssetInfoTable)
 	{
@@ -180,7 +180,6 @@ FCharacterAnimAssetInfoStruct ABackStreetGameModeBase::GetCharacterAnimAssetInfo
 			return *assetInfoRow;
 		}
 	}
-
 	// 데이터가 없을 경우 기본값 반환
 	return FCharacterAnimAssetInfoStruct();
 }

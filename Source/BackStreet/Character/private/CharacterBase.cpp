@@ -238,7 +238,7 @@ void ACharacterBase::TryReload()
 		return;
 	}
 
-	float reloadTime = GetWeaponActorRef()->GetWeaponStat().LoadingDelayTime;
+	float reloadTime = GetWeaponActorRef()->GetWeaponStat().RangedWeaponStat.LoadingDelayTime;
 	if (AnimAssetData.ReloadAnimMontageList.Num() > 0)
 	{
 		UAnimMontage* reloadAnim = AnimAssetData.ReloadAnimMontageList[0];
