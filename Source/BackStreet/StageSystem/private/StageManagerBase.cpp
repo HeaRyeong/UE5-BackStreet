@@ -105,7 +105,7 @@ void AStageManagerBase::CleanManager()
 
 	TArray<AActor*> items;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBase::StaticClass(),items);
-
+	
 	for (AActor* remove : items)
 	{
 		if (remove != nullptr)
@@ -113,15 +113,15 @@ void AStageManagerBase::CleanManager()
 	}
 	Stages.Empty();
 	CurrentTile = nullptr;
-}
-
-void AStageManagerBase::SetMissionStages()
-{
+}	
 	
-}
-
+void AStageManagerBase::SetMissionStages()
+{	
+	
+}	
+	
 void AStageManagerBase::MoveStage(uint8 Dir)
-{
+{	
 	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase:: MoveStage Dir: %d "),Dir);
 	if (CurrentTile != nullptr)
 	{
@@ -129,9 +129,7 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 		UnloadLevel = CurrentTile->LevelRef;
 		UnloadTile->PauseStage();
 	}
-
 	MoveDir = (EDirection)Dir;
-	
 
 	switch (MoveDir)
 	{
@@ -170,7 +168,6 @@ void AStageManagerBase::MoveStage(uint8 Dir)
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
 		break;
 	}
-
 	// UI 업데이트
 	InGameScriptRef->UpdateMiniMapUI();
 
@@ -191,8 +188,7 @@ void AStageManagerBase::LoadStage()
 	
 	}
 	else
-	{
-		
+	{	
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
 		FString name = FString::FromInt(InGameScriptRef->ChapterManager->GetChapterLV());
 		name += FString(TEXT("Stage"));
@@ -202,11 +198,8 @@ void AStageManagerBase::LoadStage()
 		//MyScriptDelegate.BindUFunction(this, "CompleteLoad");
 		//CurrentTile->LevelRef->OnLevelLoaded.Add(MyScriptDelegate);
 		CurrentTile->LevelRef->SetShouldBeLoaded(true);
-		CurrentTile->LevelRef->SetShouldBeVisible(true);
-		
+		CurrentTile->LevelRef->SetShouldBeVisible(true);	
 	}
-
-	
 }
 
 void AStageManagerBase::UnLoadStage()

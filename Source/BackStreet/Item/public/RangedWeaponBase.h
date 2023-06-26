@@ -23,9 +23,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	UFUNCTION(BlueprintCallable)
+		virtual float GetAttackRange() override;
+
 protected:
 	UFUNCTION()
 		virtual void ClearAllTimerHandle() override;
+
+//------ 스탯/상태 관련 ---------------------------------
+protected:
+	UFUNCTION(BlueprintCallable)
+		virtual void UpdateWeaponStat(FWeaponStatStruct NewStat) override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FRangedWeaponStateStruct RangedWeaponState;
 
 //------ Projectile 관련----------------------------
 public:
@@ -43,7 +54,7 @@ public:
 
 	//남은 탄환의 개수를 반환 - Stat.TotalAmmoCount
 	UFUNCTION(BlueprintCallable)
-		int32 GetLeftAmmoCount() { return WeaponState.TotalAmmoCount; };
+		int32 GetLeftAmmoCount() { return RangedWeaponState.TotalAmmoCount; };
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		bool GetCanReload();
@@ -57,7 +68,7 @@ public:
 		void AddMagazine(int32 Count);
 
 	UFUNCTION()
-		void SetInfiniteAmmoMode(bool NewMode) { WeaponStat.bIsInfiniteAmmo = NewMode; }
+		void SetInfiniteAmmoMode(bool NewMode) { WeaponStat.RangedWeaponStat.bIsInfiniteAmmo = NewMode; }
 
 protected:
 	//SoftObjRef로 대체 예정

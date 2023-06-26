@@ -27,3 +27,4 @@
 #include "../../Item/public/ItemDataAssetInfo.h"
 #include "../../Item/public/WeaponInfoStruct.h"
 #include "../../Item/public/ProjectileInfoStruct.h"
+#include "../../Global/public/AssetManagerBase.h"

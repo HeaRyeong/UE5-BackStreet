@@ -52,6 +52,9 @@ public:
 
 //------ 스탯/상태 관련 ---------------------------------
 public:
+	//Weapon Stat 초기화
+	virtual void UpdateWeaponStat(FWeaponStatStruct NewStat);
+
 	UFUNCTION()
 		void InitWeapon();
 
@@ -65,12 +68,7 @@ public:
 		bool GetIsWeaponRangeType() { return WeaponStat.WeaponType == EWeaponType::E_Shoot || WeaponStat.WeaponType == EWeaponType::E_Throw; }
 
 	//공격 범위를 반환
-	UFUNCTION(BlueprintCallable)
-		float GetAttackRange();
-
-	//Weapon Stat 초기화
-	UFUNCTION(BlueprintCallable)
-		void UpdateWeaponStat(FWeaponStatStruct NewStat);
+	virtual float GetAttackRange();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		FWeaponStatStruct GetWeaponStat() { return WeaponStat; }
