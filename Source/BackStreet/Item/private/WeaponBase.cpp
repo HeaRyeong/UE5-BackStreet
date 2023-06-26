@@ -33,6 +33,10 @@ void AWeaponBase::BeginPlay()
 	InitWeapon();
 }
 
+void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
+{
+}
+
 void AWeaponBase::InitWeapon()
 {
 	GamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -52,20 +56,9 @@ void AWeaponBase::RevertWeaponInfo(FWeaponStatStruct OldWeaponStat, FWeaponState
 	WeaponState = OldWeaponState;
 }
 
-void AWeaponBase::Attack()
-{
-	
-}
+void AWeaponBase::Attack() { }
 
-void AWeaponBase::StopAttack()
-{
-}
-
-void AWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
-{
-	if (NewStat.MaxDurability == 0) return;
-	WeaponStat = NewStat;
-}
+void AWeaponBase::StopAttack() { }
 
 void AWeaponBase::UpdateComboState()
 {
@@ -97,18 +90,6 @@ void AWeaponBase::ClearAllTimerHandle()
 	//* 자식 클래스에서 오버라이드 *//
 }
 
-float AWeaponBase::GetAttackRange()
-{
-	if (!IsValid(OwnerCharacterRef)) return 200.0f;
-
-	if (WeaponStat.WeaponType == EWeaponType::E_Melee ||
-		(!OwnerCharacterRef->GetCharacterStat().bInfinite && WeaponState.CurrentAmmoCount == 0.0f && WeaponState.TotalAmmoCount == 0.0f))
-	{
-		return 150.0f; //매크로나 const 멤버로 수정하기 
-	}
-	return 700.0f;
-}
-
 void AWeaponBase::UpdateDurabilityState()
 {
 	if (OwnerCharacterRef->GetCharacterStat().bInfinite || WeaponStat.bInfinite) return;
@@ -124,3 +105,4 @@ void AWeaponBase::UpdateDurabilityState()
 	}
 }
 
+float AWeaponBase::GetAttackRange() { return 0.0f; }

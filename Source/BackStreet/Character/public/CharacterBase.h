@@ -28,7 +28,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 		UChildActorComponent* InventoryComponent;	
 
-
 // ------- Character Action 기본 ------- 
 public:
 	//Input에 Binding 되어 공격을 시도 (AnimMontage를 호출)
@@ -118,33 +117,19 @@ public:
 	UFUNCTION()
 		void ResetAtkIntervalTimer();
 
-// ----- VFX -------------------
+// ----- 애니메이션 관련 -------------------
+protected:
+	//애니메이션, VFX, 사운드큐 등 저장
+	UPROPERTY()
+		struct FCharacterAnimAssetInfoStruct AnimAssetData;
+
+// ----- VFX ------------------- -> 위 애니메이션 처럼 변경 예정
 protected:
 	UFUNCTION()
 		void InitDynamicMeshMaterial(UMaterialInterface* NewMaterial);
 
 	UPROPERTY()
 		class UMaterialInstanceDynamic* CurrentDynamicMaterial;
-
-// ----- 캐릭터 애니메이션 -------------------
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		TArray<class UAnimMontage*> AttackAnimMontageArray;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* ShootAnimMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* HitAnimMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* RollAnimMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* DieAnimMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Animation")
-		class UAnimMontage* ReloadAnimMontage;
 
 // ------ 그 외 캐릭터 프로퍼티  ---------------
 protected:

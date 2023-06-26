@@ -7,13 +7,16 @@
 #include "../../Character/public/CharacterBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #define MAX_LINETRACE_POS_COUNT 6
+#define DEFAULT_MELEE_ATK_RANGE 150.0f
 
 void AMeleeWeaponBase::Attack()
 {
 	Super::Attack();
 
+	this->Tags.Add("Melee");
+
 	//근접 공격이 가능한 무기라면 근접 공격 로직 수행
-	if (WeaponStat.bCanMeleeAtk)
+	if (WeaponStat.MeleeWeaponStat.bCanMeleeAtk)
 	{
 		PlayEffectSound(AttackSound);
 		GetWorldTimerManager().SetTimer(MeleeAtkTimerHandle, this, &AMeleeWeaponBase::MeleeAttack, 0.01f, true);
@@ -35,6 +38,12 @@ void AMeleeWeaponBase::StopAttack()
 	MeleeTrailParticle->Deactivate();
 }
 
+float AMeleeWeaponBase::GetAttackRange()
+{
+	if (!IsValid(OwnerCharacterRef)) return DEFAULT_MELEE_ATK_RANGE + 50.0f;
+	return DEFAULT_MELEE_ATK_RANGE;
+}
+
 void AMeleeWeaponBase::ClearAllTimerHandle()
 {
 	Super::ClearAllTimerHandle();    
@@ -42,6 +51,12 @@ void AMeleeWeaponBase::ClearAllTimerHandle()
 	GetWorldTimerManager().ClearTimer(MeleeAtkTimerHandle);
 	MeleePrevTracePointList.Empty(); 
 	MeleeLineTraceQueryParams.ClearIgnoredActors();
+}
+
+void AMeleeWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)
+{
+	Super::UpdateWeaponStat(NewStat);
+	// State 초기화
 }
 
 void AMeleeWeaponBase::MeleeAttack()
@@ -60,7 +75,7 @@ void AMeleeWeaponBase::MeleeAttack()
 		ActivateMeleeHitEffect(hitResult.Location);
 
 		//데미지를 주고, 중복 체크를 해준다.
-		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
+		UGameplayStatics::ApplyDamage(hitResult.GetActor(), WeaponStat.MeleeWeaponStat.WeaponMeleeDamage * WeaponStat.WeaponDamageRate
 			, OwnerCharacterRef->GetController(), OwnerCharacterRef, nullptr);
 		MeleeLineTraceQueryParams.AddIgnoredActor(hitResult.GetActor());
 

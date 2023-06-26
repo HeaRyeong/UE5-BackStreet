@@ -25,12 +25,59 @@ enum class EWeaponType : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FWeaponStatStruct : public FTableRowBase
+struct FMeleeWeaponStatStruct : public FTableRowBase
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+	//----- 근접 관련 Property --------------------
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float WeaponMeleeDamage = 0.2f;
+
+	//근접 공격이 가능한 지? 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool bCanMeleeAtk = true;
+};
+
+USTRUCT(BlueprintType)
+struct FRangedWeaponStatStruct : public FTableRowBase
 {
 public:
 	GENERATED_USTRUCT_BODY()
 	
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
+	//----- 발사체 관련 Property ------------------
+	//무한 탄약인지?
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool bIsInfiniteAmmo;
+
+	//공격 시, 발사체가 있는지?
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool bHasProjectile = false;
+
+	// 무한 탄창인지?
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		bool bInfiniteMagazine;
+
+	//한 탄창에 최대 발사체 수
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 MaxAmmoPerMagazine;
+
+	//소지할 수 있는 최대 발사체 개수 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		int32 MaxTotalAmmo = 200;
+
+	//장전 시간
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float LoadingDelayTime;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponStatStruct : public FTableRowBase
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
 		FName WeaponName;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite)
@@ -40,7 +87,6 @@ public:
 		EWeaponType WeaponType;
 
 	//----- 공통 Stat -------
-	
 	//공격 속도 Rate
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float WeaponAtkSpeedRate = 1.0f;
@@ -48,18 +94,6 @@ public:
 	//무기 데미지
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float WeaponDamageRate = 1.0f;
-
-	//인벤토리를 차지하는 칸 수
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		uint8 WeaponWeight = 1;
-
-	//----- 근접 관련 Property --------------------
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float WeaponMeleeDamage = 0.2f;
-
-	//근접 공격이 가능한 지? 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bCanMeleeAtk = true;
 
 	//무기는 각 하나의 디버프만 가짐 (임시)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -78,37 +112,38 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		int32 MaxDurability = 10;
 
-	//----- 발사체 관련 Property ------------------
-	//무한 탄약인지?
+	//인벤토리를 차지하는 칸 수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bIsInfiniteAmmo;
+		uint8 WeaponWeight = 1;
 
-	//공격 시, 발사체가 있는지?
+	//----- 근거리 Stat ------
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bHasProjectile = false;
+		FMeleeWeaponStatStruct MeleeWeaponStat;
 
-	// 무한 탄창인지?
+	//----- 원거리 Stat ------
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		bool bInfiniteMagazine;
-
-	//한 탄창에 최대 발사체 수
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 MaxAmmoPerMagazine; 
-
-	//소지할 수 있는 최대 발사체 개수 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		int32 MaxTotalAmmo = 200;
-
-	//장전 시간
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float LoadingDelayTime;
+		FRangedWeaponStatStruct RangedWeaponStat;
 };
 
+USTRUCT(BlueprintType)
+struct FRangedWeaponStateStruct
+{
+public:
+	GENERATED_USTRUCT_BODY()
+
+		//현재 탄창에 있는 발사체 수
+		UPROPERTY(BlueprintReadOnly)
+		int32 CurrentAmmoCount = 0;
+
+	//탄창에 있는 탄환들의 총합
+	UPROPERTY(BlueprintReadOnly)
+		int32 TotalAmmoCount = 0;
+};
 
 USTRUCT(BlueprintType)
 struct FWeaponStateStruct
 {
-public:
+public:						
 	GENERATED_USTRUCT_BODY()
 
 	//현재 내구도
@@ -119,11 +154,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		int32 ComboCount = 0;
 
-	//현재 탄창에 있는 발사체 수
-	UPROPERTY(BlueprintReadOnly)
-		int32 CurrentAmmoCount = 0;
-
-	//탄창에 있는 탄환들의 총합
-	UPROPERTY(BlueprintReadOnly)
-		int32 TotalAmmoCount = 0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FRangedWeaponStateStruct RangedWeaponState;
 };

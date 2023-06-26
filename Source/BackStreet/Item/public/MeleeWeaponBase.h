@@ -22,9 +22,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual void StopAttack() override;
 
+	UFUNCTION(BlueprintCallable)
+		virtual float GetAttackRange() override;
+
 protected:
 	UFUNCTION()
 		virtual void ClearAllTimerHandle() override;
+
+//------ 스탯/상태 관련 ---------------------------------
+protected:
+	UFUNCTION(BlueprintCallable)
+		virtual void UpdateWeaponStat(FWeaponStatStruct NewStat) override;
 
 //-------- Melee 관련 ---------------------------
 public:
@@ -57,6 +65,4 @@ private:
 
 	UPROPERTY()
 		FTimerHandle MeleeAtkTimerHandle;
-
-	
 };

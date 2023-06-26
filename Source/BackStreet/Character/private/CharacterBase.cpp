@@ -32,6 +32,12 @@ void ACharacterBase::BeginPlay()
 		GetInventoryRef()->SetOwner(this);
 		GetInventoryRef()->InitInventory();
 	}
+
+	//애니메이션 에셋 초기화
+	if (IsValid(GamemodeRef))
+	{
+		AnimAssetData = GamemodeRef->GetCharacterAnimAssetInfoData(CharacterStat.CharacterID);
+	}
 }
 
 // Called every frame
@@ -118,9 +124,9 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	{
 		Die();
 	}
-	else if (IsValid(HitAnimMontage))
+	else if (AnimAssetData.HitAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(HitAnimMontage);
+		PlayAnimMontage(AnimAssetData.HitAnimMontageList[0]);
 	}
 	return DamageAmount;
 }
@@ -152,9 +158,9 @@ void ACharacterBase::Die()
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
 
-	if (DieAnimMontage != nullptr)
+	if (AnimAssetData.DieAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(DieAnimMontage);
+		PlayAnimMontage(AnimAssetData.DieAnimMontageList[0]);
 	}
 	else
 	{
@@ -164,7 +170,6 @@ void ACharacterBase::Die()
 
 void ACharacterBase::TryAttack()
 {
-	if (AttackAnimMontageArray.Num() <= 0) return;
 	if (!IsValid(GetWeaponActorRef())) return;
 	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
@@ -172,16 +177,39 @@ void ACharacterBase::TryAttack()
 	CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
 	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
-	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
+	int32 nextAnimIdx = 0;
 	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
-	if (GetWeaponActorRef()->GetWeaponStat().WeaponType == EWeaponType::E_Shoot)
+	TArray<UAnimMontage*> targetAnimList;
+	switch (GetWeaponActorRef()->GetWeaponStat().WeaponType)
 	{
-		PlayAnimMontage(ShootAnimMontage, attackSpeed + 0.75f);
+	case EWeaponType::E_Melee:
+		if (AnimAssetData.MeleeAttackAnimMontageList.Num() > 0)
+		{
+			nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AnimAssetData.MeleeAttackAnimMontageList.Num();
+		}
+		targetAnimList = AnimAssetData.MeleeAttackAnimMontageList;
+		break;
+	case EWeaponType::E_Shoot:
+		if (AnimAssetData.ShootAnimMontageList.Num() > 0)
+		{
+			nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AnimAssetData.ShootAnimMontageList.Num();
+		}
+		targetAnimList = AnimAssetData.ShootAnimMontageList;
+		break;
+	case EWeaponType::E_Throw:
+		if (AnimAssetData.ThrowAnimMontageList.Num() > 0)
+		{
+			nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AnimAssetData.ThrowAnimMontageList.Num();
+		}
+		targetAnimList = AnimAssetData.ThrowAnimMontageList;
+		break;
 	}
-	else
-	{	
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 0.75f);
+
+	if (targetAnimList.Num() > 0
+		&& IsValid(targetAnimList[nextAnimIdx]))
+	{
+		PlayAnimMontage(targetAnimList[nextAnimIdx], attackSpeed + 0.75f);
 	}
 }
 
@@ -210,10 +238,12 @@ void ACharacterBase::TryReload()
 		return;
 	}
 
-	float reloadTime = GetWeaponActorRef()->GetWeaponStat().LoadingDelayTime;
-	if (IsValid(ReloadAnimMontage))
+	float reloadTime = GetWeaponActorRef()->GetWeaponStat().RangedWeaponStat.LoadingDelayTime;
+	if (AnimAssetData.ReloadAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(ReloadAnimMontage);
+		UAnimMontage* reloadAnim = AnimAssetData.ReloadAnimMontageList[0];
+		if (IsValid(reloadAnim))
+			PlayAnimMontage(reloadAnim);
 	}
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
