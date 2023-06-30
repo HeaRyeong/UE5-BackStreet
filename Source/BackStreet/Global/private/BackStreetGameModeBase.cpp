@@ -5,6 +5,8 @@
 #include "../../StageSystem/public/ChapterManagerBase.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/RangedWeaponBase.h"
+#include "../../Item/public/MeleeWeaponBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "../../Character/public/CharacterBase.h"
 #include "../../Character/public/MainCharacterBase.h"
@@ -18,7 +20,7 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 		EnemyStatTable = DataTable.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> StageTypeDataTable(TEXT("/Game/Map/Stages/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> StageTypeDataTable(TEXT("/Game/System/StageManager/Data/D_StageEnemyTypeTable.D_StageEnemyTypeTable"));
 	if (StageTypeDataTable.Succeeded())
 	{
 		StageTypeTable = StageTypeDataTable.Object;
@@ -123,7 +125,6 @@ void ABackStreetGameModeBase::UpdateWeaponStat(AWeaponBase* TargetWeapon, FWeapo
 		TargetWeapon->UpdateWeaponStat(NewStat);
 	}
 }
-
 void ABackStreetGameModeBase::UpdateWeaponStatWithID(AWeaponBase* TargetWeapon, const uint8 WeaponID)
 {
 	if (IsValid(TargetWeapon) && IsValid(WeaponStatTable))
@@ -161,5 +162,27 @@ FStageEnemyTypeStruct ABackStreetGameModeBase::GetStageTypeInfoWithRow(uint16 ro
 	FStageEnemyTypeStruct* newStat = StageTypeTable->FindRow<FStageEnemyTypeStruct>(FName(rowName), rowName);
 	if (newStat == nullptr) return FStageEnemyTypeStruct();
 	return *newStat;
+}
+
+FCharacterAnimAssetInfoStruct ABackStreetGameModeBase::GetCharacterAnimAssetInfoData(const int32 CharacterID)
+{
+	// 캐시된 데이터 확인
+	if (CachedCharacterAssetInfoData.AnimAssetInfoMap.Contains(CharacterID))
+	{
+		return CachedCharacterAssetInfoData.AnimAssetInfoMap[CharacterID];
+	}
+	// AssetInfoTable에서 데이터 가져오기
+	if (AnimAssetInfoTable)
+	{
+		FCharacterAnimAssetInfoStruct* assetInfoRow = AnimAssetInfoTable->FindRow<FCharacterAnimAssetInfoStruct>(FName(*FString::FromInt(CharacterID)), FString(""));
+		if (assetInfoRow)
+		{
+			// 데이터를 캐시에 저장
+			CachedCharacterAssetInfoData.AnimAssetInfoMap.Add(CharacterID, *assetInfoRow);
+			return *assetInfoRow;
+		}
+	}
+	// 데이터가 없을 경우 기본값 반환
+	return FCharacterAnimAssetInfoStruct();
 }
 

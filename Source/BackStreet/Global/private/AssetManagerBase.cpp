@@ -6,7 +6,7 @@
 #include "../public/BackStreetGameModeBase.h"
 #include "UObject/ConstructorHelpers.h"
 #include "../../Character/public/EnemyCharacterBase.h"
-#include "../../StageSystem/public/RewardBoxBase.h"
+#include "../../Item/public/RewardBoxBase.h"
 
 AAssetManagerBase::AAssetManagerBase()
 {

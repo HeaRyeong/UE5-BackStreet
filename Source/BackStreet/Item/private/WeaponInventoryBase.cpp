@@ -64,15 +64,16 @@ bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 	FWeaponStatStruct newWeaponStat = GamemodeRef->GetWeaponStatInfoWithID(NewWeaponID);
 	FWeaponStateStruct newWeaponState = FWeaponStateStruct();
 	newWeaponState.CurrentDurability = newWeaponStat.MaxDurability;
-	newWeaponState.CurrentAmmoCount = newWeaponStat.MaxAmmoPerMagazine;
+	newWeaponState.RangedWeaponState.CurrentAmmoCount = newWeaponStat.RangedWeaponStat.MaxAmmoPerMagazine;
 
 	//먼저, 원거리 무기의 중복 여부를 판단. 중복된다면 Ammo를 추가
 	int32 duplicateIdx = CheckWeaponDuplicate(NewWeaponID);
 	if (duplicateIdx != -1)
 	{
-		if (newWeaponStat.bHasProjectile && !newWeaponStat.bIsInfiniteAmmo)
+		if (newWeaponStat.RangedWeaponStat.bHasProjectile && !newWeaponStat.RangedWeaponStat.bIsInfiniteAmmo)
 		{
-			InventoryArray[duplicateIdx].WeaponState.TotalAmmoCount += InventoryArray[duplicateIdx].WeaponStat.MaxAmmoPerMagazine;
+			InventoryArray[duplicateIdx].WeaponState.RangedWeaponState.TotalAmmoCount +=
+				InventoryArray[duplicateIdx].WeaponStat.RangedWeaponStat.MaxAmmoPerMagazine;
 			if(duplicateIdx == CurrentIdx) SyncCurrentWeaponInfo(true);
 			return true;
 		}
@@ -173,12 +174,12 @@ bool AWeaponInventoryBase::TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount)
 {
 	const int32 targetInventoryIdx = GetWeaponInventoryIdx(WeaponID);
 	if (targetInventoryIdx == -1) return false;
-	if (!InventoryArray[targetInventoryIdx].WeaponStat.bHasProjectile) return false;
+	if (!InventoryArray[targetInventoryIdx].WeaponStat.RangedWeaponStat.bHasProjectile) return false;
 
 	FInventoryItemInfoStruct& itemInfoRef = InventoryArray[targetInventoryIdx];
 
-	itemInfoRef.WeaponState.TotalAmmoCount += AmmoCount;
-	itemInfoRef.WeaponState.TotalAmmoCount %= itemInfoRef.WeaponStat.MaxTotalAmmo;
+	itemInfoRef.WeaponState.RangedWeaponState.TotalAmmoCount += AmmoCount;
+	itemInfoRef.WeaponState.RangedWeaponState.TotalAmmoCount %= itemInfoRef.WeaponStat.RangedWeaponStat.MaxTotalAmmo;
 	
 	if (CurrentIdx == targetInventoryIdx) SyncCurrentWeaponInfo(true);
 	else OnInventoryItemIsUpdated.Broadcast(targetInventoryIdx, false, InventoryArray[targetInventoryIdx]);

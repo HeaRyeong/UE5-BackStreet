@@ -1,6 +1,7 @@
 #include "../public/CharacterBase.h"
 #include "../../Global/public/DebuffManager.h"
 #include "../../Item/public/WeaponBase.h"
+#include "../../Item/public/RangedWeaponBase.h"
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Global/public/AssetManagerBase.h"
@@ -15,9 +16,6 @@ ACharacterBase::ACharacterBase()
 
 	InventoryComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("INVENTORY"));
 	InventoryComponent->SetupAttachment(GetCapsuleComponent());
-
-	BuffManagerComponent = CreateDefaultSubobject<UChildActorComponent>(TEXT("BUFF_MANAGER"));
-	BuffManagerComponent->SetupAttachment(GetCapsuleComponent());
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +31,12 @@ void ACharacterBase::BeginPlay()
 	{
 		GetInventoryRef()->SetOwner(this);
 		GetInventoryRef()->InitInventory();
+	}
+
+	//애니메이션 에셋 초기화
+	if (IsValid(GamemodeRef))
+	{
+		AnimAssetData = GamemodeRef->GetCharacterAnimAssetInfoData(CharacterStat.CharacterID);
 	}
 }
 
@@ -61,8 +65,8 @@ bool ACharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor*
 	if (!IsValid(GamemodeRef)) return false;
 	if(!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
 
-	GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
-	return true;
+	bool result = GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
+	return result;
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
@@ -80,6 +84,7 @@ void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)
 
 void ACharacterBase::UpdateCharacterState(FCharacterStateStruct NewState)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Debuff State : %d"), NewState.CharacterDebuffState);
 	CharacterState = NewState;
 }
 
@@ -119,9 +124,9 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	{
 		Die();
 	}
-	else if (IsValid(HitAnimMontage))
+	else if (AnimAssetData.HitAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(HitAnimMontage);
+		PlayAnimMontage(AnimAssetData.HitAnimMontageList[0]);
 	}
 	return DamageAmount;
 }
@@ -153,9 +158,9 @@ void ACharacterBase::Die()
 	GetCharacterMovement()->Deactivate();
 	bUseControllerRotationYaw = false;
 
-	if (DieAnimMontage != nullptr)
+	if (AnimAssetData.DieAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(DieAnimMontage);
+		PlayAnimMontage(AnimAssetData.DieAnimMontageList[0]);
 	}
 	else
 	{
@@ -165,7 +170,6 @@ void ACharacterBase::Die()
 
 void ACharacterBase::TryAttack()
 {
-	if (AttackAnimMontageArray.Num() <= 0) return;
 	if (!IsValid(GetWeaponActorRef())) return;
 	if (GetWorldTimerManager().IsTimerActive(AtkIntervalHandle)) return;
 	if (!CharacterState.bCanAttack || !GetIsActionActive(ECharacterActionType::E_Idle)) return;
@@ -173,16 +177,39 @@ void ACharacterBase::TryAttack()
 	CharacterState.bCanAttack = false; //공격간 Delay,Interval 조절을 위해 세팅
 	CharacterState.CharacterActionState = ECharacterActionType::E_Attack;
 
-	const int32 nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AttackAnimMontageArray.Num();
+	int32 nextAnimIdx = 0;
 	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
-	if (GetWeaponActorRef()->GetWeaponStat().WeaponType == EWeaponType::E_Shoot)
+	TArray<UAnimMontage*> targetAnimList;
+	switch (GetWeaponActorRef()->GetWeaponStat().WeaponType)
 	{
-		PlayAnimMontage(ShootAnimMontage, attackSpeed + 0.75f);
+	case EWeaponType::E_Melee:
+		if (AnimAssetData.MeleeAttackAnimMontageList.Num() > 0)
+		{
+			nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AnimAssetData.MeleeAttackAnimMontageList.Num();
+		}
+		targetAnimList = AnimAssetData.MeleeAttackAnimMontageList;
+		break;
+	case EWeaponType::E_Shoot:
+		if (AnimAssetData.ShootAnimMontageList.Num() > 0)
+		{
+			nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AnimAssetData.ShootAnimMontageList.Num();
+		}
+		targetAnimList = AnimAssetData.ShootAnimMontageList;
+		break;
+	case EWeaponType::E_Throw:
+		if (AnimAssetData.ThrowAnimMontageList.Num() > 0)
+		{
+			nextAnimIdx = GetWeaponActorRef()->GetCurrentComboCnt() % AnimAssetData.ThrowAnimMontageList.Num();
+		}
+		targetAnimList = AnimAssetData.ThrowAnimMontageList;
+		break;
 	}
-	else
-	{	
-		PlayAnimMontage(AttackAnimMontageArray[nextAnimIdx], attackSpeed + 0.75f);
+
+	if (targetAnimList.Num() > 0
+		&& IsValid(targetAnimList[nextAnimIdx]))
+	{
+		PlayAnimMontage(targetAnimList[nextAnimIdx], attackSpeed + 0.75f);
 	}
 }
 
@@ -192,8 +219,6 @@ void ACharacterBase::Attack()
 	
 	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
-	//GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
-	//									, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
 	GetWeaponActorRef()->Attack();
 }
  
@@ -206,21 +231,24 @@ void ACharacterBase::StopAttack()
 void ACharacterBase::TryReload()
 {
 	if (!IsValid(GetWeaponActorRef())) return;
-	if (!GetWeaponActorRef()->GetCanReload())
+	if (GetWeaponActorRef()->GetWeaponStat().WeaponType != EWeaponType::E_Shoot) return;
+	if (!Cast<ARangedWeaponBase>(GetWeaponActorRef())->GetCanReload())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
 		return;
 	}
 
-	float reloadTime = GetWeaponActorRef()->GetWeaponStat().LoadingDelayTime;
-	if (IsValid(ReloadAnimMontage))
+	float reloadTime = GetWeaponActorRef()->GetWeaponStat().RangedWeaponStat.LoadingDelayTime;
+	if (AnimAssetData.ReloadAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(ReloadAnimMontage);
+		UAnimMontage* reloadAnim = AnimAssetData.ReloadAnimMontageList[0];
+		if (IsValid(reloadAnim))
+			PlayAnimMontage(reloadAnim);
 	}
 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
-		GetWeaponActorRef()->TryReload();
+		Cast<ARangedWeaponBase>(GetWeaponActorRef())->TryReload();
 		CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
 	}), 1.0f, false, reloadTime);
 }

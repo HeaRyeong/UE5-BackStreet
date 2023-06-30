@@ -14,10 +14,16 @@
 //새로운 타이머 핸들 리스트를 생성할 때 복사할 리스트
 TArray<FTimerHandle> TempTimerHandleList;
 TArray<float> TempResetValueList;
+float TempResetValue = 0.0f;
 
 UDebuffManager::UDebuffManager()
 {
-
+	//추후 초기화를 위한 Temp 배열을 초기화
+	for (int idx = 0; idx <= DEBUFF_DAMAGE_TIMER_IDX; idx++)
+	{
+		TempTimerHandleList.Add(FTimerHandle());
+		TempResetValueList.Add(0.0f);
+	}
 }
 
 bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterBase* Target, AActor* Causer, float TotalTime, float Variable)
@@ -32,7 +38,7 @@ bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterB
 
 	if (GetDebuffIsActive((ECharacterDebuffType)DebuffType, Target))
 	{
-		float& resetValue = (GetResetValueListRef(Target))[GetDebuffInfoListIndex(DebuffType)];
+		float& resetValue = GetDebuffResetValueRef(DebuffType, Target);
 		float remainTime = GamemodeRef->GetWorldTimerManager().GetTimerRemaining(timerHandle);
 
 		ResetStatDebuffState(DebuffType, Target, resetValue);
@@ -51,15 +57,18 @@ bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterB
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
 			dotDamageDelegate.BindUFunction(Target, FName("TakeDebuffDamage"), Variable, DebuffType, Causer);
-			GamemodeRef->GetWorldTimerManager().SetTimer((GetTimerHandleListRef(Target))[DEBUFF_DAMAGE_TIMER_IDX], dotDamageDelegate, 1.0f, true);
+			if (!(GetTimerHandleListRef(Target)).IsValidIndex(DEBUFF_DAMAGE_TIMER_IDX))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Timer Handle List is Invalid!!! - - - - - "));
+			}
+			else 
+				GamemodeRef->GetWorldTimerManager().SetTimer((GetTimerHandleListRef(Target))[DEBUFF_DAMAGE_TIMER_IDX], dotDamageDelegate, 1.0f, true);
 			break;
 		//----스탯 조정 디버프-------------------
 		case ECharacterDebuffType::E_Stun:
 			Target->StopAttack();
 			characterState.CharacterActionState = ECharacterActionType::E_Stun;
 			Target->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-			UE_LOG(LogTemp, Warning, TEXT("STUN ACTIVATED"));
-
 			break;
 		case ECharacterDebuffType::E_Slow:
 			characterStat.CharacterMoveSpeed *= Variable;
@@ -72,7 +81,8 @@ bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterB
 			characterStat.CharacterDefense *= Variable;
 			break;
 	}
-	(GetResetValueListRef(Target))[GetDebuffInfoListIndex(DebuffType)] = Variable;
+	TArray<float>& resetValueListRef = GetResetValueListRef(Target);
+	resetValueListRef[GetDebuffInfoListIndex(DebuffType)] = Variable;
 
 	Target->UpdateCharacterStat(characterStat);
 	Target->UpdateCharacterState(characterState);
@@ -102,8 +112,7 @@ void UDebuffManager::ResetStatDebuffState(ECharacterDebuffType DebuffType, AChar
 		characterStat.CharacterMoveSpeed /= ResetVal;
 		characterStat.CharacterAtkSpeed /= ResetVal;
 		break;
-	case ECharacterDebuffType::E_Stun:
-		UE_LOG(LogTemp, Warning, TEXT("TRY STUN DEACTIVATED"));
+	case ECharacterDebuffType::E_Stun:	
 		characterState.CharacterActionState = ECharacterActionType::E_Idle;
 		Target->ResetActionState(true);
 		Target->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
@@ -115,7 +124,6 @@ void UDebuffManager::ResetStatDebuffState(ECharacterDebuffType DebuffType, AChar
 		characterStat.CharacterDefense /= ResetVal;
 		break;
 	}
-	
 	Target->UpdateCharacterStat(characterStat);
 	Target->UpdateCharacterState(characterState);
 	ClearDebuffTimer(DebuffType, Target);
@@ -158,20 +166,31 @@ void UDebuffManager::InitDebuffManager(ABackStreetGameModeBase* NewGamemodeRef)
 bool UDebuffManager::GetDebuffIsActive(ECharacterDebuffType DebuffType, ACharacterBase* Target)
 {
 	if (!IsValid(Target)) return false;
-//	if (OwnerCharacterRef->GetCharacterState().CharacterDebuffState & (1 << (int)DebuffType)) return true;
+	if (Target->GetCharacterState().CharacterDebuffState & (1 << (int)DebuffType)) return true;
 	return false;
 }
 
 FTimerHandle& UDebuffManager::GetDebuffTimerHandleRef(ECharacterDebuffType DebuffType, ACharacterBase* Target)
 {
 	TArray<FTimerHandle>& timerHandleListRef = GetTimerHandleListRef(Target);
-	int16 targetListIdx = GetDebuffInfoListIndex( DebuffType);
+	int16 targetListIdx = GetDebuffInfoListIndex(DebuffType);
 	return timerHandleListRef[targetListIdx];
 }
 
-int16 UDebuffManager::GetDebuffInfoListIndex(ECharacterDebuffType DebuffType)
+uint16 UDebuffManager::GetDebuffInfoListIndex(ECharacterDebuffType DebuffType)
 {
 	return (uint16)DebuffType;
+}
+
+float& UDebuffManager::GetDebuffResetValueRef(ECharacterDebuffType DebuffType, ACharacterBase* Target)
+{
+	TArray<float>& resetValueListRef = GetResetValueListRef(Target);
+	const uint16 debuffTypeIndex = GetDebuffInfoListIndex(DebuffType);
+	if (resetValueListRef.IsValidIndex(debuffTypeIndex) && IsValid(Target))
+	{
+		return resetValueListRef[debuffTypeIndex];
+	}
+	return TempResetValue;
 }
 
 
@@ -197,6 +216,5 @@ void UDebuffManager::AddNewTimerList(ACharacterBase* Target)
 {
 	if (!IsValid(Target)) return;
 	FDebuffTimerInfoStruct newTimerInfo = { TempTimerHandleList, TempResetValueList };
-
 	TimerInfoMap.Add({ Target->GetUniqueID(), newTimerInfo });
 }
