@@ -2,10 +2,7 @@
 
 #include "../public/BackStreetGameModeBase.h"
 #include "../public/DebuffManager.h"
-#include "../../StageSystem/public/GridBase.h"
-#include "../../StageSystem/public/TileBase.h"
 #include "../../StageSystem/public/ChapterManagerBase.h"
-#include "../../StageSystem/public/StageManagerBase.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/ItemBase.h"
@@ -30,28 +27,32 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 
 void ABackStreetGameModeBase::BeginPlay()
 {
-	//------ 델리게이트 바인딩 ---------------
-	FinishChapterDelegate.AddDynamic(this, &ABackStreetGameModeBase::FinishChapter);
+	if (bIsInGame)
+	{
+		FActorSpawnParameters spawnParams;
+		FRotator rotator;
+		FVector spawnLocation = FVector::ZeroVector;
 
-	//------ Ref 멤버 초기화  ---------------
-	PlayerCharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
+		ChapterManager->SetOwner(this);
+		ChapterManager->CreateChapterManager();
 
-	//------ Global Buff/Debuff Manager 초기화 --------
-	DebuffManager = NewObject<UDebuffManager>(this, UDebuffManager::StaticClass(), FName("BuffDebuffManager"));
-	DebuffManager->InitDebuffManager(this);
+		//------ 델리게이트 바인딩 ---------------
+		FinishChapterDelegate.AddDynamic(this, &ABackStreetGameModeBase::FinishChapter);
+		FadeOutDelegate.AddDynamic(this, &ABackStreetGameModeBase::FadeOut);
+
+
+		//------ Ref 멤버 초기화  ---------------
+		PlayerCharacterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+		//------ Global Buff/Debuff Manager 초기화 --------
+		DebuffManager = NewObject<UDebuffManager>(this, UDebuffManager::StaticClass(), FName("BuffDebuffManager"));
+		DebuffManager->InitDebuffManager(this);
+
+		Super::BeginPlay();
+	}
+
 }
-
-
-void ABackStreetGameModeBase::StartChapter()
-{
-	//FTimerHandle delegateBindDelayTimer;
-	//GetWorldTimerManager().SetTimer(delegateBindDelayTimer, FTimerDelegate::CreateLambda([&]()
-	//	{
-	//		StartTileDelegate.Broadcast(); //Binding이 되도록 한 Tick 이후에 BroadCast를 해준다.
-	//	}), 0.1f, false, 0.5f);
-
-}
-
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)
 {

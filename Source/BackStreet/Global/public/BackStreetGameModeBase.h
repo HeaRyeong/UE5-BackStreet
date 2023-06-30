@@ -10,6 +10,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateClearResource);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateSingleParam, bool, bGameIsOver);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDelegateSystemMessage, FName, Message, FColor, TextColor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateStageClear);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateMissionClear);
 
 UCLASS()
 class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
@@ -27,7 +29,16 @@ public:
 		FDelegateClearResource ClearResourceDelegate;
 	
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateClearResource ChapterClearResourceDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSystemMessage PrintSystemMessageDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateStageClear StageClearDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateStageClear FadeOutDelegate;
 
 
 public:
@@ -39,8 +50,6 @@ protected:
 
 // ----- Gameplay Manager -------------------
 public:
-	UFUNCTION()
-		void StartChapter();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void FinishChapter(bool bGameIsOver);
@@ -74,6 +83,21 @@ public:
 
 	UFUNCTION()
 		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
+
+	UFUNCTION(BlueprintCallable)
+		class AChapterManagerBase* GetChapterManagerRef() { return ChapterManager; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void FadeOut();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void UpdateMiniMapUI();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void SetMiniMapUI();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void PopUpClearUI();
 
 
 // ------ Data Table -----------------------------
@@ -109,8 +133,18 @@ private:
 	UPROPERTY()
 		class UDebuffManager* DebuffManager;
 
+	UPROPERTY()
+		class AChapterManagerBase* ChapterManager;
+
+public:
+	//현재 게임 모드가 인게임인지 트랜지션인지 확인
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		bool bIsInGame;
+
 protected: 
 	//게임 일시정지 여부
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;
+
+
 };

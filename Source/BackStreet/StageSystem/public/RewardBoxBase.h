@@ -54,7 +54,7 @@ public:
 		void UpdateUI();
 
 	UFUNCTION()
-		void SetBelongTile(ATileBase* Target);
+		void SetBelongStage(class AStageData* Target);
 
 	UFUNCTION(BlueprintCallable)
 		void SetCharacterAbilityList();
@@ -71,5 +71,5 @@ public:
 
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		class ATileBase* BelongTile;
+		class AStageData* BelongStage;
 };

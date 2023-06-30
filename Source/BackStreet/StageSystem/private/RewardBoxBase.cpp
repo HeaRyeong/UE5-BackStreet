@@ -3,10 +3,10 @@
 
 #include "../public/RewardBoxBase.h"
 #include "Components/SphereComponent.h"
-#include "../public/TileBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/AbilityManagerBase.h"
 #include "../../Character/public/CharacterInfoEnum.h"
+#include "../public/StageData.h"
 
 
 // Sets default values
@@ -105,9 +105,9 @@ bool ARewardBoxBase::TrySwapAbility(int32 GetAbility, int32 StoreAbility)
 }
 
 
-void ARewardBoxBase::SetBelongTile(ATileBase* Target)
+void ARewardBoxBase::SetBelongStage(AStageData* Target)
 {
-	BelongTile = Target;
+	BelongStage = Target;
 }
 
 void ARewardBoxBase::SetCharacterAbilityList()

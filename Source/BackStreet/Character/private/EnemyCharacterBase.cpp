@@ -8,12 +8,8 @@
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
-#include "../../StageSystem/public/TileBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../StageSystem/public/ChapterManagerBase.h"
-#include "../../StageSystem/public/StageManagerBase.h"
-#include "../../StageSystem/public/MissionBase.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #define TURN_TIME_OUT_SEC 1.0f
@@ -132,13 +128,11 @@ void AEnemyCharacterBase::SpawnDeathItems()
 
 	if (SpawnItemTypeList.IsValidIndex(0)&&SpawnItemTypeList[0] == EItemCategoryInfo::E_Mission)
 	{
-		ALevelScriptInGame* level = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
-		UMissionBase* target = level->GetChapterManager()->GetStageManager()->GetCurrentStage()->Mission;
 		AItemBase* newItem = GamemodeRef->SpawnItemToWorld((uint8)SpawnItemTypeList[0], SpawnItemIDList[0], GetActorLocation() + FMath::VRand() * 10.0f);
 		if (IsValid(newItem))
 			{
 				spawnedItemList.Add(newItem);
-				newItem->Dele_MissionItemSpawned.BindUFunction(target, FName("TryAddMissionItem"));
+				//newItem->Dele_MissionItemSpawned.BindUFunction(target, FName("TryAddMissionItem"));
 			}
 	
 	}
