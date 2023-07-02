@@ -24,7 +24,9 @@
 #include "../../StageSystem/public/DirectionEnumInfo.h"
 #include "../../StageSystem/public/StageInfoStruct.h"
 #include "../../Item/public/ItemInfoStruct.h"
-#include "../../Item/public/ItemDataAssetInfo.h"
 #include "../../Item/public/WeaponInfoStruct.h"
 #include "../../Item/public/ProjectileInfoStruct.h"
 #include "../../Global/public/AssetManagerBase.h"
+
+/* ----- 스테이지 정보 (사용되는 곳이 많아 임시로 추가 논의 필요, 사용하는 곳 마다 추가할지) ------------ */
+//#include "../../StageSystem/public/StageData.h"

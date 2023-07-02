@@ -3,9 +3,7 @@
 
 #include "../public/ItemBoxBase.h"
 #include "../public/ItemBase.h"
-#include "../../StageSystem/public/MissionBase.h"
 #include "../../StageSystem/public/ChapterManagerBase.h"
-#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NiagaraFunctionLibrary.h"
