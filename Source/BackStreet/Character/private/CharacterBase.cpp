@@ -112,6 +112,8 @@ void ACharacterBase::ResetActionState(bool bForceReset)
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator
 								, AActor* DamageCauser)
 {
+	if (!IsValid(DamageCauser) || !IsValid(EventInstigator)) return 0.0f; 
+
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	DamageAmount = DamageAmount - DamageAmount * CharacterStat.CharacterDefense;
@@ -134,7 +136,7 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 float ACharacterBase::TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer)
 {
 	if (!IsValid(Causer)) return 0.0f;
-	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
+	TakeDamage(DamageAmount, FDamageEvent(), Causer->GetInstigatorController(), Causer);
 	return DamageAmount;
 }
 

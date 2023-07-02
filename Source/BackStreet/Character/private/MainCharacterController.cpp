@@ -36,7 +36,12 @@ FRotator AMainCharacterController::GetRotationToCursor()
 
 	retRotation = UKismetMathLibrary::FindLookAtRotation(GetPawn()->GetActorLocation(), cursorWorldDeprojectionLocation);
 	retRotation = UKismetMathLibrary::MakeRotator(0.0f, 0.0f, retRotation.Yaw + 270.0f);
-	return retRotation;
+	return LastRotationToCursor = retRotation;
+}
+
+FRotator AMainCharacterController::GetLastRotationToCursor()
+{
+	return LastRotationToCursor;
 }
 
 FVector AMainCharacterController::GetCursorDeprojectionWorldLocation()

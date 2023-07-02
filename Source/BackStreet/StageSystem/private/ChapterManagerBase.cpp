@@ -123,7 +123,7 @@ void AChapterManagerBase::CreateChapterManager()
 
 void AChapterManagerBase::CreateResourceManager()
 {
-	UObject* spawnResourceManager = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Map/Global/BP_ResourceManager.BP_ResourceManager")));
+	UObject* spawnResourceManager = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/System/StageManager/Blueprint/BP_ResourceManager.BP_ResourceManager")));
 
 	UBlueprint* bp = Cast<UBlueprint>(spawnResourceManager);
 	if (!spawnResourceManager)

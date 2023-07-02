@@ -7,7 +7,7 @@
 #include "../public/ChapterManagerBase.h"
 #include "../../Character/public/EnemyCharacterBase.h"
 #include "../../AISystem/public/AIControllerBase.h"
-#include "../public/RewardBoxBase.h"
+#include "../../Item/public/RewardBoxBase.h"
 #include "../../Item/public/ItemBoxBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "Engine/LevelStreaming.h"
@@ -126,7 +126,7 @@ void AResourceManager::SpawnRewardBox(class AStageData* Target)
 	ARewardBoxBase* rewardBox = GetWorld()->SpawnActor<ARewardBoxBase>(RewardBoxAssets[0], Target->RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0, 90, 0), actorSpawnParameters);
 	rewardBox->Tags.AddUnique("RewardBox");
 	Target->RewardBoxRef=rewardBox;
-	rewardBox->SetBelongStage(Target);
+	//rewardBox->SetBelongStage(Target);
 }
 
 void AResourceManager::BindDelegate(class AStageData* Target)

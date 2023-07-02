@@ -29,6 +29,12 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 
 void ABackStreetGameModeBase::BeginPlay()
 {
+	
+
+}
+
+void ABackStreetGameModeBase::InitializeGame()
+{
 	if (bIsInGame)
 	{
 		FActorSpawnParameters spawnParams;
@@ -51,9 +57,7 @@ void ABackStreetGameModeBase::BeginPlay()
 		DebuffManager = NewObject<UDebuffManager>(this, UDebuffManager::StaticClass(), FName("BuffDebuffManager"));
 		DebuffManager->InitDebuffManager(this);
 
-		Super::BeginPlay();
 	}
-
 }
 
 void ABackStreetGameModeBase::PlayCameraShakeEffect(ECameraShakeType EffectType, FVector Location, float Radius)

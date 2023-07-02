@@ -4,7 +4,6 @@
 #include "../public/RewardBoxBase.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
-#include "../../StageSystem/public/TileBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/AbilityManagerBase.h"
 #include "../../Character/public/CharacterInfoEnum.h"

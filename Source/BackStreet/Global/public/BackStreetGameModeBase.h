@@ -50,6 +50,9 @@ protected:
 
 // ----- Gameplay Manager -------------------
 public:
+	UFUNCTION(BlueprintCallable)
+		void InitializeGame();
+
 	UFUNCTION(BlueprintImplementableEvent)
 		void PrintDebugMessage();
 
@@ -86,6 +89,22 @@ public:
 	UFUNCTION()
 		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
 
+	UFUNCTION(BlueprintCallable)
+		class AChapterManagerBase* GetChapterManagerRef() { return ChapterManager; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void FadeOut();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void UpdateMiniMapUI();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void SetMiniMapUI();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void PopUpClearUI();
+
+
 	// ------ Asset Info ----------------------------
 public:
 	//캐릭터의 애니메이션 에셋 데이터를 읽어들임
@@ -105,22 +124,6 @@ private:
 	//추후 따로 뺄 예정
 	UPROPERTY()
 		FCharacterAssetInfoStruct CachedCharacterAssetInfoData;
-
-	UFUNCTION(BlueprintCallable)
-		class AChapterManagerBase* GetChapterManagerRef() { return ChapterManager; }
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void FadeOut();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void UpdateMiniMapUI();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void SetMiniMapUI();
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void PopUpClearUI();
-
 
 // ------ Data Table -----------------------------
 protected:

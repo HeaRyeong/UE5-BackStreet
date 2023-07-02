@@ -20,8 +20,11 @@ public:
 		FDelegateAIContorl AIOffDelegate;
 
 public:
+	AStageData();
+
 	UFUNCTION()
 		EStageCategoryInfo GetStageType() { return StageType; }
+
 	UFUNCTION(BlueprintCallable)
 		bool GetIsVisited() { return bIsVisited; }
 public:
