@@ -30,7 +30,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetLobbyStage();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		void CreateChapterManager();
 
 	UFUNCTION()
@@ -95,13 +95,14 @@ private:
 
 private:
 	UPROPERTY()
-	TArray<class AStageData*> StageList;
+		TArray<class AStageData*> StageList;
 
 	UPROPERTY()
 		class AStageData* CurrentStage;
 
 	UPROPERTY()
 		class AStageData* LobbyStage;
+
 private:
 	UPROPERTY()
 		class UStageGenerator* StageGenerator;
@@ -111,6 +112,11 @@ private:
 
 	UPROPERTY()
 		class AResourceManager* ResourceManager;
+
+	//SoftObjRef로 대체 예정
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|ResourceManager")
+		TSubclassOf<class AResourceManager> ResourceManagerClass;
+
 
 
 };

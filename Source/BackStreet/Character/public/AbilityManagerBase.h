@@ -17,11 +17,11 @@ public:
 		uint8 AbilityId;
 
 	//어빌리티명
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		FName AbilityName;
 
 	//어빌리티 설명
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		FName AbilityDescription;
 
 	//어빌리티의 아이콘

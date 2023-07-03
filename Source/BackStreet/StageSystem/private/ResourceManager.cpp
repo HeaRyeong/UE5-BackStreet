@@ -124,7 +124,8 @@ void AResourceManager::SpawnRewardBox(class AStageData* Target)
 	FActorSpawnParameters actorSpawnParameters;
 	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	ARewardBoxBase* rewardBox = GetWorld()->SpawnActor<ARewardBoxBase>(RewardBoxAssets[0], Target->RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0, 90, 0), actorSpawnParameters);
-	rewardBox->Tags.AddUnique("RewardBox");
+	if(IsValid(rewardBox))rewardBox->Tags.AddUnique("RewardBox");
+	else { UE_LOG(LogTemp, Warning, TEXT("Whyrano")); }
 	Target->RewardBoxRef=rewardBox;
 	//rewardBox->SetBelongStage(Target);
 }
@@ -142,6 +143,7 @@ void AResourceManager::BindDelegate(class AStageData* Target)
 
 void AResourceManager::DieMonster(AEnemyCharacterBase* Target)
 {
+	if (!IsValid(GetOwner())) return;
 	AStageData* currentStage = Cast<AChapterManagerBase>(GetOwner())->GetCurrentStage();
 
 	UE_LOG(LogTemp, Log, TEXT("Call MonsterDie()"));

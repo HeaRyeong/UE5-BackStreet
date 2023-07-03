@@ -64,7 +64,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bHasProjectile = false;
 
-	// 무한 탄창인지?
+	//무한 탄창인지?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bInfiniteMagazine;
 
