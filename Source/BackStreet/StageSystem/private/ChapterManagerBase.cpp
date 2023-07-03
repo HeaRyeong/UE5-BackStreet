@@ -123,28 +123,10 @@ void AChapterManagerBase::CreateChapterManager()
 
 void AChapterManagerBase::CreateResourceManager()
 {
-	UObject* spawnResourceManager = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/System/StageManager/Blueprint/BP_ResourceManager.BP_ResourceManager")));
-
-	UBlueprint* bp = Cast<UBlueprint>(spawnResourceManager);
-	if (!spawnResourceManager)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("CANT FIND OBJECT TO SPAWN")));
-		return;
-	}
-
-	UClass* spawnClass = spawnResourceManager->StaticClass();
-	if (spawnClass == NULL)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("CLASS == NULL")));
-		return;
-	}
-
-	UWorld* world = GetWorld();
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	ResourceManager = Cast<AResourceManager>(world->SpawnActor<AActor>(bp->GeneratedClass, GetActorLocation(), GetActorRotation(), SpawnParams));
-
+	FActorSpawnParameters actorSpawnParameters;
+	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	actorSpawnParameters.Owner = this;
+	ResourceManager = GetWorld()->SpawnActor<AResourceManager>(ResourceManagerClass,FVector(0,0,0), FRotator(0, 90, 0), actorSpawnParameters);
 }
 
 void AChapterManagerBase::InitChapterManager()

@@ -29,8 +29,7 @@ ABackStreetGameModeBase::ABackStreetGameModeBase()
 
 void ABackStreetGameModeBase::BeginPlay()
 {
-	
-
+	Super::BeginPlay();
 }
 
 void ABackStreetGameModeBase::InitializeGame()
@@ -41,9 +40,10 @@ void ABackStreetGameModeBase::InitializeGame()
 		FRotator rotator;
 		FVector spawnLocation = FVector::ZeroVector;
 
-		ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
-		ChapterManager->SetOwner(this);
-		ChapterManager->CreateChapterManager();
+		CreateChapterManager();
+		//ChapterManager = GetWorld()->SpawnActor<AChapterManagerBase>(AChapterManagerBase::StaticClass(), spawnLocation, rotator, spawnParams);
+		//ChapterManager->SetOwner(this);
+		//ChapterManager->CreateChapterManager();
 
 		//------ 델리게이트 바인딩 ---------------
 		FinishChapterDelegate.AddDynamic(this, &ABackStreetGameModeBase::FinishChapter);

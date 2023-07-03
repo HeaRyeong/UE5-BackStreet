@@ -17,6 +17,11 @@ public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSpawnRequest SpawnRequestDelegate;
 
+		FScriptDelegate LoadCompleteDelegate;
+
+		FScriptDelegate UnloadCompleteDelegate;
+
+
 public:
 		UFUNCTION()
 			void InitTransitionManager();

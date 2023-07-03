@@ -177,9 +177,7 @@ void AMainCharacterBase::TryInvestigate()
 		}
 		Investigate(nearActorList[0]);
 		ResetActionState();
-
 	}
-
 }
 
 void AMainCharacterBase::Investigate(AActor* TargetActor)
@@ -305,7 +303,7 @@ TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
-	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
+	for (float sphereRadius = 0.2f; sphereRadius < 15.0f; sphereRadius += 0.2f)
 	{
 		bool result = false;
 

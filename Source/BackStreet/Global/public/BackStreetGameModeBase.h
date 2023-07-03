@@ -50,6 +50,9 @@ protected:
 
 // ----- Gameplay Manager -------------------
 public:
+	UFUNCTION(BlueprintImplementableEvent)
+		void CreateChapterManager();
+
 	UFUNCTION(BlueprintCallable)
 		void InitializeGame();
 
@@ -151,14 +154,14 @@ protected:
 		TMap<int32, TSubclassOf<class AItemBase> > ItemClassMap;
 
 //------ 그 외 프로퍼티 ---------------
-private:
+protected:
 	UPROPERTY()
 		class AMainCharacterBase* PlayerCharacterRef;
 
 	UPROPERTY()
 		class UDebuffManager* DebuffManager;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		class AChapterManagerBase* ChapterManager;
 
 public:
