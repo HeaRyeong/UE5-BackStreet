@@ -4,7 +4,6 @@
 #include "../public/RewardBoxBase.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
-#include "../../StageSystem/public/TileBase.h"
 #include "../../Character/public/MainCharacterBase.h"
 #include "../../Character/public/AbilityManagerBase.h"
 #include "../../Character/public/CharacterInfoEnum.h"
@@ -19,6 +18,8 @@ ARewardBoxBase::ARewardBoxBase()
 	RootComponent = OverlapVolume = CreateDefaultSubobject<USphereComponent>("SPHERE_COLLISION");
 	OverlapVolume->SetRelativeScale3D(FVector(5.0f));
 	OverlapVolume->SetCollisionProfileName("ItemTrigger", true);
+	OverlapVolume->SetSimulatePhysics(true);
+	OverlapVolume->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ITEM_MESH"));
 	Mesh->SetupAttachment(RootComponent);
@@ -28,6 +29,8 @@ ARewardBoxBase::ARewardBoxBase()
 	InfoWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("INFO_WIDGET"));
 	InfoWidgetComponent->SetupAttachment(Mesh);
 	InfoWidgetComponent->SetVisibility(false);
+
+	this->Tags.Add("RewardBox");
 }
 
 // Called when the game starts or when spawned

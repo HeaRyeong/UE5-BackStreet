@@ -112,6 +112,8 @@ void ACharacterBase::ResetActionState(bool bForceReset)
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator
 								, AActor* DamageCauser)
 {
+	if (!IsValid(DamageCauser) || !IsValid(EventInstigator)) return 0.0f; 
+
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	DamageAmount = DamageAmount - DamageAmount * CharacterStat.CharacterDefense;
@@ -134,7 +136,7 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 float ACharacterBase::TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer)
 {
 	if (!IsValid(Causer)) return 0.0f;
-	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
+	TakeDamage(DamageAmount, FDamageEvent(), Causer->GetInstigatorController(), Causer);
 	return DamageAmount;
 }
 
@@ -231,12 +233,9 @@ void ACharacterBase::StopAttack()
 void ACharacterBase::TryReload()
 {
 	if (!IsValid(GetWeaponActorRef())) return;
-	if (GetWeaponActorRef()->GetWeaponStat().WeaponType != EWeaponType::E_Shoot) return;
-	if (!Cast<ARangedWeaponBase>(GetWeaponActorRef())->GetCanReload())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CAN'T RELOAD"));
-		return;
-	}
+	if (GetWeaponActorRef()->GetWeaponStat().WeaponType != EWeaponType::E_Shoot
+		&& GetWeaponActorRef()->GetWeaponStat().WeaponType != EWeaponType::E_Throw)	return; 
+	if (!Cast<ARangedWeaponBase>(GetWeaponActorRef())->GetCanReload()) return;
 
 	float reloadTime = GetWeaponActorRef()->GetWeaponStat().RangedWeaponStat.LoadingDelayTime;
 	if (AnimAssetData.ReloadAnimMontageList.Num() > 0)

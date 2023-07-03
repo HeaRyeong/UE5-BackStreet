@@ -82,8 +82,8 @@ void AMeleeWeaponBase::MeleeAttack()
 		//디버프도 부여
 		if (IsValid(GamemodeRef->GetGlobalDebuffManagerRef()))
 		{
-			GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(WeaponStat.DebuffType, Cast<ACharacterBase>(hitResult.GetActor())
-				, OwnerCharacterRef, WeaponStat.DebuffTotalTime, WeaponStat.DebuffVariable);
+			GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(WeaponStat.MeleeWeaponStat.DebuffType, Cast<ACharacterBase>(hitResult.GetActor())
+				, OwnerCharacterRef, WeaponStat.MeleeWeaponStat.DebuffTotalTime, WeaponStat.MeleeWeaponStat.DebuffVariable);
 		}
 
 		//내구도를 업데이트

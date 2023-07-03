@@ -10,6 +10,8 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateClearResource);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateSingleParam, bool, bGameIsOver);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDelegateSystemMessage, FName, Message, FColor, TextColor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateStageClear);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateMissionClear);
 
 UCLASS()
 class BACKSTREET_API ABackStreetGameModeBase : public AGameModeBase
@@ -27,7 +29,16 @@ public:
 		FDelegateClearResource ClearResourceDelegate;
 	
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateClearResource ChapterClearResourceDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSystemMessage PrintSystemMessageDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateStageClear StageClearDelegate;
+
+	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
+		FDelegateStageClear FadeOutDelegate;
 
 
 public:
@@ -40,10 +51,13 @@ protected:
 // ----- Gameplay Manager -------------------
 public:
 	UFUNCTION(BlueprintImplementableEvent)
-		void PrintDebugMessage();
+		void CreateChapterManager();
 
-	UFUNCTION()
-		void StartChapter();
+	UFUNCTION(BlueprintCallable)
+		void InitializeGame();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void PrintDebugMessage();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void FinishChapter(bool bGameIsOver);
@@ -78,7 +92,23 @@ public:
 	UFUNCTION()
 		class UDebuffManager* GetGlobalDebuffManagerRef() { return DebuffManager; }
 
-// ------ Asset Info ----------------------------
+	UFUNCTION(BlueprintCallable)
+		class AChapterManagerBase* GetChapterManagerRef() { return ChapterManager; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void FadeOut();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void UpdateMiniMapUI();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void SetMiniMapUI();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void PopUpClearUI();
+
+
+	// ------ Asset Info ----------------------------
 public:
 	//캐릭터의 애니메이션 에셋 데이터를 읽어들임
 	UFUNCTION()
@@ -88,7 +118,7 @@ protected:
 	//애니메이션 에셋 경로 저장 데이터 테이블
 	UPROPERTY(EditDefaultsOnly, Category = "Asset|Data")
 		UDataTable* AnimAssetInfoTable;
-	
+
 	//VFX 에셋 경로 저장 데이터 테이블
 	UPROPERTY(EditDefaultsOnly, Category = "Asset|Data")
 		UDataTable* VFXssetInfoTable;
@@ -124,17 +154,25 @@ protected:
 		TMap<int32, TSubclassOf<class AItemBase> > ItemClassMap;
 
 //------ 그 외 프로퍼티 ---------------
-private:
+protected:
 	UPROPERTY()
 		class AMainCharacterBase* PlayerCharacterRef;
 
 	UPROPERTY()
 		class UDebuffManager* DebuffManager;
 
-	
+	UPROPERTY(BlueprintReadWrite)
+		class AChapterManagerBase* ChapterManager;
+
+public:
+	//현재 게임 모드가 인게임인지 트랜지션인지 확인
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+		bool bIsInGame;
 
 protected: 
 	//게임 일시정지 여부
 	UPROPERTY(BlueprintReadWrite)
 		bool bIsGamePaused = false;
+
+
 };

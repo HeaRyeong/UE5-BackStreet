@@ -10,10 +10,8 @@
 #include "../../Item/public/ItemBase.h"
 #include "../../Item/public/ItemBoxBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
-#include "../../StageSystem/public/ALevelScriptInGame.h"
 #include "../../StageSystem/public/ChapterManagerBase.h"
-#include "../../StageSystem/public/StageManagerBase.h"
-#include "../../StageSystem/public/TileBase.h"
+#include "../../StageSystem/public/StageData.h"
 #include "Components/AudioComponent.h"
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
@@ -35,7 +33,7 @@ AMainCharacterBase::AMainCharacterBase()
 	CameraBoom->bInheritPitch = false;
 	CameraBoom->bInheritRoll = false;
 	CameraBoom->bInheritYaw = false;
-	CameraBoom->SetRelativeRotation({ -60.0f, 0.0f, 0.0f });
+	CameraBoom->SetWorldRotation({ -45.0f, 0.0f, 0.0f });
 
 	FollowingCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FOLLOWING_CAMERA"));
 	FollowingCamera->SetupAttachment(CameraBoom);
@@ -116,13 +114,30 @@ void AMainCharacterBase::MoveRight(float Value)
 void AMainCharacterBase::Roll()
 {
 	if (!GetIsActionActive(ECharacterActionType::E_Idle)) return;
-	
+
 	FVector newDirection(0.0f);
+	FRotator newRotation = FRotator();
 	newDirection.X = GetInputAxisValue(FName("MoveForward"));
 	newDirection.Y = GetInputAxisValue(FName("MoveRight"));
 
-	FRotator newRotation = { 0, FMath::Atan2(newDirection.Y, newDirection.X) * 180.0f / 3.141592, 0.0f};
-	newRotation.Yaw += 270.0f;
+	//아무런 방향 입력이 없다면? 
+	if (newDirection.Y + newDirection.X == 0)
+	{
+		//메시의 방향으로 구르기
+		newDirection = GetMesh()->GetComponentRotation().Vector();
+		newRotation = { 0, FMath::Atan2(newDirection.Y, newDirection.X) * 180.0f / 3.141592, 0.0f };
+	}
+	else //아니라면, 입력 방향으로 구르기
+	{
+		newRotation = { 0, FMath::Atan2(newDirection.Y, newDirection.X) * 180.0f / 3.141592, 0.0f };
+		newRotation.Yaw += 270.0f;
+	}
+
+	//Rotation 리셋 로직
+	GetWorldTimerManager().ClearTimer(RotationResetTimerHandle);
+	ResetRotationToMovement();
+	SetActorRotation(newRotation + FRotator(0.0f, 90.0f, 0.0f));
+	GetMesh()->SetWorldRotation(newRotation);
 
 	// 사운드
 	if (RollSound->IsValidLowLevelFast())
@@ -130,16 +145,13 @@ void AMainCharacterBase::Roll()
 		UGameplayStatics::PlaySoundAtLocation(this, RollSound, GetActorLocation());
 	}
 
-	GetMesh()->SetWorldRotation(newRotation);
-
+	//애니메이션 
 	CharacterState.CharacterActionState = ECharacterActionType::E_Roll;
-
 	if (AnimAssetData.RollAnimMontageList.Num() > 0
 		&& IsValid(AnimAssetData.RollAnimMontageList[0]))
 	{
-		PlayAnimMontage(AnimAssetData.RollAnimMontageList[0], FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 450.0f));
-	}
-	
+		PlayAnimMontage(AnimAssetData.RollAnimMontageList[0], FMath::Max(1.0f, CharacterStat.CharacterMoveSpeed / 550.0f));
+	}	
 }
 
 void AMainCharacterBase::ZoomIn(float Value)
@@ -165,9 +177,7 @@ void AMainCharacterBase::TryInvestigate()
 		}
 		Investigate(nearActorList[0]);
 		ResetActionState();
-
 	}
-
 }
 
 void AMainCharacterBase::Investigate(AActor* TargetActor)
@@ -252,12 +262,8 @@ void AMainCharacterBase::Die()
 	Super::Die();
 	if (IsValid(GamemodeRef))
 	{
-		ALevelScriptInGame* inGameScriptRef = Cast<ALevelScriptInGame>(GetWorld()->GetLevelScriptActor(GetWorld()->GetCurrentLevel()));
-
-		if (IsValid(inGameScriptRef))
-		{
-			inGameScriptRef->GetChapterManager()->GetStageManager()->GetCurrentStage()->FinishTileDelegate.Broadcast();
-		}
+		GamemodeRef->GetChapterManagerRef()->GetCurrentStage()->AIOffDelegate.Broadcast();
+		
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 		//ClearAllTimerHandle();
 		GamemodeRef->ClearResourceDelegate.Broadcast();
@@ -279,10 +285,15 @@ void AMainCharacterBase::RotateToCursor()
 		GetMesh()->SetWorldRotation(newRotation);
 	}
 	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetMesh()->SetWorldRotation(newRotation.Quaternion());
 
-	ResetRotationToMovement();
-	newRotation.Yaw += (-270.0f);
-	SetActorRotation(newRotation.Quaternion(), ETeleportType::TeleportPhysics);
+	GetWorld()->GetTimerManager().ClearTimer(RotationResetTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(RotationResetTimerHandle, FTimerDelegate::CreateLambda([&]() {
+		ResetRotationToMovement();
+		FRotator newRotation = PlayerControllerRef->GetLastRotationToCursor();
+		newRotation.Yaw = FMath::Fmod((newRotation.Yaw + 90.0f), 360.0f);
+		SetActorRotation(newRotation.Quaternion(), ETeleportType::ResetPhysics);
+	}), 1.0f, false);
 }
 
 TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
@@ -292,7 +303,7 @@ TArray<AActor*> AMainCharacterBase::GetNearInteractionActorList()
 	TEnumAsByte<EObjectTypeQuery> itemObjectType = UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel3);
 	FVector overlapBeginPos = GetActorLocation() + GetMesh()->GetForwardVector() * 70.0f + GetMesh()->GetUpVector() * -45.0f;
 	
-	for (float sphereRadius = 0.2f; sphereRadius < 1.5f; sphereRadius += 0.2f)
+	for (float sphereRadius = 0.2f; sphereRadius < 15.0f; sphereRadius += 0.2f)
 	{
 		bool result = false;
 
