@@ -56,16 +56,16 @@ public:
 		bool bIsValid;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		TArray<AActor*> MonsterSpawnPoints;
+		TArray<FVector> MonsterSpawnPoints;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		TArray<AActor*> ItemSpawnPoints;
+		TArray<FVector> ItemSpawnPoints;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		TArray<AActor*> CharacterSpawnPoint;
+		TArray<FVector> CharacterSpawnPoint;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		TArray<AActor*> RewardBoxSpawnPoint;
+		TArray<FVector> RewardBoxSpawnPoint;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		TArray<class AEnemyCharacterBase*> MonsterList;

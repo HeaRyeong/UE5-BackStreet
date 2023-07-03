@@ -50,7 +50,7 @@ void AResourceManager::SpawnMonster(class AStageData* Target)
 	{
 		int32 selectidxA = FMath::RandRange(0, Target->MonsterSpawnPoints.Num() - 1);
 		int32 selectidxB = FMath::RandRange(0, Target->MonsterSpawnPoints.Num() - 1);
-		AActor* temp;
+		FVector temp;
 
 		temp = Target->MonsterSpawnPoints[selectidxA];
 		Target->MonsterSpawnPoints[selectidxA] = Target->MonsterSpawnPoints[selectidxB];
@@ -64,7 +64,7 @@ void AResourceManager::SpawnMonster(class AStageData* Target)
 		int32 enemyIDIdx = FMath::RandRange(0, enemyIDList.Num() - 1);
 
 		FActorSpawnParameters actorSpawnParameters;
-		FVector spawnLocation = Target->MonsterSpawnPoints[i]->GetActorLocation();
+		FVector spawnLocation = Target->MonsterSpawnPoints[i];
 		spawnLocation = spawnLocation + FVector(0, 0, 200);
 
 		actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -80,7 +80,7 @@ void AResourceManager::SpawnBossMonster(class AStageData* Target)
 {
 	FActorSpawnParameters actorSpawnParameters;
 	uint16 idx = FMath::RandRange(0, Target->MonsterSpawnPoints.Num() - 1);
-	FVector spawnLocation = Target->MonsterSpawnPoints[idx]->GetActorLocation();
+	FVector spawnLocation = Target->MonsterSpawnPoints[idx];
 	spawnLocation = spawnLocation + FVector(0, 0, 200);
 
 	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -99,7 +99,7 @@ void AResourceManager::SpawnItem(class AStageData* Target)
 	{
 		int32 selectidxA = FMath::RandRange(0, Target->ItemSpawnPoints.Num() - 1);
 		int32 selectidxB = FMath::RandRange(0, Target->ItemSpawnPoints.Num() - 1);
-		AActor* temp;
+		FVector temp;
 
 		temp = Target->ItemSpawnPoints[selectidxA];
 		Target->ItemSpawnPoints[selectidxA] = Target->ItemSpawnPoints[selectidxB];
@@ -111,7 +111,7 @@ void AResourceManager::SpawnItem(class AStageData* Target)
 	for (int8 i = 0; i < spawnMax; i++)
 	{
 		int8 type = FMath::RandRange(0, ItemBoxAssets.Num() - 1);
-		FVector spawnLocation = Target->ItemSpawnPoints[i]->GetActorLocation();
+		FVector spawnLocation = Target->ItemSpawnPoints[i];
 		spawnLocation = spawnLocation + FVector(0, 0, 200);
 		AItemBoxBase* item = GetWorld()->SpawnActor<AItemBoxBase>(ItemBoxAssets[type], spawnLocation, FRotator::ZeroRotator);
 		item->InitItemBox(false);
@@ -123,10 +123,32 @@ void AResourceManager::SpawnRewardBox(class AStageData* Target)
 {
 	FActorSpawnParameters actorSpawnParameters;
 	actorSpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	ARewardBoxBase* rewardBox = GetWorld()->SpawnActor<ARewardBoxBase>(RewardBoxAssets[0], Target->RewardBoxSpawnPoint[0]->GetActorLocation(), FRotator(0, 90, 0), actorSpawnParameters);
-	if(IsValid(rewardBox))rewardBox->Tags.AddUnique("RewardBox");
-	else { UE_LOG(LogTemp, Warning, TEXT("Whyrano")); }
-	Target->RewardBoxRef=rewardBox;
+	ARewardBoxBase* rewardBox;
+	if (IsValid(RewardBoxAssets[0]))
+	{
+		if (IsValid(Target))
+		{
+			if (Target->RewardBoxSpawnPoint.IsValidIndex(0))
+			{
+				rewardBox = GetWorld()->SpawnActor<ARewardBoxBase>(RewardBoxAssets[0], Target->RewardBoxSpawnPoint[0], FRotator(0, 90, 0), actorSpawnParameters);
+				if(IsValid(rewardBox)) Target->RewardBoxRef = rewardBox;
+
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("RewardBoxSpawnPoint[0] Whyrano"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Target Whyrano"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RewardBoxAssets[0] Whyrano"));
+	}
+
 	//rewardBox->SetBelongStage(Target);
 }
 
@@ -158,7 +180,7 @@ void AResourceManager::DieMonster(AEnemyCharacterBase* Target)
 		currentStage->bIsClear = true;
 
 		SpawnRewardBox(currentStage);
-		gameModeRef->StageClearDelegate.Broadcast();
+		//gameModeRef->StageClearDelegate.Broadcast();
 
 		Cast<AChapterManagerBase>(GetOwner())->CheckChapterClear();
 		//PauseTimer();
