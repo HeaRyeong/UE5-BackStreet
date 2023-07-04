@@ -27,6 +27,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		bool GetIsVisited() { return bIsVisited; }
+
+//민감한 프로퍼티는 protected나 private로 수정부탁드립니다.
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		int32 XPos;

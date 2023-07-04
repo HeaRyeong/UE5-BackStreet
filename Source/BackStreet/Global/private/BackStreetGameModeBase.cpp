@@ -3,6 +3,7 @@
 #include "../public/BackStreetGameModeBase.h"
 #include "../public/DebuffManager.h"
 #include "../../StageSystem/public/ChapterManagerBase.h"
+#include "../../StageSystem/public/StageData.h"
 #include "../../Item/public/ProjectileBase.h"
 #include "../../Item/public/WeaponBase.h"
 #include "../../Item/public/RangedWeaponBase.h"
@@ -86,6 +87,13 @@ AItemBase* ABackStreetGameModeBase::SpawnItemToWorld(uint8 ItemType, uint8 ItemI
 		if (IsValid(newItem))
 		{
 			newItem->InitItem((EItemCategoryInfo)ItemType, ItemID);
+
+			//임시코드!!!!!!!!!!!!!!!! 230704 @ljh
+			if (IsValid(GetChapterManagerRef()) 
+				&& GetChapterManagerRef()->GetCurrentStage())
+			{
+				GetChapterManagerRef()->GetCurrentStage()->ItemList.Add(newItem);
+			}
 		}
 		return newItem;
 	}

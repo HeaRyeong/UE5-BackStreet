@@ -89,8 +89,6 @@ void AResourceManager::SpawnBossMonster(class AStageData* Target)
 	// 수정 필요 하드코딩..
 	monster->EnemyID = 1200;
 	monster->InitEnemyStat();
-
-
 }
 
 void AResourceManager::SpawnItem(class AStageData* Target)
@@ -294,18 +292,7 @@ void AResourceManager::CleanStageItem(class AStageData* Target)
 			target->Destroy();
 		}
 	}
-	// 임시 아이템 삭제 로직
-	TArray<AActor*> itmes;
 
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBase::StaticClass(), itmes);
-	for (AActor* target : itmes)
-	{
-		UE_LOG(LogTemp, Log, TEXT("AChapterManagerBase::InitChapterManager: Find ResourceManager"));
-
-		GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
-		target->Destroy();
-
-	}
 }
 
 
