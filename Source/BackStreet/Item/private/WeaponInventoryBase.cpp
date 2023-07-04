@@ -178,8 +178,15 @@ bool AWeaponInventoryBase::TryAddAmmoToWeapon(int32 WeaponID, int32 AmmoCount)
 
 	FInventoryItemInfoStruct& itemInfoRef = InventoryArray[targetInventoryIdx];
 
-	itemInfoRef.WeaponState.RangedWeaponState.TotalAmmoCount += AmmoCount;
-	itemInfoRef.WeaponState.RangedWeaponState.TotalAmmoCount %= itemInfoRef.WeaponStat.RangedWeaponStat.MaxTotalAmmo;
+	int32& currTotalAmmoCount = itemInfoRef.WeaponState.RangedWeaponState.TotalAmmoCount;
+	const int32 maxTotalAmmoCount = itemInfoRef.WeaponStat.RangedWeaponStat.MaxTotalAmmo;
+
+	currTotalAmmoCount += AmmoCount;
+
+	if(currTotalAmmoCount < maxTotalAmmoCount)
+		currTotalAmmoCount %= maxTotalAmmoCount;
+	else
+		currTotalAmmoCount = maxTotalAmmoCount;
 	
 	if (CurrentIdx == targetInventoryIdx) SyncCurrentWeaponInfo(true);
 	else OnInventoryItemIsUpdated.Broadcast(targetInventoryIdx, false, InventoryArray[targetInventoryIdx]);

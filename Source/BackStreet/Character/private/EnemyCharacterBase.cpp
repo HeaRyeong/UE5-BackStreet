@@ -76,7 +76,9 @@ void AEnemyCharacterBase::Attack()
 {
 	Super::Attack();
 
-	const float attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
+	float attackSpeed = 0.5f;
+	if(IsValid(GetWeaponActorRef()))
+		attackSpeed = FMath::Min(1.5f, CharacterStat.CharacterAtkSpeed * GetWeaponActorRef()->GetWeaponStat().WeaponAtkSpeedRate);
 
 	GetWorldTimerManager().SetTimer(AtkIntervalHandle, this, &ACharacterBase::ResetAtkIntervalTimer
 		, 1.0f, false, FMath::Max(0.0f, 1.5f - attackSpeed));
