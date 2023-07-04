@@ -262,7 +262,9 @@ void AMainCharacterBase::Die()
 	Super::Die();
 	if (IsValid(GamemodeRef))
 	{
-		GamemodeRef->GetChapterManagerRef()->GetCurrentStage()->AIOffDelegate.Broadcast();
+		if(IsValid(GamemodeRef->GetChapterManagerRef())
+			&& IsValid(GamemodeRef->GetChapterManagerRef()->GetCurrentStage()))
+			GamemodeRef->GetChapterManagerRef()->GetCurrentStage()->AIOffDelegate.Broadcast();
 		
 		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 		//ClearAllTimerHandle();

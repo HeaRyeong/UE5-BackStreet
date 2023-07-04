@@ -30,6 +30,8 @@ bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterB
 {
 	if (!IsValid(GamemodeRef) || !IsValid(Target)) return false;
 
+	UE_LOG(LogTemp, Warning, TEXT("TRY #2"));
+
 	FTimerDelegate timerDelegate, healTimerDelegate, dotDamageDelegate;
 	FTimerHandle& timerHandle = GetDebuffTimerHandleRef(DebuffType, Target);
 
@@ -47,6 +49,8 @@ bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterB
 		return SetDebuffTimer( DebuffType, Target, Causer, FMath::Min(TotalTime + remainTime, MAX_DEBUFF_TIME), Variable);
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("TRY #3"));
+
 	/*---- 디버프 타이머 세팅 ----------------------------*/
 	Variable = FMath::Min(1.0f, FMath::Abs(Variable)); //값 정제
 	characterState.CharacterDebuffState |= (1 << (int)DebuffType);
@@ -56,7 +60,10 @@ bool UDebuffManager::SetDebuffTimer(ECharacterDebuffType DebuffType, ACharacterB
 		//----데미지 디버프-------------------
 		case ECharacterDebuffType::E_Flame:
 		case ECharacterDebuffType::E_Poison:
-			dotDamageDelegate.BindUFunction(Target, FName("TakeDebuffDamage"), Variable, DebuffType, Causer);
+			dotDamageDelegate.BindUFunction(Target, FName("TakeDebuffDamage"), Variable, DebuffType, Causer);\
+
+			UE_LOG(LogTemp, Warning, TEXT("%lf"), Variable);
+
 			if (!(GetTimerHandleListRef(Target)).IsValidIndex(DEBUFF_DAMAGE_TIMER_IDX))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Timer Handle List is Invalid!!! - - - - - "));

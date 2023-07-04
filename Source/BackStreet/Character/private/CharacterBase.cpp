@@ -63,7 +63,8 @@ void ACharacterBase::InitCharacterState()
 bool ACharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer, float TotalTime, float Value)
 {
 	if (!IsValid(GamemodeRef)) return false;
-	if(!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
+	
+	if (!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
 
 	bool result = GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
 	return result;
@@ -112,7 +113,7 @@ void ACharacterBase::ResetActionState(bool bForceReset)
 float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator
 								, AActor* DamageCauser)
 {
-	if (!IsValid(DamageCauser) || !IsValid(EventInstigator)) return 0.0f; 
+	if (!IsValid(DamageCauser)) return 0.0f; 
 
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -136,7 +137,7 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 float ACharacterBase::TakeDebuffDamage(float DamageAmount, ECharacterDebuffType DebuffType, AActor* Causer)
 {
 	if (!IsValid(Causer)) return 0.0f;
-	TakeDamage(DamageAmount, FDamageEvent(), Causer->GetInstigatorController(), Causer);
+	TakeDamage(DamageAmount, FDamageEvent(), nullptr, Causer);
 	return DamageAmount;
 }
 
@@ -248,7 +249,7 @@ void ACharacterBase::TryReload()
 	CharacterState.CharacterActionState = ECharacterActionType::E_Reload;
 	GetWorldTimerManager().SetTimer(ReloadTimerHandle, FTimerDelegate::CreateLambda([&](){
 		Cast<ARangedWeaponBase>(GetWeaponActorRef())->TryReload();
-		CharacterState.CharacterActionState = ECharacterActionType::E_Idle;
+		ResetActionState(true);
 	}), 1.0f, false, reloadTime);
 }
 
