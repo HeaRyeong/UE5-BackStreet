@@ -264,7 +264,7 @@ void AResourceManager::CleanStageMonster(class AStageData* Target)
 {
 	for (AEnemyCharacterBase* target :Target->MonsterList)
 	{
-		if (target != nullptr)
+		if (IsValid(target))
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
 			target->Destroy();
@@ -277,7 +277,7 @@ void AResourceManager::CleanStageItem(class AStageData* Target)
 {
 	for (AItemBoxBase* target : Target->ItemBoxList)
 	{
-		if (target != nullptr)
+		if (IsValid(target))
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
 			target->Destroy();
@@ -286,7 +286,7 @@ void AResourceManager::CleanStageItem(class AStageData* Target)
 
 	for (AItemBase* target : Target->ItemList)
 	{
-		if (target != nullptr)
+		if (IsValid(target))
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
 			target->Destroy();
