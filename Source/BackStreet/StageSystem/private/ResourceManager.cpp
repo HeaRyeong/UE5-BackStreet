@@ -4,21 +4,33 @@
 #include "../public/ResourceManager.h"
 #include "../public/StageData.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
+#include "../../Global/public/DebuffManager.h"
 #include "../public/ChapterManagerBase.h"
 #include "../../Character/public/EnemyCharacterBase.h"
+#include "../../Character/public/MainCharacterBase.h"
 #include "../../AISystem/public/AIControllerBase.h"
 #include "../../Item/public/RewardBoxBase.h"
 #include "../../Item/public/ItemBoxBase.h"
 #include "../../Item/public/ItemBase.h"
 #include "Engine/LevelStreaming.h"
 
-void AResourceManager::InitResourceManager()
+AResourceManager::AResourceManager()
 {
-	ABackStreetGameModeBase* gameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+}
+
+void AResourceManager::BeginPlay()
+{
+	Super::BeginPlay();
 
 	// AI Controller 반환 관련해서 논의 필요할 듯
-	//gameModeRef->ClearResourceDelegate.AddDynamic(this, &AResourceManager::CleanAllResource);
+	ABackStreetGameModeBase* gameModeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	gameModeRef->ClearResourceDelegate.AddDynamic(this, &AResourceManager::CleanAllResource);
 	gameModeRef->ChapterClearResourceDelegate.AddDynamic(this, &AResourceManager::CleanAllResource);
+}
+
+void AResourceManager::InitResourceManager()
+{
+	
 }
 
 void AResourceManager::SpawnStageActor(class AStageData* Target)
@@ -233,11 +245,22 @@ void AResourceManager::CleanAllResource()
 
 	TArray<AStageData*> stages = Cast<AChapterManagerBase>(GetOwner())->GetStages();
 
-	for (AStageData* stage : stages)
+	for (int32 idx = stages.Num()-1; idx>=0; idx--)
 	{
-		CleanStage(stage);
+		AStageData* stage = stages[idx];
+		if (IsValid(stage))
+		{
+			CleanStage(stage);
+		}
+	}
+	ABackStreetGameModeBase* gamemodeRef = Cast<ABackStreetGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (IsValid(gamemodeRef))
+	{
+		gamemodeRef->GetGlobalDebuffManagerRef()->ClearAllDebuffTimer();
 	}
 
+	if(IsValid(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+		Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))->ClearAllTimerHandle();
 }
 
 void AResourceManager::CleanStage(class AStageData* Target)
@@ -255,19 +278,18 @@ void AResourceManager::CleanStage(class AStageData* Target)
 		// 고민중..
 	}
 	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
-	Target->Destroy();
-
 }
 
 
 void AResourceManager::CleanStageMonster(class AStageData* Target)
 {
-	for (AEnemyCharacterBase* target :Target->MonsterList)
+	for (int32 idx = Target->MonsterList.Num()-1; idx >= 0; idx--)
 	{
+		AEnemyCharacterBase* target = Target->MonsterList[idx];
 		if (IsValid(target))
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
-			target->Destroy();
+			target->TakeDamage(100000.0f, FDamageEvent(), nullptr, this);
 		}
 	}
 }
@@ -275,8 +297,9 @@ void AResourceManager::CleanStageMonster(class AStageData* Target)
 
 void AResourceManager::CleanStageItem(class AStageData* Target)
 {
-	for (AItemBoxBase* target : Target->ItemBoxList)
+	for (int32 idx = Target->ItemBoxList.Num() - 1; idx >= 0; idx--)
 	{
+		AItemBoxBase* target = Target->ItemBoxList[idx];
 		if (IsValid(target))
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
@@ -284,15 +307,15 @@ void AResourceManager::CleanStageItem(class AStageData* Target)
 		}
 	}
 
-	for (AItemBase* target : Target->ItemList)
+	for (int32 idx = Target->ItemList.Num() - 1; idx >= 0; idx--)
 	{
+		AItemBase* target = Target->ItemList[idx];
 		if (IsValid(target))
 		{
 			GetWorld()->GetTimerManager().ClearAllTimersForObject(target);
 			target->Destroy();
 		}
 	}
-
 }
 
 

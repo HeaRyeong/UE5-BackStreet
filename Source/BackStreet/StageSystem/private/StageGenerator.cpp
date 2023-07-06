@@ -5,6 +5,7 @@
 #include "../public/ResourceManager.h"
 #include "../../StageSystem/public/StageData.h"
 
+
 TArray<class AStageData*> UStageGenerator::CreateMaze()
 {
 	Stages.Empty();

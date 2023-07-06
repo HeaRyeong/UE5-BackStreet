@@ -17,6 +17,7 @@ class BACKSTREET_API UStageGenerator : public UObject
 {
 	GENERATED_BODY()
 
+
 public:
 	UFUNCTION(BlueprintCallable)
 		TArray<class AStageData*> CreateMaze();

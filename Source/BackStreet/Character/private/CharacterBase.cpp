@@ -155,6 +155,12 @@ void ACharacterBase::Die()
 		GetInventoryRef()->RemoveCurrentWeapon();
 		GetInventoryRef()->Destroy();
 	}
+	if (IsValid(GetWeaponActorRef()))
+	{
+		GetWeaponActorRef()->ClearAllTimerHandle();
+	}
+
+	ClearAllTimerHandle();
 	CharacterState.CharacterActionState = ECharacterActionType::E_Die;
 	CharacterStat.bIsInvincibility = true;
 	ClearAllTimerHandle();

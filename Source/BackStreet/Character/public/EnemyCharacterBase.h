@@ -117,8 +117,7 @@ protected:
 		class UAnimMontage* PreChaseAnimMontage;
 
 public:
-	UFUNCTION()
-		void ClearAllTimerHandle();
+	void ClearAllTimerHandle();
 
 private:
 	//무한 Turn에 빠지지 않게 TimeOut 처리 시켜주는 타이머 핸들

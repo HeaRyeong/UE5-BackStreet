@@ -44,6 +44,7 @@ float ARangedWeaponBase::GetAttackRange()
 void ARangedWeaponBase::ClearAllTimerHandle()
 {
 	Super::ClearAllTimerHandle();
+	GetWorldTimerManager().ClearTimer(AutoReloadTimerHandle);
 } 
 
 void ARangedWeaponBase::UpdateWeaponStat(FWeaponStatStruct NewStat)

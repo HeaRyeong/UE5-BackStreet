@@ -166,7 +166,6 @@ protected:
 
 // ------- ±× ¿Ü -----------
 public:
-	UFUNCTION()
 	virtual void ClearAllTimerHandle() override;
 
 private:

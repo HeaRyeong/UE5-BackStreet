@@ -13,6 +13,7 @@ UCLASS()
 class BACKSTREET_API UTransitionManager : public UObject
 {
 	GENERATED_BODY()
+
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateSpawnRequest SpawnRequestDelegate;

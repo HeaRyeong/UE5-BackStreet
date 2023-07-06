@@ -87,7 +87,7 @@ void AWeaponBase::PlayEffectSound(USoundCue* EffectSound)
 
 void AWeaponBase::ClearAllTimerHandle()
 {
-	//* 자식 클래스에서 오버라이드 *//
+	GetWorldTimerManager().ClearTimer(ComboTimerHandle);
 }
 
 void AWeaponBase::UpdateDurabilityState()

@@ -149,7 +149,8 @@ protected:
 
 // ----- 타이머 관련 ---------------------------------
 protected:
-	virtual void ClearAllTimerHandle();
+	UFUNCTION()
+		virtual void ClearAllTimerHandle();
 
 	//공격 간 딜레이 핸들
 	UPROPERTY()

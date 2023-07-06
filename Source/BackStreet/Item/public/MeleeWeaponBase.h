@@ -25,9 +25,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 		virtual float GetAttackRange() override;
 
-protected:
-	UFUNCTION()
-		virtual void ClearAllTimerHandle() override;
 
 //------ 스탯/상태 관련 ---------------------------------
 protected:
@@ -62,6 +59,10 @@ private:
 
 	//UPROPERTY()
 	FCollisionQueryParams MeleeLineTraceQueryParams;
+
+
+protected:
+	virtual void ClearAllTimerHandle() override;
 
 	UPROPERTY()
 		FTimerHandle MeleeAtkTimerHandle;

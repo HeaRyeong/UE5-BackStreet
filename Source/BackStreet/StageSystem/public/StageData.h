@@ -12,6 +12,9 @@ class BACKSTREET_API AStageData : public AActor
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void BeginPlay() override;
+
 public:
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable)
 		FDelegateAIContorl AIOnDelegate;

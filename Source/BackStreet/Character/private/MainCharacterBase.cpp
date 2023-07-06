@@ -271,7 +271,7 @@ void AMainCharacterBase::Die()
 		GamemodeRef->ClearResourceDelegate.Broadcast();
 		GamemodeRef->FinishChapterDelegate.Broadcast(true);
 	}
-	//ClearAllTimerHandle();
+	//;
 	UE_LOG(LogTemp, Warning, TEXT("DIE DELEGATE"));
 }
 

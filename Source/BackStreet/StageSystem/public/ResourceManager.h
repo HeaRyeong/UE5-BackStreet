@@ -14,6 +14,13 @@ class BACKSTREET_API AResourceManager : public AActor
 	GENERATED_BODY()
 
 public:
+	AResourceManager();
+
+protected:
+	virtual void BeginPlay() override;
+
+
+public:
 	UFUNCTION()
 		void InitResourceManager();
 
