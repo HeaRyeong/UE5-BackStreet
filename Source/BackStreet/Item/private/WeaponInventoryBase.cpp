@@ -101,21 +101,34 @@ bool AWeaponInventoryBase::AddWeapon(int32 NewWeaponID)
 	return false;
 }
 
-void AWeaponInventoryBase::RemoveWeapon(int32 InventoryIdx)
+void AWeaponInventoryBase::RemoveWeapon(int32 WeaponID)
 {
-	if (!InventoryArray.IsValidIndex(InventoryIdx)) return;
+	if (!GetWeaponIsContained(WeaponID)) return;
 
-	CurrentCapacity -= InventoryArray[GetCurrentIdx()].WeaponStat.WeaponWeight;
+	int32 targetInventoryIdx = GetWeaponInventoryIdx(WeaponID);
+	if (!InventoryArray.IsValidIndex(targetInventoryIdx)) return;
+	
+
+	CurrentCapacity -= InventoryArray[targetInventoryIdx].WeaponStat.WeaponWeight;
 	CurrentWeaponCount -= 1;
 
-	InventoryArray.RemoveAt(GetCurrentIdx());
-	if (GetCurrentWeaponCount() >= 1)
+	InventoryArray.RemoveAt(targetInventoryIdx);
+
+	if (targetInventoryIdx == GetCurrentIdx())
 	{
-		SetCurrentIdx(0);
-		EquipWeapon(0);
-		SortInventory();
-		OnInventoryIsUpdated.Broadcast(InventoryArray);
+		if (GetCurrentWeaponCount() >= 1)
+		{
+			SetCurrentIdx(0);
+			EquipWeapon(0);
+			CurrentIdx = 0;
+		}
 	}
+	else
+	{
+		CurrentIdx = targetInventoryIdx;
+	}
+	SortInventory();
+	OnInventoryIsUpdated.Broadcast(InventoryArray);
 }
 
 bool AWeaponInventoryBase::SwitchToNextWeapon()
@@ -274,7 +287,7 @@ void AWeaponInventoryBase::RemoveCurrentWeapon()
 {
 	if (!IsValid(GetCurrentWeaponRef())) return;
 	CurrentWeaponRef->Destroy();
-	RemoveWeapon(GetCurrentIdx());
+	RemoveWeapon(GetCurrentWeaponInfo().WeaponID);
 	OnInventoryIsUpdated.Broadcast(InventoryArray);
 }
 
