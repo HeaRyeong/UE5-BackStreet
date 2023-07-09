@@ -34,9 +34,9 @@ void ACharacterBase::BeginPlay()
 	}
 
 	//애니메이션 에셋 초기화
-	if (IsValid(GamemodeRef))
+	if (GamemodeRef.IsValid())
 	{
-		AnimAssetData = GamemodeRef->GetCharacterAnimAssetInfoData(CharacterStat.CharacterID);
+		AnimAssetData = GamemodeRef.Get()->GetCharacterAnimAssetInfoData(CharacterStat.CharacterID);
 	}
 }
 
@@ -62,19 +62,19 @@ void ACharacterBase::InitCharacterState()
 
 bool ACharacterBase::TryAddNewDebuff(ECharacterDebuffType NewDebuffType, AActor* Causer, float TotalTime, float Value)
 {
-	if (!IsValid(GamemodeRef)) return false;
+	if(!GamemodeRef.IsValid()) return false;
 	
-	if (!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
+	if (!IsValid(GamemodeRef.Get()->GetGlobalDebuffManagerRef())) return false;
 
-	bool result = GamemodeRef->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
+	bool result = GamemodeRef.Get()->GetGlobalDebuffManagerRef()->SetDebuffTimer(NewDebuffType, this, Causer, TotalTime, Value);
 	return result;
 }
 
 bool ACharacterBase::GetDebuffIsActive(ECharacterDebuffType DebuffType)
 {
-	if (!IsValid(GamemodeRef)) return false;
-	if (!IsValid(GamemodeRef->GetGlobalDebuffManagerRef())) return false;
-	return	GamemodeRef->GetGlobalDebuffManagerRef()->GetDebuffIsActive(DebuffType, this);
+	if(!GamemodeRef.IsValid()) return false;
+	if (!IsValid(GamemodeRef.Get()->GetGlobalDebuffManagerRef())) return false;
+	return	GamemodeRef.Get()->GetGlobalDebuffManagerRef()->GetDebuffIsActive(DebuffType, this);
 }
 
 void ACharacterBase::UpdateCharacterStat(FCharacterStatStruct NewStat)

@@ -114,11 +114,6 @@ void AWeaponInventoryBase::RemoveWeapon(int32 WeaponID)
 	InventoryArray.RemoveAt(targetInventoryIdx);
 	const bool bIsCurrentWeapon = targetInventoryIdx == GetCurrentIdx();
 
-	UE_LOG(LogTemp, Warning, TEXT("bIsCurrentWeapon : %d"), (int32)bIsCurrentWeapon);
-	UE_LOG(LogTemp, Warning, TEXT("CurrentIdx : %d"), GetCurrentIdx());
-	UE_LOG(LogTemp, Warning, TEXT("targetInventoryIdx : %d"), targetInventoryIdx);
-	UE_LOG(LogTemp, Warning, TEXT("---"));
-
 	CurrentIdx = bIsCurrentWeapon ? 0 : GetCurrentWeaponCount() - 1;
 
 	if (bIsCurrentWeapon)
@@ -129,7 +124,6 @@ void AWeaponInventoryBase::RemoveWeapon(int32 WeaponID)
 			EquipWeapon(CurrentIdx);
 		}
 	}
-	
 	SortInventory();
 	OnInventoryIsUpdated.Broadcast(InventoryArray);
 }

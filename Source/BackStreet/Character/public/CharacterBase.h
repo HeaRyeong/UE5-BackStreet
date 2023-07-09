@@ -142,10 +142,10 @@ protected:
 		FCharacterStateStruct CharacterState;
 
 	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
-
-	UPROPERTY()
 		class AWeaponInventoryBase* InventoryRef;
+
+	//Gamemode 약 참조
+	TWeakObjectPtr<class ABackStreetGameModeBase> GamemodeRef;
 
 // ----- 타이머 관련 ---------------------------------
 protected:
