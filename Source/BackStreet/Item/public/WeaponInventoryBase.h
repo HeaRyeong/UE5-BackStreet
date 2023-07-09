@@ -48,8 +48,8 @@ public:
 		bool AddWeapon(int32 NewWeaponID);
 
 	//무기를 인벤토리로부터 제거
-	UFUNCTION()
-		void RemoveWeapon(int32 InventoryIdx);
+	UFUNCTION(BlueprintCallable)
+		void RemoveWeapon(int32 WeaponID);
 
 	//현재 장착하고 있는 Weapon Actor 정보를 제거한다.
 	UFUNCTION()
