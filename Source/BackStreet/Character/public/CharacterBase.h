@@ -109,6 +109,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		class AWeaponInventoryBase* GetInventoryRef();
 
+	UFUNCTION()
+		void SetWeaponActorRef(class AWeaponBase* NewWeapon);
+
 	//무기 Ref를 반환
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 		class AWeaponBase* GetWeaponActorRef();
@@ -143,6 +146,9 @@ protected:
 
 	UPROPERTY()
 		class AWeaponInventoryBase* InventoryRef;
+
+	UPROPERTY()
+		class AWeaponBase* WeaponRef;
 
 	//Gamemode 약 참조
 	TWeakObjectPtr<class ABackStreetGameModeBase> GamemodeRef;

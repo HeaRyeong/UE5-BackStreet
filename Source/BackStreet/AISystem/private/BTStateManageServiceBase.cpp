@@ -24,25 +24,26 @@ void UBTStateManageServiceBase::TickNode(UBehaviorTreeComponent& OwnerComp, uint
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	if (!IsValid(OwnerCharacterRef)) //최초 수행 : BB와 캐릭터 Ref를 초기화
+	if (!OwnerCharacterRef.IsValid()) //최초 수행 : BB와 캐릭터 Ref를 초기화
 	{
 		OwnerCharacterRef = Cast<AEnemyCharacterBase>(OwnerComp.GetAIOwner()->GetPawn());
-		OwnerCharacterRef->EnemyDamageDelegate.BindUFunction(this, FName("OnOwnerGetDamaged"));
+		OwnerCharacterRef.Get()->EnemyDamageDelegate.BindUFunction(this, FName("OnOwnerGetDamaged"));
 
 		BlackboardRef = OwnerComp.GetBlackboardComponent();
-		BlackboardRef->SetValueAsVector(FName("SpawnLocation"), OwnerCharacterRef->GetActorLocation());
+		BlackboardRef.Get()->SetValueAsVector(FName("SpawnLocation"), OwnerCharacterRef.Get()->GetActorLocation());
 	}
 	else 
 	{
 		UpdateAIState();
-		BlackboardRef->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
+		BlackboardRef.Get()->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
 	}
 }
 
 void UBTStateManageServiceBase::UpdateAIState()
 {
-	if (OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Die
-		|| OwnerCharacterRef->GetCharacterState().CharacterActionState == ECharacterActionType::E_Stun)
+	if (!OwnerCharacterRef.IsValid()) return;
+	if (OwnerCharacterRef.Get()->GetCharacterState().CharacterActionState == ECharacterActionType::E_Die
+		|| OwnerCharacterRef.Get()->GetCharacterState().CharacterActionState == ECharacterActionType::E_Stun)
 	{
 		AIBehaviorState = EAIBehaviorType::E_Stun;
 		return;
@@ -76,32 +77,32 @@ void UBTStateManageServiceBase::UpdateAIState()
 
 bool UBTStateManageServiceBase::CheckPatrolState()
 {
-	const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
+	const FVector& spawnLocation = BlackboardRef.Get()->GetValueAsVector(FName("SpawnLocation"));
 	if (GetDistanceTo(spawnLocation) <= 100.0f) return true;
 	return false;
 }
 
 bool UBTStateManageServiceBase::CheckReturnState()
 {
-	const FVector& spawnLocation = BlackboardRef->GetValueAsVector(FName("SpawnLocation"));
+	const FVector& spawnLocation = BlackboardRef.Get()->GetValueAsVector(FName("SpawnLocation"));
 	if (AIBehaviorState == EAIBehaviorType::E_Return || GetDistanceTo(spawnLocation) >= MAX_CHASE_DISTANCE) return true;
 	return false;
 }
 
 bool UBTStateManageServiceBase::CheckChaseState()
 {
-	const ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
+	const ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef.Get()->GetValueAsObject(FName("TargetCharacter")));
 	return IsValid(targetCharacterRef);
 }
 
 bool UBTStateManageServiceBase::CheckAttackState()
 {
-	if(!BlackboardRef->GetValueAsBool(FName("ReadyToAttack"))) return false;
-	if(!BlackboardRef->GetValueAsBool(FName("PreChaseAnimFlag"))) return false;
-	if (BlackboardRef->GetValueAsBool(FName("HasRangedWeapon")) && !BlackboardRef->GetValueAsBool(FName("HasLineOfSight"))) return false;
+	if(!BlackboardRef.Get()->GetValueAsBool(FName("ReadyToAttack"))) return false;
+	if(!BlackboardRef.Get()->GetValueAsBool(FName("PreChaseAnimFlag"))) return false;
+	if( BlackboardRef.Get()->GetValueAsBool(FName("HasRangedWeapon")) && !BlackboardRef.Get()->GetValueAsBool(FName("HasLineOfSight"))) return false;
 
-	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef->GetValueAsObject(FName("TargetCharacter")));
-	AWeaponBase* weaponActorRef = OwnerCharacterRef->GetWeaponActorRef();
+	ACharacter* targetCharacterRef = Cast<ACharacter>(BlackboardRef.Get()->GetValueAsObject(FName("TargetCharacter")));
+	AWeaponBase* weaponActorRef = OwnerCharacterRef.Get()->GetWeaponActorRef();
 	
 	float distanceToTarget = IsValid(targetCharacterRef) ? GetDistanceTo(targetCharacterRef->GetActorLocation()) : 100.0f;
 	float attackRange = IsValid(weaponActorRef) ? (weaponActorRef->GetAttackRange()) : 100.0f;
@@ -110,20 +111,20 @@ bool UBTStateManageServiceBase::CheckAttackState()
 
 float UBTStateManageServiceBase::GetDistanceTo(const FVector& EndLocation)
 {
-	return UKismetMathLibrary::Vector_Distance(OwnerCharacterRef->GetActorLocation(), EndLocation);
+	return UKismetMathLibrary::Vector_Distance(OwnerCharacterRef.Get()->GetActorLocation(), EndLocation);
 }
 
 void UBTStateManageServiceBase::OnOwnerGetDamaged(AActor* Causer)
 {
-	if (!IsValid(Causer) || !Causer->ActorHasTag("Player")) return;
+	if (!IsValid(Causer) || Causer->IsActorBeingDestroyed() || !Causer->ActorHasTag("Player")) return;
 	if (AIBehaviorState == EAIBehaviorType::E_Stun) return;
 
 	if (AIBehaviorState == EAIBehaviorType::E_Return)
 	{
-		BlackboardRef->SetValueAsVector("SpawnLocation", OwnerCharacterRef->GetActorLocation());
+		BlackboardRef.Get()->SetValueAsVector("SpawnLocation", OwnerCharacterRef.Get()->GetActorLocation());
 	}
 
 	AIBehaviorState = EAIBehaviorType::E_Chase;
-	BlackboardRef->SetValueAsObject("TargetCharacter", Causer);
-	BlackboardRef->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
+	BlackboardRef.Get()->SetValueAsObject("TargetCharacter", Causer);
+	BlackboardRef.Get()->SetValueAsEnum("AIBehaviorState", (uint8)AIBehaviorState);
 }
