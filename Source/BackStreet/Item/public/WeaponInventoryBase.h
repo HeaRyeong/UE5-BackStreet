@@ -156,13 +156,14 @@ private:
 	UPROPERTY()
 		TMap<int32, UClass*> WeaponClassInfoMap;
 
-	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
 
-	UPROPERTY()
-		class ACharacterBase* OwnerCharacterRef;
+private: 
+	//게임모드 Ref
+	TWeakObjectPtr<class ABackStreetGameModeBase> GamemodeRef;
+
+	//인벤토리 소유자 플레이어 
+	TWeakObjectPtr<class ACharacterBase> OwnerCharacterRef;
 
 	//현재 장비하고 있는 WeaponRef
-	UPROPERTY()
-		class AWeaponBase* CurrentWeaponRef;
+	TWeakObjectPtr<class AWeaponBase> CurrentWeaponRef;
 };
