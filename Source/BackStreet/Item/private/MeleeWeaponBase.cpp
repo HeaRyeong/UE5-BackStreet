@@ -125,7 +125,6 @@ void AMeleeWeaponBase::ActivateMeleeHitEffect(const FVector& Location)
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffectParticle, emitterSpawnTransform, true, EPSCPoolMethod::None, true);
 
 	}
-
 	//카메라 Shake 효과
 	GamemodeRef.Get()->PlayCameraShakeEffect(OwnerCharacterRef.Get()->ActorHasTag("Player") ? ECameraShakeType::E_Attack : ECameraShakeType::E_Hit, Location);
 
@@ -141,10 +140,12 @@ bool AMeleeWeaponBase::TryActivateSlowHitEffect()
 	//마지막 콤보 슬로우 효과, 추후 MaxComboCnt 프로퍼티 추가 예정
 		//애니메이션 배열 소유는 캐릭터. OwnerCharacter->GetAnimArray(WeaponType).Num() ) 
 		// ㄴ> 이런식으로 하면 될 거 같은데...
-	if (OwnerCharacterRef.Get()->ActorHasTag("Player") && WeaponState.ComboCount % 4 == 0)
+	if (OwnerCharacterRef.Get()->ActorHasTag("Player"))
 	{
 		FTimerHandle attackSlowEffectTimerHandle;
-		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.1f);
+		const float dilationValue = WeaponState.ComboCount % 5 == 0 ? 0.08 : 0.15;
+
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), dilationValue);
 		GetWorldTimerManager().SetTimer(attackSlowEffectTimerHandle, FTimerDelegate::CreateLambda([&]() {
 			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
 		}), 0.015f, false);
