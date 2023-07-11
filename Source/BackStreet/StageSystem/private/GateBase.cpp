@@ -50,7 +50,7 @@ void AGateBase::InitGate()
 void AGateBase::AddGate()
 {
 	AStageData* stage = GamemodeRef->GetChapterManagerRef()->GetCurrentStage();
-	stage->GateList.Add(this);
+	stage->AddGateList(this);
 }
 
 void AGateBase::EnterGate()
@@ -183,7 +183,7 @@ void AGateBase::CheckHaveToActive()
 			
 			for (int i = 0; i < 4; i++)
 			{
-				if (!stage->GateInfo[i])
+				if (!stage->GetGateInfoDir(EDirection(i)))
 				{
 					switch (i)
 					{

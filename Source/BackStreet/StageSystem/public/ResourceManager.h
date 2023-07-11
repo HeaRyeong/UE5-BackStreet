@@ -3,9 +3,6 @@
 #pragma once
 #include "../../Global/public/BackStreet.h"
 #include "ResourceManager.generated.h"
-#define MAX_ITEM_SPAWN 10
-#define MIN_ITEM_SPAWN 7
-#define MAX_STAGE_TYPE 5
 
 
 UCLASS()

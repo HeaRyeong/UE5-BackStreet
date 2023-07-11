@@ -37,22 +37,22 @@ void UTransitionManager::MoveStage(EDirection Dir)
 	switch (Dir)
 	{
 	case EDirection::E_UP:
-		chapterManager->SetCurrentStage(GetStage(currentStage->XPos + 1, currentStage->YPos));
+		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos() + 1, currentStage->GetYPos()));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
-		chapterManager->SetCurrentStage(GetStage(currentStage->XPos - 1, currentStage->YPos));
+		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos() - 1, currentStage->GetYPos()));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
-		chapterManager->SetCurrentStage(GetStage(currentStage->XPos, currentStage->YPos - 1));
+		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos(), currentStage->GetYPos() - 1));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
-		chapterManager->SetCurrentStage(GetStage(currentStage->XPos, currentStage->YPos + 1));
+		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos(), currentStage->GetYPos() + 1));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
@@ -82,14 +82,14 @@ void UTransitionManager::LoadStage()
 	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase::LoadStage"));
 	//FScriptDelegate loadCompleteDelegate;
 
-	if (currentStage->LevelRef != nullptr)
+	if (currentStage->GetLevelRef() != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Load Level"));
 
-		currentStage->LevelRef->OnLevelShown.Add(LoadCompleteDelegate);
+		currentStage->GetLevelRef()->OnLevelShown.Add(LoadCompleteDelegate);
 
-		currentStage->LevelRef->SetShouldBeLoaded(true);
-		currentStage->LevelRef->SetShouldBeVisible(true);
+		currentStage->GetLevelRef()->SetShouldBeLoaded(true);
+		currentStage->GetLevelRef()->SetShouldBeVisible(true);
 
 
 	}
@@ -99,20 +99,20 @@ void UTransitionManager::LoadStage()
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
 
 		FString name = FString::FromInt(chapterManager->GetChapterLV());
-		FVector location = currentStage->StageLocation;
+		FVector location = currentStage->GetStageLocation();
 
 		name += FString(TEXT("Stage"));
-		name += FString::FromInt(currentStage->YPos * MAX_GRID_SIZE + currentStage->XPos);
+		name += FString::FromInt(currentStage->GetYPos() * MAX_GRID_SIZE + currentStage->GetXPos());
 
-		currentStage->LevelRef = UGameplayStatics::GetStreamingLevel(GetWorld(), currentStage->LevelToLoad)->CreateInstance(name);
-		ULevelStreaming* level = currentStage->LevelRef;
+		currentStage->SetLevelRef(UGameplayStatics::GetStreamingLevel(GetWorld(), currentStage->GetLevelToLoad())->CreateInstance(name));
+		ULevelStreaming* level = currentStage->GetLevelRef();
 
-		currentStage->LevelRef->LevelTransform.SetLocation(location);
+		currentStage->GetLevelRef()->LevelTransform.SetLocation(location);
 		
 		LoadCompleteDelegate.BindUFunction(this, "CompleteLoad");
 		level->OnLevelShown.Add(LoadCompleteDelegate);
-		currentStage->LevelRef->SetShouldBeLoaded(true);
-		currentStage->LevelRef->SetShouldBeVisible(true);
+		currentStage->GetLevelRef()->SetShouldBeLoaded(true);
+		currentStage->GetLevelRef()->SetShouldBeVisible(true);
 
 	}
 
@@ -126,9 +126,9 @@ void UTransitionManager::UnLoadStage()
 	if (HideStage != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
-		HideStage->LevelRef->OnLevelHidden.Add(UnloadCompleteDelegate);
-		HideStage->LevelRef->SetShouldBeLoaded(false);
-		HideStage->LevelRef->SetShouldBeVisible(false);
+		HideStage->GetLevelRef()->OnLevelHidden.Add(UnloadCompleteDelegate);
+		HideStage->GetLevelRef()->SetShouldBeLoaded(false);
+		HideStage->GetLevelRef()->SetShouldBeVisible(false);
 	}
 	else
 	{
@@ -142,10 +142,10 @@ void UTransitionManager::CompleteLoad()
 {
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::CompleteLoad"));
 	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
-	if (!currentStage->bIsVisited)
+	if (!currentStage->GetIsVisited())
 	{
 		SetStage(currentStage);
-		currentStage->bIsVisited = true;
+		currentStage->SetIsVisited(true);
 		// 델리게이트로 변경필요
 		Cast<AChapterManagerBase>(this->GetOuter())->GetResourceManager()->SpawnStageActor(currentStage);
 	}
@@ -169,29 +169,26 @@ void UTransitionManager::SetSpawnPoint(AStageData* Target)
 {
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::SetSpawnPoint"));
 
-	ULevelStreaming* levelRef = Target->LevelRef;
+	ULevelStreaming* levelRef = Target->GetLevelRef();
 	ULevel* level = levelRef->GetLoadedLevel();
 
 	for (AActor* actor : level->Actors)
 	{
 		if (actor->ActorHasTag(FName(TEXT("MonsterSpawnPoint"))))
 		{
-			Target->MonsterSpawnPoints.AddUnique(FVector(actor->GetActorLocation()));
-
+			Target->AddMonsterSpawnPoint(FVector(actor->GetActorLocation()));
 		}
 		if (actor->ActorHasTag(FName(TEXT("ItemSpawnPoint"))))
 		{
-			Target->ItemSpawnPoints.AddUnique(FVector(actor->GetActorLocation()));
+			Target->AddItemSpawnPoint(FVector(actor->GetActorLocation()));
 		}
 		if (actor->ActorHasTag(FName(TEXT("CharacterSpawnPoint"))))
 		{
-			Target->CharacterSpawnPoint.AddUnique(FVector(actor->GetActorLocation()));
-
+			Target->AddCharacterSpawnPoint(FVector(actor->GetActorLocation()));
 		}
 		if (actor->ActorHasTag(FName(TEXT("RewardBoxSpawnPoint"))))
 		{
-			Target->RewardBoxSpawnPoint.AddUnique(FVector(actor->GetActorLocation()));
-
+			Target->AddRewardBoxSpawnPoint(FVector(actor->GetActorLocation()));
 		}
 	}
 }
@@ -202,7 +199,7 @@ void UTransitionManager::SetGate()
 
 	TArray<AActor*> gates;
 	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
-	currentStage->GateList.Empty();
+	currentStage->EmptyGateList();
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGateBase::StaticClass(), gates);
 	for (AActor* gate : gates)
@@ -271,15 +268,17 @@ void UTransitionManager::TeleportCharacter()
 	}
 	else if (telegate == FName(TEXT("StartGate")))
 	{
-		if (currentStage->CharacterSpawnPoint.IsValidIndex(0))
+		TArray<FVector> characterSpawnPoint = currentStage->GetCharacterSpawnPoint();
+
+		if (characterSpawnPoint.IsValidIndex(0))
 		{
-			moveLocation = currentStage->CharacterSpawnPoint[0];
+			moveLocation = characterSpawnPoint[0];
 
 		}
 	}
 	else
 	{
-		for (AGateBase* gate : currentStage->GateList)
+		for (class AGateBase* gate : currentStage->GetGateList())
 		{
 			if (gate->ActorHasTag(telegate))
 			{
@@ -298,9 +297,9 @@ void UTransitionManager::TeleportCharacter()
 
 AStageData* UTransitionManager::GetStage(uint8 XPosition, uint8 YPosition)
 {
-	if (XPosition >= 0 && XPosition < ChapterSize && YPosition >= 0 && YPosition < ChapterSize)
+	if (XPosition >= 0 && XPosition < MAX_GRID_SIZE && YPosition >= 0 && YPosition < MAX_GRID_SIZE)
 	{
-		return (Stages[(YPosition * ChapterSize) + XPosition]);
+		return (Stages[(YPosition * MAX_GRID_SIZE) + XPosition]);
 	}
 	else
 		return nullptr;

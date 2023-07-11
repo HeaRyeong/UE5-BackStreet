@@ -7,8 +7,6 @@
 #include "StageGenerator.generated.h"
 // 이런 define 코드 BackStreet,h에 모아서 정의하는게 깔끔하지 않을까 싶음
 
-#define ChapterSize 3
-
 /**
  * 
  */

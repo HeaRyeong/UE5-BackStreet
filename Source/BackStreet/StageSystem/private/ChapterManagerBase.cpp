@@ -70,7 +70,7 @@ bool AChapterManagerBase::IsChapterClear()
 	{
 		if (stage->GetStageType() == EStageCategoryInfo::E_Boss)
 		{
-			if (stage->bIsClear)
+			if (stage->GetIsClear())
 				return true;
 		}
 	}
@@ -158,7 +158,6 @@ void AChapterManagerBase::InitStartGate()
 
 void AChapterManagerBase::UpdateMapUI()
 {
-
 	Cast<ABackStreetGameModeBase>(GetOwner())->UpdateMiniMapUI();
 }
 
