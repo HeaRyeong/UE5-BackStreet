@@ -124,7 +124,7 @@ protected:
 	//최대 어빌리티 수
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (UIMin = 1, UIMax = 5))
 		int32 MaxAbilityCount = 3;
-
+		
 private:
 	//현재 플레이어가 소유한 어빌리티의 정보
 	UPROPERTY()

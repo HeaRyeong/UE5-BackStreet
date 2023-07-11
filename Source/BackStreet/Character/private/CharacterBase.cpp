@@ -5,6 +5,7 @@
 #include "../../Item/public/WeaponInventoryBase.h"
 #include "../../Global/public/BackStreetGameModeBase.h"
 #include "../../Global/public/AssetManagerBase.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Animation/AnimMontage.h"
 
 // Sets default values
@@ -129,7 +130,8 @@ float ACharacterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	}
 	else if (AnimAssetData.HitAnimMontageList.Num() > 0)
 	{
-		PlayAnimMontage(AnimAssetData.HitAnimMontageList[0]);
+		const int32 randomIdx = UKismetMathLibrary::RandomIntegerInRange(0, AnimAssetData.HitAnimMontageList.Num() - 1);
+		PlayAnimMontage(AnimAssetData.HitAnimMontageList[randomIdx]);
 	}
 	return DamageAmount;
 }
