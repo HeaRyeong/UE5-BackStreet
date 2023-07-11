@@ -14,6 +14,8 @@ class BACKSTREET_API AWeaponBase : public AActor
 {
 	GENERATED_BODY()
 
+	friend class ACharacterBase; 
+
 //------ Global, Component -------------------
 public:
 	// Sets default values for this actor's properties
@@ -21,9 +23,6 @@ public:
 
 	//Weapon이 파괴되었을때 호출할 이벤트
 	FDelegateWeaponDestroy WeaponDestroyDelegate;
-
-	//모든 타이머를 해제
-	virtual void ClearAllTimerHandle();
 
 protected:
 	// Called when the game starts or when spawned
@@ -130,13 +129,17 @@ protected:
 		class USoundCue* AttackFailSound;
 
 protected:
-	//캐릭터 Ref
-	UPROPERTY()
-		class ACharacterBase* OwnerCharacterRef;
-
-	UPROPERTY()
-		class ABackStreetGameModeBase* GamemodeRef;
+	//모든 타이머를 해제
+	UFUNCTION(BlueprintCallable)
+		virtual void ClearAllTimerHandle();
 
 	UPROPERTY()
 		FTimerHandle ComboTimerHandle;
+
+protected:
+	//게임모드 약 참조
+	TWeakObjectPtr<class ABackStreetGameModeBase> GamemodeRef;
+
+	//소유자 캐릭터 약 참조
+	TWeakObjectPtr<class ACharacterBase> OwnerCharacterRef;
 };

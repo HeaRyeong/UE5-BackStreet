@@ -37,6 +37,16 @@ public:
 	//근접 공격이 가능한 지? 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bCanMeleeAtk = true;
+
+	//무기는 각 하나의 디버프만 가짐 (임시)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		ECharacterDebuffType DebuffType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float DebuffTotalTime;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+		float DebuffVariable;
 };
 
 USTRUCT(BlueprintType)
@@ -54,7 +64,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bHasProjectile = false;
 
-	// 무한 탄창인지?
+	//무한 탄창인지?
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bInfiniteMagazine;
 
@@ -95,16 +105,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		float WeaponDamageRate = 1.0f;
 
-	//무기는 각 하나의 디버프만 가짐 (임시)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		ECharacterDebuffType DebuffType;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float DebuffTotalTime;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-		float DebuffVariable;
-
 	// 내구도 PROPERTY 추가
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 		bool bInfinite = false;
@@ -131,8 +131,8 @@ struct FRangedWeaponStateStruct
 public:
 	GENERATED_USTRUCT_BODY()
 
-		//현재 탄창에 있는 발사체 수
-		UPROPERTY(BlueprintReadOnly)
+	//현재 탄창에 있는 발사체 수
+	UPROPERTY(BlueprintReadOnly)
 		int32 CurrentAmmoCount = 0;
 
 	//탄창에 있는 탄환들의 총합
