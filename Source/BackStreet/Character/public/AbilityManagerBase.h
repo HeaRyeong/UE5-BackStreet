@@ -130,9 +130,8 @@ private:
 	UPROPERTY()
 		TArray<FAbilityInfoStruct> ActiveAbilityInfoList;
 	
-	//소유자
-	UPROPERTY()
-		class ACharacterBase* OwnerCharacterRef;
+	//소유자 캐릭터 약참조
+	TWeakObjectPtr<class ACharacterBase> OwnerCharacterRef;
 
 	//모든 어빌리티의 정보
 	UPROPERTY()
