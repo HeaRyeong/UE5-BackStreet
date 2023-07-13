@@ -15,6 +15,7 @@ void UTransitionManager::InitTransitionManager()
 	{
 		SpawnRequestDelegate.AddDynamic(this, &AResourceManager::SpawnStageActor);
 	}*/
+	ChapterManager = Cast<AChapterManagerBase>(this->GetOuter());
 	LoadCompleteDelegate.BindUFunction(this, "CompleteLoad");
 	UnloadCompleteDelegate.BindUFunction(this, "SetGate");
 
@@ -28,8 +29,9 @@ void UTransitionManager::InitChapter(TArray<class AStageData*> StageRef)
 
 void UTransitionManager::MoveStage(EDirection Dir)
 {
-	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
-	AChapterManagerBase* chapterManager = Cast<AChapterManagerBase>(this->GetOuter());
+	if (!ChapterManager.IsValid()) return;
+	AStageData* currentStage = ChapterManager.Get()->GetCurrentStage();
+	if (!IsValid(currentStage)) return;
 
 	MoveDirection = Dir;
 	HideStageWork(Dir);
@@ -37,50 +39,50 @@ void UTransitionManager::MoveStage(EDirection Dir)
 	switch (Dir)
 	{
 	case EDirection::E_UP:
-		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos() + 1, currentStage->GetYPos()));
+		ChapterManager.Get()->SetCurrentStage(GetStage(currentStage->GetXPos() + 1, currentStage->GetYPos()));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Up"));
 		break;
 	case EDirection::E_DOWN:
-		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos() - 1, currentStage->GetYPos()));
+		ChapterManager.Get()->SetCurrentStage(GetStage(currentStage->GetXPos() - 1, currentStage->GetYPos()));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Down"));
 		break;
 	case EDirection::E_LEFT:
-		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos(), currentStage->GetYPos() - 1));
+		ChapterManager.Get()->SetCurrentStage(GetStage(currentStage->GetXPos(), currentStage->GetYPos() - 1));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Left"));
 		break;
 	case EDirection::E_RIGHT:
-		chapterManager->SetCurrentStage(GetStage(currentStage->GetXPos(), currentStage->GetYPos() + 1));
+		ChapterManager.Get()->SetCurrentStage(GetStage(currentStage->GetXPos(), currentStage->GetYPos() + 1));
 		LoadStage();
 		UE_LOG(LogTemp, Log, TEXT("Move to Right"));
 		break;
 	case EDirection::E_Start:
 		UE_LOG(LogTemp, Log, TEXT("Start Game"));
-		chapterManager->SetCurrentStage(Stages[0]);
+		ChapterManager.Get()->SetCurrentStage(Stages[0]);
 		LoadStage();
 		break;
 	case EDirection::E_Chapter:
 		UE_LOG(LogTemp, Log, TEXT("New Chapter"));
-		chapterManager->SetCurrentStage(chapterManager->GetLobbyStage());
+		ChapterManager.Get()->SetCurrentStage(ChapterManager.Get()->GetLobbyStage());
 		UnLoadStage();
-		chapterManager->MoveChapter();
+		ChapterManager.Get()->MoveChapter();
 		break;
 	default:
 		UE_LOG(LogTemp, Log, TEXT("Wrong Dir"));
 		break;
 	}
 
-	Cast<AChapterManagerBase>(this->GetOuter())->UpdateMapUI();
-
+	ChapterManager.Get()->UpdateMapUI();
 }
 
 void UTransitionManager::LoadStage()
 {
-	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
+	if (!ChapterManager.IsValid()) return;
+	AStageData* currentStage = ChapterManager.Get()->GetCurrentStage();
+	if (!IsValid(currentStage)) return;
 	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase::LoadStage"));
-	//FScriptDelegate loadCompleteDelegate;
 
 	if (currentStage->GetLevelRef() != nullptr)
 	{
@@ -95,10 +97,9 @@ void UTransitionManager::LoadStage()
 	}
 	else
 	{
-		AChapterManagerBase* chapterManager = Cast<AChapterManagerBase>(this->GetOuter());
 		UE_LOG(LogTemp, Log, TEXT("Instance is not exist , Create Level Instance"));
 
-		FString name = FString::FromInt(chapterManager->GetChapterLV());
+		FString name = FString::FromInt(ChapterManager.Get()->GetChapterLV());
 		FVector location = currentStage->GetStageLocation();
 
 		name += FString(TEXT("Stage"));
@@ -121,14 +122,13 @@ void UTransitionManager::LoadStage()
 void UTransitionManager::UnLoadStage()
 {
 	UE_LOG(LogTemp, Log, TEXT("AStageManagerBase::UnLoadStage"));
-	//FScriptDelegate UnloadCompleteDelegate;
 
-	if (HideStage != nullptr)
+	if (HideStage.IsValid())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Instance is exist, Now UnLoad Level"));
-		HideStage->GetLevelRef()->OnLevelHidden.Add(UnloadCompleteDelegate);
-		HideStage->GetLevelRef()->SetShouldBeLoaded(false);
-		HideStage->GetLevelRef()->SetShouldBeVisible(false);
+		HideStage.Get()->GetLevelRef()->OnLevelHidden.Add(UnloadCompleteDelegate);
+		HideStage.Get()->GetLevelRef()->SetShouldBeLoaded(false);
+		HideStage.Get()->GetLevelRef()->SetShouldBeVisible(false);
 	}
 	else
 	{
@@ -141,13 +141,16 @@ void UTransitionManager::UnLoadStage()
 void UTransitionManager::CompleteLoad()
 {
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::CompleteLoad"));
-	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
+	if (!ChapterManager.IsValid()) return;
+	AStageData* currentStage = ChapterManager.Get()->GetCurrentStage();
+	if (!IsValid(currentStage)) return;
+
 	if (!currentStage->GetIsVisited())
 	{
 		SetStage(currentStage);
 		currentStage->SetIsVisited(true);
 		// 델리게이트로 변경필요
-		Cast<AChapterManagerBase>(this->GetOuter())->GetResourceManager()->SpawnStageActor(currentStage);
+		ChapterManager.Get()->GetResourceManager()->SpawnStageActor(currentStage);
 	}
 	else
 	{
@@ -160,6 +163,8 @@ void UTransitionManager::CompleteLoad()
 
 void UTransitionManager::SetStage(AStageData* Target)
 {
+	if (!IsValid(Target)) return;
+
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::SetStage"));
 	SetSpawnPoint(Target);
 	SpawnRequestDelegate.Broadcast(Target);
@@ -167,6 +172,7 @@ void UTransitionManager::SetStage(AStageData* Target)
 
 void UTransitionManager::SetSpawnPoint(AStageData* Target)
 {
+	if (!IsValid(Target)) return;
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::SetSpawnPoint"));
 
 	ULevelStreaming* levelRef = Target->GetLevelRef();
@@ -196,9 +202,9 @@ void UTransitionManager::SetSpawnPoint(AStageData* Target)
 void UTransitionManager::SetGate()
 {
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::SetGate"));
-
+	if (!ChapterManager.IsValid()) return;
 	TArray<AActor*> gates;
-	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
+	AStageData* currentStage = ChapterManager.Get()->GetCurrentStage();
 	currentStage->EmptyGateList();
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGateBase::StaticClass(), gates);
@@ -214,11 +220,11 @@ void UTransitionManager::SetGate()
 
 void UTransitionManager::HideStageWork(EDirection Dir)
 {	
+	if (!ChapterManager.IsValid()) return;
 	if (Dir != EDirection::E_Start)
 	{
-		HideStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
-		HideStage->AIOffDelegate.Broadcast();
-
+		HideStage = ChapterManager.Get()->GetCurrentStage();
+		HideStage.Get()->AIOffDelegate.Broadcast();
 	}
 	else
 		HideStage = nullptr;
@@ -226,10 +232,10 @@ void UTransitionManager::HideStageWork(EDirection Dir)
 
 void UTransitionManager::TeleportCharacter()
 {
+	if (!ChapterManager.IsValid()) return;
 	UE_LOG(LogTemp, Log, TEXT("UTransitionManager::TeleportCharacter"));
-	AStageData* currentStage = Cast<AChapterManagerBase>(this->GetOuter())->GetCurrentStage();
+	AStageData* currentStage = ChapterManager.Get()->GetCurrentStage();
 	AMainCharacterBase* characterRef = Cast<AMainCharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	AChapterManagerBase* chapterManager = Cast<AChapterManagerBase>(this->GetOuter());
 	FVector moveLocation;
 	FName telegate;
 
@@ -273,7 +279,6 @@ void UTransitionManager::TeleportCharacter()
 		if (characterSpawnPoint.IsValidIndex(0))
 		{
 			moveLocation = characterSpawnPoint[0];
-
 		}
 	}
 	else

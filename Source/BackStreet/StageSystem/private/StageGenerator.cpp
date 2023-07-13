@@ -10,6 +10,7 @@ TArray<class AStageData*> UStageGenerator::CreateMaze()
 {
 	Stages.Empty();
 	UWorld* world = GetWorld();
+
 	for (int y = 0; y < MAX_GRID_SIZE; y++)
 	{
 		for (int x = 0; x < MAX_GRID_SIZE; x++)
@@ -61,23 +62,20 @@ void UStageGenerator::InitStageData(FVector Vector, int32 Ypos, int32 Xpos, clas
 
 }
 
-
 void UStageGenerator::RecursiveBacktracking()
 {
 	if (Tracks.Num() == 0) return;
 
-	class AStageData* currenttile = Tracks[Tracks.Num() - 1];
-	class AStageData* nexttile = GetRandomNeighbourTile(currenttile);
+	AStageData* currenttile = Tracks[Tracks.Num() - 1];
+	AStageData* nexttile = GetRandomNeighbourTile(currenttile);
 
 	if (nexttile->GetIsValid())
 	{
 		VisitTile(currenttile, nexttile);
-
 	}
 	else
 	{
 		Tracks.Pop();
-
 	}
 
 	RecursiveBacktracking();

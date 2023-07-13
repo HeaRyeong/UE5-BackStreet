@@ -18,8 +18,6 @@ protected:
 
 
 public:
-	UFUNCTION()
-		void InitResourceManager();
 
 	UFUNCTION()
 		void SpawnStageActor(class AStageData* Target);
@@ -61,7 +59,7 @@ public:
 	UFUNCTION()
 		FName GetRandomMap();
 
-public:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FName> MapNames;
 

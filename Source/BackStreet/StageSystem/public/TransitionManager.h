@@ -63,8 +63,9 @@ private:
 	UPROPERTY()
 		TArray<class AStageData*> Stages;
 
-	UPROPERTY()
 		TWeakObjectPtr<class AStageData> HideStage;
+
+		TWeakObjectPtr<class AChapterManagerBase> ChapterManager;
 
 	UPROPERTY()
 		EDirection MoveDirection;

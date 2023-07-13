@@ -85,10 +85,10 @@ private:
 		void InitStartGate();
 
 private:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 		int32 ChapterLV;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 		float StatWeight;
 
 private:
