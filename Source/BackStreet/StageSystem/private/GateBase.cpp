@@ -34,6 +34,8 @@ void AGateBase::Tick(float DeltaTime)
 void AGateBase::BeginPlay()
 {
 	Super::BeginPlay();
+	if (this->ActorHasTag(FName("Off")))
+		DeactivateGate();
 	
 }
 
@@ -61,6 +63,8 @@ void AGateBase::EnterGate()
 	{
 		InitGate();
 	}
+	if (this->ActorHasTag(FName("Off")))
+		return;
 	RequestMoveStage();
 }
 
